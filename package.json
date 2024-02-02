@@ -1,10 +1,10 @@
 {
-  "name": "arb-translator",
+  "name": "flutter-translator",
   "publisher": "DevStory",
   "license": "SEE LICENSE IN LICENSE",
-  "displayName": "ARB Translator",
-  "description": "Translates ARB files to Google Translator.",
-  "version": "1.3.11",
+  "displayName": "Flutter Translator",
+  "description": "It supports the internationalization of flutter applications using Google Translator.",
+  "version": "2.0.0",
   "engines": {
     "vscode": "^1.84.0"
   },
@@ -15,7 +15,7 @@
   "categories": [
     "Language Packs"
   ],
-  "repository": "https://github.com/nero-angela/arb-translator",
+  "repository": "https://github.com/nero-angela/flutter-translator",
   "homepage": "https://devstory.co.kr",
   "keyword": [
     "arb",
@@ -29,9 +29,9 @@
   "contributes": {
     "configuration": {
       "type": "object",
-      "title": "ArbTranslator",
+      "title": "FlutterTranslator",
       "properties": {
-        "arbTranslator.config": {
+        "flutterTranslator.config": {
           "type": "object",
           "properties": {
             "arbPrefix": {
@@ -78,44 +78,44 @@
     },
     "commands": [
       {
-        "command": "arb-translator.initialize",
-        "title": "Arb Translator : Initialize"
+        "command": "flutter-translator.arb.initialize",
+        "title": "Flutter Translator : [ARB] Initialize"
       },
       {
-        "command": "arb-translator.translate",
-        "title": "Arb Translator : Translate"
+        "command": "flutter-translator.arb.translate",
+        "title": "Flutter Translator : [ARB] Translate"
       },
       {
-        "command": "arb-translator.excludeTranslation",
-        "title": "Arb Translator : Exclude Translation"
+        "command": "flutter-translator.arb.excludeTranslation",
+        "title": "Flutter Translator : [ARB] Exclude Translation"
       },
       {
-        "command": "arb-translator.configureTargetLanguageCode",
-        "title": "Arb Translator : Configure Target Language Code"
+        "command": "flutter-translator.arb.configureTargetLanguageCode",
+        "title": "Flutter Translator : [ARB] Configure Target Language Code"
       },
       {
-        "command": "arb-translator.validateTranslation",
-        "title": "Arb Translator : Validate Translation"
+        "command": "flutter-translator.arb.validateTranslation",
+        "title": "Flutter Translator : [ARB] Validate Translation"
       },
       {
-        "command": "arb-translator.decodeAllHtmlEntities",
-        "title": "Arb Translator : Decode All HTML Entities"
+        "command": "flutter-translator.arb.decodeAllHtmlEntities",
+        "title": "Flutter Translator : [ARB] Decode All HTML Entities"
       },
       {
-        "command": "arb-translator.uploadToGoogleSheet",
-        "title": "Arb Translator : Upload To Google Sheet"
+        "command": "flutter-translator.arb.uploadToGoogleSheet",
+        "title": "Flutter Translator : [ARB] Upload To Google Sheet"
       },
       {
-        "command": "arb-translator.openGoogleSheet",
-        "title": "Arb Translator : Open Google Sheet"
+        "command": "flutter-translator.arb.openGoogleSheet",
+        "title": "Flutter Translator : [ARB] Open Google Sheet"
       },
       {
-        "command": "arb-translator.changeArbKeys",
-        "title": "Arb Translator : Change Arb Keys"
+        "command": "flutter-translator.arb.changeArbKeys",
+        "title": "Flutter Translator : [ARB] Change Keys"
       },
       {
-        "command": "arb-translator.deleteArbKeys",
-        "title": "Arb Translator : Delete Arb Keys"
+        "command": "flutter-translator.arb.deleteArbKeys",
+        "title": "Flutter Translator : [ARB] Delete Keys"
       }
     ]
   },
@@ -127,7 +127,7 @@
     "lint": "eslint src --ext ts",
     "lint:watch": "esw --color -w src --ext ts",
     "test": "vscode-test",
-    "package": "npm run lint && (rm -r out || true) && vsce package",
+    "package": "npm run lint && (rm -r out || true) && npm run compile && vsce package",
     "publish": "npm run package && vsce publish"
   },
   "devDependencies": {

@@ -1,5 +1,6 @@
-# Arb Translator
-It is an extension that translates [ARB(Application Resource Bundle)](https://github.com/google/app-resource-bundle/wiki/ApplicationResourceBundleSpecification) files using Google Translator.
+# Flutter Translator
+It supports the internationalization of flutter applications using Google Translator.
+- [ARB(Application Resource Bundle)](https://github.com/google/app-resource-bundle/wiki/ApplicationResourceBundleSpecification) files Translation
 
 ## How to start
 The starting method differs depending on whether you already have an arb file translated or not.

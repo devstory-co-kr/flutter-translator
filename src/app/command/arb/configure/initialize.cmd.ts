@@ -1,19 +1,19 @@
 import * as fs from "fs";
 import path from "path";
 import * as vscode from "vscode";
-import { ArbService } from "../../arb/arb.service";
-import { ConfigService } from "../../config/config.service";
-import { ArbFileNotFoundException } from "../../util/exceptions";
-import { Toast } from "../../util/toast";
-import { Workspace } from "../../util/workspace";
-import { Cmd } from "../cmd";
+import { ArbService } from "../../../arb/arb.service";
+import { ConfigService } from "../../../config/config.service";
+import { ArbFileNotFoundException } from "../../../util/exceptions";
+import { Toast } from "../../../util/toast";
+import { Workspace } from "../../../util/workspace";
+import { Cmd } from "../../cmd";
 
 interface InitParams {
   configService: ConfigService;
   arbService: ArbService;
 }
 
-export class InitializeCmd {
+export class ArbInitializeCmd {
   private configService: ConfigService;
   private arbService: ArbService;
 
@@ -65,7 +65,7 @@ export class InitializeCmd {
 
     // targetLanguageCodeLilst
     if (targetLanguageCodeList.length === 0) {
-      await vscode.commands.executeCommand(Cmd.configureTargetLanguageCode);
+      await vscode.commands.executeCommand(Cmd.ArbConfigureTargetLanguageCode);
     }
 
     // open workspace

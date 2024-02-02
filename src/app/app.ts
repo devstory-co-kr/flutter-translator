@@ -31,18 +31,21 @@ export class ArbTranslator implements App {
   public name: string = Constant.appName;
 
   public commands = {
-    [Cmd.initialize]: () => this.registry.initializeCmd.run(),
-    [Cmd.translate]: () => this.registry.translateCmd.run(),
-    [Cmd.excludeTranslation]: () => this.registry.excludeTranslationCmd.run(),
-    [Cmd.configureTargetLanguageCode]: () =>
-      this.registry.selectTargetLanguageCodeCmd.run(),
-    [Cmd.validateTranslation]: () => this.registry.validateTranslationCmd.run(),
-    [Cmd.decodeAllHtmlEntities]: () =>
-      this.registry.decodeAllHtmlEntitiesCmd.run(),
-    [Cmd.uploadToGoogleSheet]: () => this.registry.uploadToGoogleSheetCmd.run(),
-    [Cmd.openGoogleSheet]: () => this.registry.openGoogleSheetCmd.run(),
-    [Cmd.changeArbKeys]: () => this.registry.changeArbKeysCmd.run(),
-    [Cmd.deleteArbKeys]: () => this.registry.deleteArbKeysCmd.run(),
+    [Cmd.ArbInitialize]: () => this.registry.arbInitializeCmd.run(),
+    [Cmd.ArbTranslate]: () => this.registry.arbTranslateCmd.run(),
+    [Cmd.ArbExcludeTranslation]: () =>
+      this.registry.arbExcludeTranslationCmd.run(),
+    [Cmd.ArbConfigureTargetLanguageCode]: () =>
+      this.registry.arbSelectTargetLanguageCodeCmd.run(),
+    [Cmd.ArbValidateTranslation]: () =>
+      this.registry.arbValidateTranslationCmd.run(),
+    [Cmd.ArbDecodeAllHtmlEntities]: () =>
+      this.registry.arbDecodeAllHtmlEntitiesCmd.run(),
+    [Cmd.ArbUploadToGoogleSheet]: () =>
+      this.registry.arbUploadToGoogleSheetCmd.run(),
+    [Cmd.ArbOpenGoogleSheet]: () => this.registry.arbOpenGoogleSheetCmd.run(),
+    [Cmd.ArbChangeKeys]: () => this.registry.arbChangeKeysCmd.run(),
+    [Cmd.ArbDeleteKeys]: () => this.registry.arbDeleteKeysCmd.run(),
   };
 
   public init = async () => {
@@ -61,7 +64,7 @@ export class ArbTranslator implements App {
 
   public onException = async (e: any) => {
     if (e instanceof ConfigNotFoundException) {
-      await vscode.commands.executeCommand(Cmd.initialize);
+      await vscode.commands.executeCommand(Cmd.ArbInitialize);
     } else if (e instanceof ConfigurationRequiredException) {
       Dialog.showTargetLanguageCodeListRequiredDialog();
     } else if (e instanceof APIKeyRequiredException) {

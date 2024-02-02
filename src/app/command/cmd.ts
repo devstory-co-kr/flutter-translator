@@ -1,26 +1,30 @@
 export enum Cmd {
-  initialize = "arb-translator.initialize",
-  translate = "arb-translator.translate",
-  excludeTranslation = "arb-translator.excludeTranslation",
-  configureTargetLanguageCode = "arb-translator.configureTargetLanguageCode",
-  validateTranslation = "arb-translator.validateTranslation",
-  decodeAllHtmlEntities = "arb-translator.decodeAllHtmlEntities",
-  uploadToGoogleSheet = "arb-translator.uploadToGoogleSheet",
-  openGoogleSheet = "arb-translator.openGoogleSheet",
-  changeArbKeys = "arb-translator.changeArbKeys",
-  deleteArbKeys = "arb-translator.deleteArbKeys",
+  // ARB Command
+  ArbInitialize = "flutter-translator.arb.initialize",
+  ArbTranslate = "flutter-translator.arb.translate",
+  ArbExcludeTranslation = "flutter-translator.arb.excludeTranslation",
+  ArbConfigureTargetLanguageCode = "flutter-translator.arb.configureTargetLanguageCode",
+  ArbValidateTranslation = "flutter-translator.arb.validateTranslation",
+  ArbDecodeAllHtmlEntities = "flutter-translator.arb.decodeAllHtmlEntities",
+  ArbUploadToGoogleSheet = "flutter-translator.arb.uploadToGoogleSheet",
+  ArbOpenGoogleSheet = "flutter-translator.arb.openGoogleSheet",
+  ArbChangeKeys = "flutter-translator.arb.changeKeys",
+  ArbDeleteKeys = "flutter-translator.arb.deleteKeys",
 }
 
 export const cmdName: Record<Cmd, string> = {
-  [Cmd.initialize]: "Arb Translator : Initialize",
-  [Cmd.translate]: "Arb Translator : Translate",
-  [Cmd.validateTranslation]: "Arb Translator : Validate Translation",
-  [Cmd.excludeTranslation]: "Arb Translator : Exclude Translation",
-  [Cmd.configureTargetLanguageCode]:
-    "Arb Translator : Configure Target Language Code",
-  [Cmd.decodeAllHtmlEntities]: "Arb Translator : Decode All HTML Entities",
-  [Cmd.uploadToGoogleSheet]: "Arb Translator : Upload To Google Sheet",
-  [Cmd.openGoogleSheet]: "Arb Translator : Open Google Sheet",
-  [Cmd.changeArbKeys]: "Arb Translator : Change Arb Keys",
-  [Cmd.deleteArbKeys]: "Arb Translator : Delete Arb Keys",
+  [Cmd.ArbInitialize]: "Flutter Translator : [ARB] Initialize",
+  [Cmd.ArbTranslate]: "Flutter Translator : [ARB] Translate",
+  [Cmd.ArbValidateTranslation]:
+    "Flutter Translator : [ARB] Validate Translation",
+  [Cmd.ArbExcludeTranslation]: "Flutter Translator : [ARB] Exclude Translation",
+  [Cmd.ArbConfigureTargetLanguageCode]:
+    "Flutter Translator : [ARB] Configure Target Language Code",
+  [Cmd.ArbDecodeAllHtmlEntities]:
+    "Flutter Translator : [ARB] Decode All HTML Entities",
+  [Cmd.ArbUploadToGoogleSheet]:
+    "Flutter Translator : [ARB] Upload To Google Sheet",
+  [Cmd.ArbOpenGoogleSheet]: "Flutter Translator : [ARB] Open Google Sheet",
+  [Cmd.ArbChangeKeys]: "Flutter Translator : [ARB] Change Keys",
+  [Cmd.ArbDeleteKeys]: "Flutter Translator : [ARB] Delete Keys",
 };

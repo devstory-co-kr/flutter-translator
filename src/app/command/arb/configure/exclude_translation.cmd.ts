@@ -1,11 +1,11 @@
 import * as vscode from "vscode";
-import { Arb } from "../../arb/arb";
-import { ArbService } from "../../arb/arb.service";
-import { ConfigService } from "../../config/config.service";
-import { HistoryChange } from "../../history/history";
-import { HistoryService } from "../../history/history.service";
-import { SourceArbFilePathRequiredException } from "../../util/exceptions";
-import { Toast } from "../../util/toast";
+import { Arb } from "../../../arb/arb";
+import { ArbService } from "../../../arb/arb.service";
+import { ConfigService } from "../../../config/config.service";
+import { HistoryChange } from "../../../history/history";
+import { HistoryService } from "../../../history/history.service";
+import { SourceArbFilePathRequiredException } from "../../../util/exceptions";
+import { Toast } from "../../../util/toast";
 
 interface InitParams {
   arbService: ArbService;
@@ -13,7 +13,7 @@ interface InitParams {
   historyService: HistoryService;
 }
 
-export class ExcludeTranslationCmd {
+export class ArbExcludeTranslationCmd {
   private arbService: ArbService;
   private configService: ConfigService;
   private historyService: HistoryService;

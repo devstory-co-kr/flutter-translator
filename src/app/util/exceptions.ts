@@ -21,7 +21,9 @@ export class GoogleSheetConfigRequiredException extends BaseException {
 export class ConfigNotFoundException extends BaseException {
   constructor() {
     super(
-      `Run the "${cmdName[Cmd.initialize]}" command to add required settings.`
+      `Run the "${
+        cmdName[Cmd.ArbInitialize]
+      }" command to add required settings.`
     );
   }
 }

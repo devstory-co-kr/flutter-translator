@@ -4,17 +4,17 @@ import { ArbValidationRepository } from "./arb_validation/arb_validation.reposit
 import { ArbValidationService } from "./arb_validation/arb_validation.service";
 import { TranslationCacheDataSource } from "./cache/translation_cache.datasource";
 import { TranslationCacheRepository } from "./cache/translation_cache.repository";
-import { ChangeKeysCmd as ChangeArbKeysCmd } from "./command/arb_key/change_arb_keys.cmd";
-import { DeleteKeyCmd as DeleteArbKeysCmd } from "./command/arb_key/delete_arb_keys.cmd";
-import { ConfigureTargetLanguageCodeCmd } from "./command/configure/configure_target_language_code.cmd";
-import { ExcludeTranslationCmd } from "./command/configure/exclude_translation.cmd";
-import { InitializeCmd } from "./command/configure/initialize.cmd";
-import { OpenGoogleSheetCmd } from "./command/google_sheet/open_google_sheet.cmd";
-import { UploadToGoogleSheetCmd } from "./command/google_sheet/upload_to_google_sheet.cmd";
-import { CreateTranslationCacheCmd } from "./command/translate/create_translation_cache.cmd";
-import { TranslateCmd } from "./command/translate/translate.cmd";
-import { DecodeAllHtmlEntitiesCmd } from "./command/validate/decode_all_html_entities.cmd";
-import { ValidateTranslationCmd } from "./command/validate/validate_translation.cmd";
+import { ArbConfigureTargetLanguageCodeCmd } from "./command/arb/configure/configure_target_language_code.cmd";
+import { ArbExcludeTranslationCmd } from "./command/arb/configure/exclude_translation.cmd";
+import { ArbInitializeCmd } from "./command/arb/configure/initialize.cmd";
+import { ArbOpenGoogleSheetCmd } from "./command/arb/google_sheet/open_google_sheet.cmd";
+import { ArbUploadToGoogleSheetCmd } from "./command/arb/google_sheet/upload_to_google_sheet.cmd";
+import { ArbChangeKeysCmd } from "./command/arb/keys/change_keys.cmd";
+import { ArbDeleteKeysCmd } from "./command/arb/keys/delete_keys.cmd";
+import { ArbCreateTranslationCacheCmd } from "./command/arb/translate/create_translation_cache.cmd";
+import { ArbTranslateCmd } from "./command/arb/translate/translate.cmd";
+import { ArbDecodeAllHtmlEntitiesCmd } from "./command/arb/validate/decode_all_html_entities.cmd";
+import { ArbValidateTranslationCmd } from "./command/arb/validate/validate_translation.cmd";
 import { ConfigRepository } from "./config/config.repository";
 import { ConfigService } from "./config/config.service";
 import { GoogleAuthService } from "./google_sheet/google_auth.service";
@@ -60,17 +60,17 @@ export class Registry {
   /**
    * Command
    */
-  public initializeCmd: InitializeCmd;
-  public translateCmd: TranslateCmd;
-  public createTranslationCacheCmd: CreateTranslationCacheCmd;
-  public excludeTranslationCmd: ExcludeTranslationCmd;
-  public selectTargetLanguageCodeCmd: ConfigureTargetLanguageCodeCmd;
-  public validateTranslationCmd: ValidateTranslationCmd;
-  public decodeAllHtmlEntitiesCmd: DecodeAllHtmlEntitiesCmd;
-  public uploadToGoogleSheetCmd: UploadToGoogleSheetCmd;
-  public openGoogleSheetCmd: OpenGoogleSheetCmd;
-  public changeArbKeysCmd: ChangeArbKeysCmd;
-  public deleteArbKeysCmd: DeleteArbKeysCmd;
+  public arbInitializeCmd: ArbInitializeCmd;
+  public arbTranslateCmd: ArbTranslateCmd;
+  public arbCreateTranslationCacheCmd: ArbCreateTranslationCacheCmd;
+  public arbExcludeTranslationCmd: ArbExcludeTranslationCmd;
+  public arbSelectTargetLanguageCodeCmd: ArbConfigureTargetLanguageCodeCmd;
+  public arbValidateTranslationCmd: ArbValidateTranslationCmd;
+  public arbDecodeAllHtmlEntitiesCmd: ArbDecodeAllHtmlEntitiesCmd;
+  public arbUploadToGoogleSheetCmd: ArbUploadToGoogleSheetCmd;
+  public arbOpenGoogleSheetCmd: ArbOpenGoogleSheetCmd;
+  public arbChangeKeysCmd: ArbChangeKeysCmd;
+  public arbDeleteKeysCmd: ArbDeleteKeysCmd;
 
   constructor() {
     // data source
@@ -122,11 +122,11 @@ export class Registry {
     });
 
     // cmd
-    this.initializeCmd = new InitializeCmd({
+    this.arbInitializeCmd = new ArbInitializeCmd({
       configService: this.configService,
       arbService: this.arbService,
     });
-    this.translateCmd = new TranslateCmd({
+    this.arbTranslateCmd = new ArbTranslateCmd({
       arbService: this.arbService,
       configService: this.configService,
       historyService: this.historyService,
@@ -134,34 +134,36 @@ export class Registry {
       translationService: this.translationService,
       arbStatisticService: this.arbStatisticService,
     });
-    this.createTranslationCacheCmd = new CreateTranslationCacheCmd({
+    this.arbCreateTranslationCacheCmd = new ArbCreateTranslationCacheCmd({
       arbService: this.arbService,
       configService: this.configService,
       translationCacheRepository: this.translationCacheRepository,
     });
-    this.excludeTranslationCmd = new ExcludeTranslationCmd({
+    this.arbExcludeTranslationCmd = new ArbExcludeTranslationCmd({
       arbService: this.arbService,
       configService: this.configService,
       historyService: this.historyService,
     });
-    this.selectTargetLanguageCodeCmd = new ConfigureTargetLanguageCodeCmd({
-      arbService: this.arbService,
-      configService: this.configService,
-      languageService: this.languageService,
-    });
-    this.validateTranslationCmd = new ValidateTranslationCmd({
+    this.arbSelectTargetLanguageCodeCmd = new ArbConfigureTargetLanguageCodeCmd(
+      {
+        arbService: this.arbService,
+        configService: this.configService,
+        languageService: this.languageService,
+      }
+    );
+    this.arbValidateTranslationCmd = new ArbValidateTranslationCmd({
       arbValidationService: this.arbValidationService,
       languageService: this.languageService,
       configService: this.configService,
       arbService: this.arbService,
     });
-    this.decodeAllHtmlEntitiesCmd = new DecodeAllHtmlEntitiesCmd({
+    this.arbDecodeAllHtmlEntitiesCmd = new ArbDecodeAllHtmlEntitiesCmd({
       arbValidationService: this.arbValidationService,
       languageService: this.languageService,
       configService: this.configService,
       arbService: this.arbService,
     });
-    this.uploadToGoogleSheetCmd = new UploadToGoogleSheetCmd({
+    this.arbUploadToGoogleSheetCmd = new ArbUploadToGoogleSheetCmd({
       googleSheetService: this.googleSheetService,
       googleAuthService: this.googleAuthService,
       arbValidationService: this.arbValidationService,
@@ -169,16 +171,16 @@ export class Registry {
       configService: this.configService,
       arbService: this.arbService,
     });
-    this.openGoogleSheetCmd = new OpenGoogleSheetCmd({
+    this.arbOpenGoogleSheetCmd = new ArbOpenGoogleSheetCmd({
       googleSheetService: this.googleSheetService,
       configService: this.configService,
     });
-    this.changeArbKeysCmd = new ChangeArbKeysCmd({
+    this.arbChangeKeysCmd = new ArbChangeKeysCmd({
       historyService: this.historyService,
       configService: this.configService,
       arbService: this.arbService,
     });
-    this.deleteArbKeysCmd = new DeleteArbKeysCmd({
+    this.arbDeleteKeysCmd = new ArbDeleteKeysCmd({
       historyService: this.historyService,
       configService: this.configService,
       arbService: this.arbService,

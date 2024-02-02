@@ -1,17 +1,17 @@
 import * as fs from "fs";
 import * as vscode from "vscode";
-import { Arb } from "../../arb/arb";
-import { ArbService } from "../../arb/arb.service";
-import { ArbStatisticService } from "../../arb_statistic/arb_statistic.service";
-import { ConfigService } from "../../config/config.service";
-import { History } from "../../history/history";
-import { HistoryService } from "../../history/history.service";
-import { Language } from "../../language/language";
-import { LanguageService } from "../../language/language.service";
-import { TranslationType } from "../../translation/translation";
-import { TranslationService } from "../../translation/translation.service";
-import { TranslationStatistic } from "../../translation/translation.statistic";
-import { Dialog } from "../../util/dialog";
+import { Arb } from "../../../arb/arb";
+import { ArbService } from "../../../arb/arb.service";
+import { ArbStatisticService } from "../../../arb_statistic/arb_statistic.service";
+import { ConfigService } from "../../../config/config.service";
+import { History } from "../../../history/history";
+import { HistoryService } from "../../../history/history.service";
+import { Language } from "../../../language/language";
+import { LanguageService } from "../../../language/language.service";
+import { TranslationType } from "../../../translation/translation";
+import { TranslationService } from "../../../translation/translation.service";
+import { TranslationStatistic } from "../../../translation/translation.statistic";
+import { Dialog } from "../../../util/dialog";
 import {
   APIKeyRequiredException,
   ConfigNotFoundException,
@@ -19,9 +19,9 @@ import {
   FileNotFoundException,
   SourceArbFilePathRequiredException,
   TranslateLanguagesRequiredException,
-} from "../../util/exceptions";
-import { Toast } from "../../util/toast";
-import { Cmd } from "../cmd";
+} from "../../../util/exceptions";
+import { Toast } from "../../../util/toast";
+import { Cmd } from "../../cmd";
 
 interface InitParams {
   arbService: ArbService;
@@ -32,7 +32,7 @@ interface InitParams {
   arbStatisticService: ArbStatisticService;
 }
 
-export class TranslateCmd {
+export class ArbTranslateCmd {
   private arbService: ArbService;
   private configService: ConfigService;
   private historyService: HistoryService;
@@ -111,7 +111,7 @@ export class TranslateCmd {
       title: "Would you like to validate the translation results?",
     });
     if (isPreceedValidation) {
-      await vscode.commands.executeCommand(Cmd.validateTranslation);
+      await vscode.commands.executeCommand(Cmd.ArbValidateTranslation);
     }
   }
 

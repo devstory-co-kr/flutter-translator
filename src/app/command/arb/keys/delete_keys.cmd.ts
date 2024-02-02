@@ -1,9 +1,9 @@
 import * as vscode from "vscode";
-import { Arb } from "../../arb/arb";
-import { ArbService } from "../../arb/arb.service";
-import { ConfigService } from "../../config/config.service";
-import { HistoryService } from "../../history/history.service";
-import { Toast } from "../../util/toast";
+import { Arb } from "../../../arb/arb";
+import { ArbService } from "../../../arb/arb.service";
+import { ConfigService } from "../../../config/config.service";
+import { HistoryService } from "../../../history/history.service";
+import { Toast } from "../../../util/toast";
 
 interface InitParams {
   configService: ConfigService;
@@ -11,7 +11,7 @@ interface InitParams {
   historyService: HistoryService;
 }
 
-export class DeleteKeyCmd {
+export class ArbDeleteKeysCmd {
   private historyService: HistoryService;
   private configService: ConfigService;
   private arbService: ArbService;

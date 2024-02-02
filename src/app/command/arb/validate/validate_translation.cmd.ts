@@ -1,16 +1,16 @@
 import path from "path";
-import { Arb } from "../../arb/arb";
-import { ArbService } from "../../arb/arb.service";
+import { Arb } from "../../../arb/arb";
+import { ArbService } from "../../../arb/arb.service";
 import {
   InvalidType,
   ValidationResult,
-} from "../../arb_validation/arb_validation";
-import { ArbValidationService } from "../../arb_validation/arb_validation.service";
-import { ConfigService } from "../../config/config.service";
-import { Language } from "../../language/language";
-import { LanguageService } from "../../language/language.service";
-import { Dialog } from "../../util/dialog";
-import { Toast } from "../../util/toast";
+} from "../../../arb_validation/arb_validation";
+import { ArbValidationService } from "../../../arb_validation/arb_validation.service";
+import { ConfigService } from "../../../config/config.service";
+import { Language } from "../../../language/language";
+import { LanguageService } from "../../../language/language.service";
+import { Dialog } from "../../../util/dialog";
+import { Toast } from "../../../util/toast";
 
 interface InitParams {
   arbValidationService: ArbValidationService;
@@ -19,7 +19,7 @@ interface InitParams {
   arbService: ArbService;
 }
 
-export class ValidateTranslationCmd {
+export class ArbValidateTranslationCmd {
   private arbValidationService: ArbValidationService;
   private languageService: LanguageService;
   private configService: ConfigService;

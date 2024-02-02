@@ -1,16 +1,16 @@
 import * as vscode from "vscode";
-import { ArbService } from "../../arb/arb.service";
-import { ArbValidationService } from "../../arb_validation/arb_validation.service";
-import { ConfigService } from "../../config/config.service";
-import { GoogleAuthService } from "../../google_sheet/google_auth.service";
-import { GoogleSheetService } from "../../google_sheet/google_sheet.service";
-import { Language } from "../../language/language";
-import { LanguageService } from "../../language/language.service";
-import { Dialog } from "../../util/dialog";
-import { GoogleSheetConfigRequiredException } from "../../util/exceptions";
-import { Toast } from "../../util/toast";
-import { Workspace } from "../../util/workspace";
-import { Cmd } from "../cmd";
+import { ArbService } from "../../../arb/arb.service";
+import { ArbValidationService } from "../../../arb_validation/arb_validation.service";
+import { ConfigService } from "../../../config/config.service";
+import { GoogleAuthService } from "../../../google_sheet/google_auth.service";
+import { GoogleSheetService } from "../../../google_sheet/google_sheet.service";
+import { Language } from "../../../language/language";
+import { LanguageService } from "../../../language/language.service";
+import { Dialog } from "../../../util/dialog";
+import { GoogleSheetConfigRequiredException } from "../../../util/exceptions";
+import { Toast } from "../../../util/toast";
+import { Workspace } from "../../../util/workspace";
+import { Cmd } from "../../cmd";
 
 interface InitParams {
   googleSheetService: GoogleSheetService;
@@ -21,7 +21,7 @@ interface InitParams {
   arbService: ArbService;
 }
 
-export class UploadToGoogleSheetCmd {
+export class ArbUploadToGoogleSheetCmd {
   private googleSheetService: GoogleSheetService;
   private googleAuthService: GoogleAuthService;
   private arbValidationService: ArbValidationService;
@@ -108,7 +108,7 @@ export class UploadToGoogleSheetCmd {
     if (validationResultList.length > 0) {
       // invalid
       Toast.e("Invalid translation result. Please correct it and try again.");
-      return await vscode.commands.executeCommand(Cmd.validateTranslation);
+      return await vscode.commands.executeCommand(Cmd.ArbValidateTranslation);
     }
 
     // get google auth
@@ -187,6 +187,6 @@ export class UploadToGoogleSheetCmd {
     });
 
     Toast.i(`🟢 Upload completed`);
-    await vscode.commands.executeCommand(Cmd.openGoogleSheet);
+    await vscode.commands.executeCommand(Cmd.ArbOpenGoogleSheet);
   }
 }

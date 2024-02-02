@@ -1,10 +1,10 @@
 import path from "path";
 import * as vscode from "vscode";
-import { ArbService } from "../../arb/arb.service";
-import { LanguageCode } from "../../config/config";
-import { ConfigService } from "../../config/config.service";
-import { LanguageService } from "../../language/language.service";
-import { Toast } from "../../util/toast";
+import { ArbService } from "../../../arb/arb.service";
+import { LanguageCode } from "../../../config/config";
+import { ConfigService } from "../../../config/config.service";
+import { LanguageService } from "../../../language/language.service";
+import { Toast } from "../../../util/toast";
 
 enum Action {
   select = "Select",
@@ -17,7 +17,7 @@ interface InitParams {
   languageService: LanguageService;
 }
 
-export class ConfigureTargetLanguageCodeCmd {
+export class ArbConfigureTargetLanguageCodeCmd {
   private arbService: ArbService;
   private configService: ConfigService;
   private languageService: LanguageService;

@@ -6,6 +6,18 @@ export class ConfigurationRequiredException extends BaseException {}
 
 export class APIKeyRequiredException extends BaseException {}
 
+export class MigrationFailureException extends BaseException {
+  constructor() {
+    super("Failed to migrate");
+  }
+}
+
+export class InvalidVersionException extends BaseException {
+  constructor(message: string) {
+    super(message);
+  }
+}
+
 export class InvalidArgumentsException extends BaseException {
   constructor(message: string) {
     super(message);

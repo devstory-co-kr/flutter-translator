@@ -7,7 +7,7 @@ import { Cache, TranslationCacheKey } from "./translation_cache";
 
 export class TranslationCacheDataSource extends BaseInitRequired {
   protected className: string = "TranslationCacheDataSource";
-  private cacheFilePath: string = Workspace.getArbPath("cache.json");
+  private cacheFilePath: string = Workspace.getWorkspaceAppPath("cache.json");
   private cache: Cache = {};
 
   private get isCacheFileExist() {

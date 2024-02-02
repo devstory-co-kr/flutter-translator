@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
-import { App, ArbTranslator } from "./app/app";
+import { App, FlutterTranslator } from "./app/app";
 import { Cmd } from "./app/command/cmd";
 
-const app: App = new ArbTranslator();
+const app: App = new FlutterTranslator();
 
 export function activate(context: vscode.ExtensionContext) {
   // register command
@@ -10,6 +10,7 @@ export function activate(context: vscode.ExtensionContext) {
     const cmd: Cmd = <Cmd>cmdKey;
     const disposable = vscode.commands.registerCommand(cmdKey, async () => {
       try {
+        await app.migrate(context);
         await app.init();
         await app.commands[cmd](context);
       } catch (e) {

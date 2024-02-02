@@ -7,6 +7,7 @@ import {
   APIKeyRequiredException,
   ConfigNotFoundException,
   ConfigurationRequiredException,
+  MigrationFailureException,
   WorkspaceNotFoundException,
 } from "./util/exceptions";
 import { Logger } from "./util/logger";
@@ -16,11 +17,12 @@ export interface App {
   name: string;
   commands: Record<Cmd, (context: vscode.ExtensionContext) => void>;
   init: () => any;
+  migrate: (context: vscode.ExtensionContext) => Promise<void>;
   disposed: () => void;
   onException: (e: any) => void;
 }
 
-export class ArbTranslator implements App {
+export class FlutterTranslator implements App {
   private registry: Registry;
 
   constructor() {
@@ -56,6 +58,15 @@ export class ArbTranslator implements App {
 
     // initialize
     await this.registry.init();
+  };
+
+  public migrate = (context: vscode.ExtensionContext): Promise<void> => {
+    try {
+      return this.registry.migrationService.checkMigrate(context);
+    } catch (e: any) {
+      Logger.e(e);
+      throw new MigrationFailureException();
+    }
   };
 
   public disposed = () => {

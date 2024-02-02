@@ -19,23 +19,7 @@ export class ConfigRepository extends BaseInitRequired {
   };
   private config: Config = this.defaultConfig;
 
-  private async migrate(): Promise<void> {
-    // 1.3.11 -> 2.0.0 : Update workspace name from "arbTranslator" to "flutterTranslator"
-    const currentKey = "flutterTranslator";
-    const previousKey = "arbTranslator";
-    const previousWorkspace = vscode.workspace.getConfiguration(previousKey);
-    const previousConfig = previousWorkspace.get<Config>(this._key);
-    if (previousConfig && Object.keys(previousConfig).length > 0) {
-      // convert arbTranslator to flutterTranslator
-      const currentWorkspace = vscode.workspace.getConfiguration(currentKey);
-      await currentWorkspace.update("config", previousConfig);
-      // delete arbTranslator
-      await previousWorkspace.update("config", undefined);
-    }
-  }
-
   public async init(): Promise<void> {
-    await this.migrate();
     this.config = {
       ...this.defaultConfig,
       ...this._workspace.get<Config>(this._key),

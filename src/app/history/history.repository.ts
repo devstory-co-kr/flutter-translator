@@ -39,7 +39,8 @@ export class HistoryRepository extends BaseInitRequired {
     super.initialized();
   }
 
-  private historyFilePath: string = Workspace.getArbPath("history.json");
+  private historyFilePath: string =
+    Workspace.getWorkspaceAppPath("history.json");
 
   public get(): History {
     super.checkInit();

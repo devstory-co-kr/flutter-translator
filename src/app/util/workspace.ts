@@ -24,7 +24,7 @@ export class Workspace {
     return path.join(workspacePath, ".vscode", ...paths);
   }
 
-  public static getArbPath(...paths: string[]) {
+  public static getWorkspaceAppPath(...paths: string[]) {
     const workspacePath = vscode.workspace.workspaceFolders![0].uri.path;
     return path.join(workspacePath, ".vscode", Constant.appName, ...paths);
   }

@@ -26,6 +26,8 @@ import { LanguageService } from "./language/language.service";
 import { GoogleTranslationDataSource } from "./translation/google/google_translation.datasource";
 import { GoogleTranslationRepository } from "./translation/google/google_translation.repository";
 import { GoogleTranslationService } from "./translation/google/google_translation.service";
+import { MigrationService } from "./migration/migration.service";
+import { VersionRepository } from "./migration/version.repository";
 
 export class Registry {
   /**
@@ -43,6 +45,7 @@ export class Registry {
   private historyRepository: HistoryRepository;
   private configRepository: ConfigRepository;
   private googleSheetRepository: GoogleSheetRepository;
+  private versionRepository: VersionRepository;
 
   /**
    * Service
@@ -56,6 +59,7 @@ export class Registry {
   private arbValidationService: ArbValidationService;
   private googleAuthService: GoogleAuthService;
   private googleSheetService: GoogleSheetService;
+  public migrationService: MigrationService;
 
   /**
    * Command
@@ -89,6 +93,7 @@ export class Registry {
     this.historyRepository = new HistoryRepository();
     this.configRepository = new ConfigRepository();
     this.googleSheetRepository = new GoogleSheetRepository();
+    this.versionRepository = new VersionRepository();
 
     // service
     this.historyService = new HistoryService({
@@ -119,6 +124,9 @@ export class Registry {
     this.googleAuthService = new GoogleAuthService();
     this.googleSheetService = new GoogleSheetService({
       googleSheetRepository: this.googleSheetRepository,
+    });
+    this.migrationService = new MigrationService({
+      versionRepository: this.versionRepository,
     });
 
     // cmd

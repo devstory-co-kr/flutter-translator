@@ -1,5 +1,5 @@
-import { Language } from "../language/language";
-import { Crypto } from "../util/crypto";
+import { Language } from "../../language/language";
+import { Crypto } from "../../util/crypto";
 
 export type Cache = {
   [sourceLanguageCode: string]: {

@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { ArbService } from "../../../arb/arb.service";
-import { ArbValidationService } from "../../../arb_validation/arb_validation.service";
+import { ArbValidationService } from "../../../arb/validation/arb_validation.service";
 import { ConfigService } from "../../../config/config.service";
 import { GoogleAuthService } from "../../../google_sheet/google_auth.service";
 import { GoogleSheetService } from "../../../google_sheet/google_sheet.service";

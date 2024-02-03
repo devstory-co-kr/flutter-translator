@@ -33,7 +33,7 @@ export class FlutterTranslator implements App {
   public name: string = Constant.appName;
 
   public commands = {
-    [Cmd.ArbInitialize]: () => this.registry.arbInitializeCmd.run(),
+    [Cmd.ArbInitialize]: () => this.registry.initializeCmd.run(),
     [Cmd.ArbTranslate]: () => this.registry.arbTranslateCmd.run(),
     [Cmd.ArbExcludeTranslation]: () =>
       this.registry.arbExcludeTranslationCmd.run(),

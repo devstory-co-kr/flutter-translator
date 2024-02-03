@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as vscode from "vscode";
 import { Arb } from "../../../arb/arb";
 import { ArbService } from "../../../arb/arb.service";
-import { ArbStatisticService } from "../../../arb_statistic/arb_statistic.service";
+import { ArbStatisticService } from "../../../arb/statistic/arb_statistic.service";
 import { ConfigService } from "../../../config/config.service";
 import { History } from "../../../history/history";
 import { HistoryService } from "../../../history/history.service";

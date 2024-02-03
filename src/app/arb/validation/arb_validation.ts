@@ -1,4 +1,4 @@
-import { Arb } from "../arb/arb";
+import { Arb } from "../arb";
 
 export interface ArbValidationData {
   value: string;

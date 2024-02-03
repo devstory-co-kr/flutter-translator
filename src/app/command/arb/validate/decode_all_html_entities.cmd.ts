@@ -3,8 +3,8 @@ import { ArbService } from "../../../arb/arb.service";
 import {
   InvalidType,
   ValidationResult,
-} from "../../../arb_validation/arb_validation";
-import { ArbValidationService } from "../../../arb_validation/arb_validation.service";
+} from "../../../arb/validation/arb_validation";
+import { ArbValidationService } from "../../../arb/validation/arb_validation.service";
 import { ConfigService } from "../../../config/config.service";
 import { Language } from "../../../language/language";
 import { LanguageService } from "../../../language/language.service";

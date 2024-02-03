@@ -13,18 +13,18 @@ export enum Cmd {
 }
 
 export const cmdName: Record<Cmd, string> = {
-  [Cmd.ArbInitialize]: "Flutter Translator : [ARB] Initialize",
-  [Cmd.ArbTranslate]: "Flutter Translator : [ARB] Translate",
+  [Cmd.ArbInitialize]: "Flutter Translator: Arb - Initialize",
+  [Cmd.ArbTranslate]: "Flutter Translator: Arb - Translate",
   [Cmd.ArbValidateTranslation]:
-    "Flutter Translator : [ARB] Validate Translation",
-  [Cmd.ArbExcludeTranslation]: "Flutter Translator : [ARB] Exclude Translation",
+    "Flutter Translator: Arb - Validate Translation",
+  [Cmd.ArbExcludeTranslation]: "Flutter Translator: Arb - Exclude Translation",
   [Cmd.ArbConfigureTargetLanguageCode]:
-    "Flutter Translator : [ARB] Configure Target Language Code",
+    "Flutter Translator: Arb - Configure Target Language Code",
   [Cmd.ArbDecodeAllHtmlEntities]:
-    "Flutter Translator : [ARB] Decode All HTML Entities",
+    "Flutter Translator: Arb - Decode All HTML Entities",
   [Cmd.ArbUploadToGoogleSheet]:
-    "Flutter Translator : [ARB] Upload To Google Sheet",
-  [Cmd.ArbOpenGoogleSheet]: "Flutter Translator : [ARB] Open Google Sheet",
-  [Cmd.ArbChangeKeys]: "Flutter Translator : [ARB] Change Keys",
-  [Cmd.ArbDeleteKeys]: "Flutter Translator : [ARB] Delete Keys",
+    "Flutter Translator: Arb - Upload To Google Sheet",
+  [Cmd.ArbOpenGoogleSheet]: "Flutter Translator: Arb - Open Google Sheet",
+  [Cmd.ArbChangeKeys]: "Flutter Translator: Arb - Change Keys",
+  [Cmd.ArbDeleteKeys]: "Flutter Translator: Arb - Delete Keys",
 };

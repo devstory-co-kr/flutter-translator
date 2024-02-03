@@ -1,7 +1,7 @@
-import { TranslationCacheKey } from "../../cache/translation_cache";
-import { TranslationCacheRepository } from "../../cache/translation_cache.repository";
 import { Language } from "../../language/language";
 import { Logger } from "../../util/logger";
+import { TranslationCacheKey } from "../cache/translation_cache";
+import { TranslationCacheRepository } from "../cache/translation_cache.repository";
 import { TranslationResult } from "../translation";
 import { TranslationRepository } from "../translation.repository";
 import {

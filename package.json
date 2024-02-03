@@ -79,43 +79,43 @@
     "commands": [
       {
         "command": "flutter-translator.arb.initialize",
-        "title": "Flutter Translator : [ARB] Initialize"
+        "title": "Flutter Translator: Arb - Initialize"
       },
       {
         "command": "flutter-translator.arb.translate",
-        "title": "Flutter Translator : [ARB] Translate"
+        "title": "Flutter Translator: Arb - Translate"
       },
       {
         "command": "flutter-translator.arb.excludeTranslation",
-        "title": "Flutter Translator : [ARB] Exclude Translation"
+        "title": "Flutter Translator: Arb - Exclude Translation"
       },
       {
         "command": "flutter-translator.arb.configureTargetLanguageCode",
-        "title": "Flutter Translator : [ARB] Configure Target Language Code"
+        "title": "Flutter Translator: Arb - Configure Target Language Code"
       },
       {
         "command": "flutter-translator.arb.validateTranslation",
-        "title": "Flutter Translator : [ARB] Validate Translation"
+        "title": "Flutter Translator: Arb - Validate Translation"
       },
       {
         "command": "flutter-translator.arb.decodeAllHtmlEntities",
-        "title": "Flutter Translator : [ARB] Decode All HTML Entities"
+        "title": "Flutter Translator: Arb - Decode All HTML Entities"
       },
       {
         "command": "flutter-translator.arb.uploadToGoogleSheet",
-        "title": "Flutter Translator : [ARB] Upload To Google Sheet"
+        "title": "Flutter Translator: Arb - Upload To Google Sheet"
       },
       {
         "command": "flutter-translator.arb.openGoogleSheet",
-        "title": "Flutter Translator : [ARB] Open Google Sheet"
+        "title": "Flutter Translator: Arb - Open Google Sheet"
       },
       {
         "command": "flutter-translator.arb.changeArbKeys",
-        "title": "Flutter Translator : [ARB] Change Keys"
+        "title": "Flutter Translator: Arb - Change Keys"
       },
       {
         "command": "flutter-translator.arb.deleteArbKeys",
-        "title": "Flutter Translator : [ARB] Delete Keys"
+        "title": "Flutter Translator: Arb - Delete Keys"
       }
     ]
   },

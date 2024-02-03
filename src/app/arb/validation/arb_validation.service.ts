@@ -1,14 +1,14 @@
 import * as fs from "fs";
 import * as he from "he";
 import path from "path";
-import { Arb } from "../arb/arb";
-import { ArbService } from "../arb/arb.service";
-import { Language } from "../language/language";
-import { LanguageService } from "../language/language.service";
-import { TranslationService } from "../translation/translation.service";
-import { Dialog } from "../util/dialog";
-import { Link } from "../util/link";
-import { Toast } from "../util/toast";
+import { Language } from "../../language/language";
+import { LanguageService } from "../../language/language.service";
+import { TranslationService } from "../../translation/translation.service";
+import { Dialog } from "../../util/dialog";
+import { Link } from "../../util/link";
+import { Toast } from "../../util/toast";
+import { Arb } from "../arb";
+import { ArbService } from "../arb.service";
 import { InvalidType, ValidationResult } from "./arb_validation";
 import { ArbValidationRepository } from "./arb_validation.repository";
 

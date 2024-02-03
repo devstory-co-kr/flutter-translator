@@ -1,6 +1,6 @@
 import * as he from "he";
-import { TranslationCacheRepository } from "../../cache/translation_cache.repository";
 import { TranslationFailureException } from "../../util/exceptions";
+import { TranslationCacheRepository } from "../cache/translation_cache.repository";
 import { TranslationDataSource } from "../translation.datasource";
 import {
   PaidTranslateRepositoryParams,

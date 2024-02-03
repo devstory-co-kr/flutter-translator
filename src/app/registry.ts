@@ -1,14 +1,12 @@
 import { ArbService } from "./arb/arb.service";
-import { ArbStatisticService } from "./arb_statistic/arb_statistic.service";
-import { ArbValidationRepository } from "./arb_validation/arb_validation.repository";
-import { ArbValidationService } from "./arb_validation/arb_validation.service";
-import { TranslationCacheDataSource } from "./cache/translation_cache.datasource";
-import { TranslationCacheRepository } from "./cache/translation_cache.repository";
+import { ArbStatisticService } from "./arb/statistic/arb_statistic.service";
+import { ArbValidationRepository } from "./arb/validation/arb_validation.repository";
+import { ArbValidationService } from "./arb/validation/arb_validation.service";
 import { ArbConfigureTargetLanguageCodeCmd } from "./command/arb/configure/configure_target_language_code.cmd";
 import { ArbExcludeTranslationCmd } from "./command/arb/configure/exclude_translation.cmd";
-import { ArbInitializeCmd } from "./command/arb/configure/initialize.cmd";
 import { ArbOpenGoogleSheetCmd } from "./command/arb/google_sheet/open_google_sheet.cmd";
 import { ArbUploadToGoogleSheetCmd } from "./command/arb/google_sheet/upload_to_google_sheet.cmd";
+import { ArbInitializeCmd } from "./command/arb/initialize.cmd";
 import { ArbChangeKeysCmd } from "./command/arb/keys/change_keys.cmd";
 import { ArbDeleteKeysCmd } from "./command/arb/keys/delete_keys.cmd";
 import { ArbCreateTranslationCacheCmd } from "./command/arb/translate/create_translation_cache.cmd";
@@ -23,11 +21,13 @@ import { GoogleSheetService } from "./google_sheet/google_sheet.service";
 import { HistoryRepository } from "./history/history.repository";
 import { HistoryService } from "./history/history.service";
 import { LanguageService } from "./language/language.service";
+import { MigrationService } from "./migration/migration.service";
+import { VersionRepository } from "./migration/version.repository";
+import { TranslationCacheDataSource } from "./translation/cache/translation_cache.datasource";
+import { TranslationCacheRepository } from "./translation/cache/translation_cache.repository";
 import { GoogleTranslationDataSource } from "./translation/google/google_translation.datasource";
 import { GoogleTranslationRepository } from "./translation/google/google_translation.repository";
 import { GoogleTranslationService } from "./translation/google/google_translation.service";
-import { MigrationService } from "./migration/migration.service";
-import { VersionRepository } from "./migration/version.repository";
 
 export class Registry {
   /**
@@ -64,7 +64,7 @@ export class Registry {
   /**
    * Command
    */
-  public arbInitializeCmd: ArbInitializeCmd;
+  public initializeCmd: ArbInitializeCmd;
   public arbTranslateCmd: ArbTranslateCmd;
   public arbCreateTranslationCacheCmd: ArbCreateTranslationCacheCmd;
   public arbExcludeTranslationCmd: ArbExcludeTranslationCmd;
@@ -130,7 +130,7 @@ export class Registry {
     });
 
     // cmd
-    this.arbInitializeCmd = new ArbInitializeCmd({
+    this.initializeCmd = new ArbInitializeCmd({
       configService: this.configService,
       arbService: this.arbService,
     });

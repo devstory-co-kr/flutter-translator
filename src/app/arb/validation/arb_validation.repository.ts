@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
-import { Arb } from "../arb/arb";
-import { BaseDisposable } from "../util/base/base_disposable";
-import { Editor } from "../util/editor";
-import { Highlight, HighlightType } from "../util/highlight";
+import { BaseDisposable } from "../../util/base/base_disposable";
+import { Editor } from "../../util/editor";
+import { Highlight, HighlightType } from "../../util/highlight";
+import { Arb } from "../arb";
 import { ArbValidation, InvalidType, ValidationResult } from "./arb_validation";
 
 export class ArbValidationRepository extends BaseDisposable {

@@ -1,12 +1,12 @@
 import * as fs from "fs";
 import path from "path";
 import * as vscode from "vscode";
-import { ArbService } from "../../../arb/arb.service";
-import { ConfigService } from "../../../config/config.service";
-import { ArbFileNotFoundException } from "../../../util/exceptions";
-import { Toast } from "../../../util/toast";
-import { Workspace } from "../../../util/workspace";
-import { Cmd } from "../../cmd";
+import { ArbService } from "../../arb/arb.service";
+import { ConfigService } from "../../config/config.service";
+import { ArbFileNotFoundException } from "../../util/exceptions";
+import { Toast } from "../../util/toast";
+import { Workspace } from "../../util/workspace";
+import { Cmd } from "../cmd";
 
 interface InitParams {
   configService: ConfigService;

@@ -1,13 +1,13 @@
 import * as fs from "fs";
 import path from "path";
-import { Arb } from "../arb/arb";
-import { ArbService } from "../arb/arb.service";
-import { TranslationCacheKey } from "../cache/translation_cache";
-import { TranslationCacheRepository } from "../cache/translation_cache.repository";
-import { History } from "../history/history";
-import { Language } from "../language/language";
-import { LanguageService } from "../language/language.service";
-import { Dialog } from "../util/dialog";
+import { History } from "../../history/history";
+import { Language } from "../../language/language";
+import { LanguageService } from "../../language/language.service";
+import { TranslationCacheKey } from "../../translation/cache/translation_cache";
+import { TranslationCacheRepository } from "../../translation/cache/translation_cache.repository";
+import { Dialog } from "../../util/dialog";
+import { Arb } from "../arb";
+import { ArbService } from "../arb.service";
 import { APIStatistic, ActionStatistic, ArbStatistic } from "./arb_statistic";
 
 interface InitParams {

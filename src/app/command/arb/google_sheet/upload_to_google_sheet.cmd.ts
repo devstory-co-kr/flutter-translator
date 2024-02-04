@@ -131,6 +131,7 @@ export class ArbUploadToGoogleSheetCmd {
     const version = await vscode.window.showInputBox({
       title: "Please enter the version of this translation.",
       placeHolder: "e.g. 1.0.0 (The version is written in the A1 input box.)",
+      ignoreFocusOut: true,
     });
 
     // Preparing to upload data

@@ -70,6 +70,7 @@ export class Dialog {
       ],
       {
         title,
+        ignoreFocusOut: true,
       }
     );
     return select?.label === (confirmText ?? "Yes");
@@ -126,6 +127,7 @@ export class Dialog {
         title,
         placeHolder: placeHolder ?? `Total ${itemList.length}`,
         canPickMany: canPickMany,
+        ignoreFocusOut: true,
       }
     );
     if (!selectedItemOrItems) {

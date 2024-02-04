@@ -32,6 +32,7 @@ export class ArbChangeKeysCmd {
       title: "Old Keys",
       prompt: "Please enter the keys to change.",
       placeHolder: "e.g. oldKey1, oldKey2",
+      ignoreFocusOut: true,
     });
     if (!oldKeysInput) {
       return;
@@ -49,6 +50,7 @@ export class ArbChangeKeysCmd {
 
     // enter the keys to change
     const newKeysInput = await vscode.window.showInputBox({
+      ignoreFocusOut: true,
       title: "New Keys",
       prompt: "Please enter the keys to change.",
       placeHolder:

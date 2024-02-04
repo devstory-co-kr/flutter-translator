@@ -49,7 +49,9 @@ export class FlutterTranslator implements App {
     [Cmd.ArbChangeKeys]: () => this.registry.arbChangeKeysCmd.run(),
     [Cmd.ArbDeleteKeys]: () => this.registry.arbDeleteKeysCmd.run(),
     [Cmd.MetadataAddLanguages]: () =>
-      this.registry.metadataAddLanguageCmd.run(),
+      this.registry.metadataAddLanguagesCmd.run(),
+    [Cmd.MetadataEditLanguage]: () =>
+      this.registry.metadataEditLanguageCmd.run(),
   };
 
   public init = async () => {

@@ -120,6 +120,10 @@
       {
         "command": "flutter-translator.metadata.addLanguages",
         "title": "Flutter Translator: Metadata - Add Languages"
+      },
+      {
+        "command": "flutter-translator.metadata.editLanguage",
+        "title": "Flutter Translator: Metadata - Edit Language"
       }
     ]
   },

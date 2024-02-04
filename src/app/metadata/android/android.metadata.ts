@@ -24,6 +24,14 @@ export class AndroidMetadata implements Metadata {
     this.metadataPath = metadataPath;
   }
 
+  private title: MetadataText = {
+    fileName: "title.txt",
+    text: "",
+    optional: false,
+    maxLength: 30,
+    type: MetadataType.text,
+  };
+
   private fullDescription: MetadataText = {
     fileName: "full_description.txt",
     text: "",
@@ -37,14 +45,6 @@ export class AndroidMetadata implements Metadata {
     text: "",
     optional: false,
     maxLength: 80,
-    type: MetadataType.text,
-  };
-
-  private title: MetadataText = {
-    fileName: "title.txt",
-    text: "",
-    optional: false,
-    maxLength: 30,
     type: MetadataType.text,
   };
 

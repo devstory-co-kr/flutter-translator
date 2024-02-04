@@ -87,17 +87,16 @@ export class MetadataService {
   }
 
   public async selectLanguage({
-    platform,
+    languageList,
     title,
     placeHolder,
   }: {
-    platform: MetadataSupportPlatform;
+    languageList: MetadataLanguage[];
     title?: string;
     placeHolder?: string;
   }): Promise<MetadataLanguage | undefined> {
-    const languages = this.metadataRepository.getSupportLanguages(platform);
     const selectedLocale = await vscode.window.showQuickPick(
-      languages.map((language) => ({
+      languageList.map((language) => ({
         label: language.name,
         description: language.locale,
         language,

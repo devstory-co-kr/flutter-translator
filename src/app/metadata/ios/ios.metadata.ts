@@ -39,7 +39,7 @@ export class IOSMetadata implements Metadata {
   private subtitle: MetadataText = {
     fileName: "subtitle.txt",
     text: "",
-    optional: false,
+    optional: true,
     maxLength: 30,
     type: MetadataType.text,
   };
@@ -47,7 +47,7 @@ export class IOSMetadata implements Metadata {
   private description: MetadataText = {
     fileName: "description.txt",
     text: "",
-    optional: false,
+    optional: true,
     maxLength: 4000,
     type: MetadataType.text,
   };
@@ -55,7 +55,7 @@ export class IOSMetadata implements Metadata {
   private keywords: MetadataText = {
     fileName: "keywords.txt",
     text: "",
-    optional: false,
+    optional: true,
     maxLength: 100,
     type: MetadataType.text,
   };
@@ -63,7 +63,7 @@ export class IOSMetadata implements Metadata {
   private promotionalText: MetadataText = {
     fileName: "promotional_text.txt",
     text: "",
-    optional: false,
+    optional: true,
     maxLength: 170,
     type: MetadataType.text,
   };
@@ -71,7 +71,7 @@ export class IOSMetadata implements Metadata {
   private releaseNotes: MetadataText = {
     fileName: "release_notes.txt",
     text: "",
-    optional: false,
+    optional: true,
     maxLength: 170,
     type: MetadataType.text,
   };
@@ -79,21 +79,21 @@ export class IOSMetadata implements Metadata {
   private supportUrl: MetadataText = {
     fileName: "support_url.txt",
     text: "",
-    optional: false,
+    optional: true,
     type: MetadataType.url,
   };
 
   private marketingUrl: MetadataText = {
     fileName: "marketing_url.txt",
     text: "",
-    optional: false,
+    optional: true,
     type: MetadataType.url,
   };
 
   private privacyUrl: MetadataText = {
     fileName: "privacy_url.txt",
     text: "",
-    optional: false,
+    optional: true,
     type: MetadataType.url,
   };
 }

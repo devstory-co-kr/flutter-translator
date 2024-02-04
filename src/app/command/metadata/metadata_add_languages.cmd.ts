@@ -15,7 +15,9 @@ export class MetadataAddLanguagesCmd {
 
   public async run() {
     // select a platform.
-    const platform = await this.metadataService.selectPlatform({});
+    const platform = await this.metadataService.selectPlatform({
+      placeHolder: `Select platform to add languages.`,
+    });
     if (!platform) {
       return;
     }
@@ -25,6 +27,7 @@ export class MetadataAddLanguagesCmd {
     const languageList = await this.metadataService.selectLanguageList({
       platform,
       selectedLanguages,
+      placeHolder: `Select languages to add.`,
     });
     if (languageList.length === 0) {
       return;

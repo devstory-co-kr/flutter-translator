@@ -12,6 +12,7 @@ export enum Cmd {
   ArbDeleteKeys = "flutter-translator.arb.deleteKeys",
   // Metadata Command
   MetadataAddLanguages = "flutter-translator.metadata.addLanguages",
+  MetadataEditLanguage = "flutter-translator.metadata.editLanguage",
 }
 
 export const cmdName: Record<Cmd, string> = {
@@ -30,4 +31,5 @@ export const cmdName: Record<Cmd, string> = {
   [Cmd.ArbChangeKeys]: "Flutter Translator: Arb - Change Keys",
   [Cmd.ArbDeleteKeys]: "Flutter Translator: Arb - Delete Keys",
   [Cmd.MetadataAddLanguages]: "Flutter Translator: Metadata - Add Languages",
+  [Cmd.MetadataEditLanguage]: "Flutter Translator: Metadata - Edit Language",
 };

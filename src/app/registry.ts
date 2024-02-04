@@ -14,6 +14,7 @@ import { ArbTranslateCmd } from "./command/arb/translate/translate.cmd";
 import { ArbDecodeAllHtmlEntitiesCmd } from "./command/arb/validate/decode_all_html_entities.cmd";
 import { ArbValidateTranslationCmd } from "./command/arb/validate/validate_translation.cmd";
 import { MetadataAddLanguagesCmd } from "./command/metadata/metadata_add_languages.cmd";
+import { MetadataEditLanguageCmd } from "./command/metadata/metadata_edit_language.cmd";
 import { ConfigRepository } from "./config/config.repository";
 import { ConfigService } from "./config/config.service";
 import { GoogleAuthService } from "./google_sheet/google_auth.service";
@@ -81,7 +82,8 @@ export class Registry {
   public arbOpenGoogleSheetCmd: ArbOpenGoogleSheetCmd;
   public arbChangeKeysCmd: ArbChangeKeysCmd;
   public arbDeleteKeysCmd: ArbDeleteKeysCmd;
-  public metadataAddLanguageCmd: MetadataAddLanguagesCmd;
+  public metadataAddLanguagesCmd: MetadataAddLanguagesCmd;
+  public metadataEditLanguageCmd: MetadataEditLanguageCmd;
 
   constructor() {
     // data source
@@ -204,7 +206,10 @@ export class Registry {
       configService: this.configService,
       arbService: this.arbService,
     });
-    this.metadataAddLanguageCmd = new MetadataAddLanguagesCmd({
+    this.metadataAddLanguagesCmd = new MetadataAddLanguagesCmd({
+      metadataService: this.metadataService,
+    });
+    this.metadataEditLanguageCmd = new MetadataEditLanguageCmd({
       metadataService: this.metadataService,
     });
   }

@@ -1,6 +1,7 @@
 import path from "path";
 import * as vscode from "vscode";
 import { MetadataService } from "../../metadata/metadata.service";
+import { Cmd } from "../cmd";
 
 interface InitParams {
   metadataService: MetadataService;
@@ -15,20 +16,37 @@ export class MetadataEditLanguageCmd {
 
   public async run() {
     // select a platform.
-    const platform = await this.metadataService.selectPlatform({});
+    const platform = await this.metadataService.selectPlatform({
+      placeHolder: `Select the platform to edit.`,
+    });
     if (!platform) {
+      return;
+    }
+
+    // get list of selected platform languages
+    const languageList = this.metadataService.getLanguageList(platform);
+    if (languageList.length === 0) {
+      const title = `There is no language to edit in ${platform}.`;
+      const answer = await vscode.window.showInformationMessage(
+        title,
+        "Add Languages"
+      );
+      if (answer === "Add Languages") {
+        await vscode.commands.executeCommand(Cmd.MetadataAddLanguages);
+      }
       return;
     }
 
     // select a language.
     const language = await this.metadataService.selectLanguage({
-      platform,
+      languageList,
+      placeHolder: `Select the language to edit.`,
     });
     if (!language) {
       return;
     }
 
-    // create folders and files.
+    // get folders and files.
     const metadata = this.metadataService.createMetadataFiles(
       platform,
       language

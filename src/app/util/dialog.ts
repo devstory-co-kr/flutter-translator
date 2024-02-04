@@ -70,6 +70,7 @@ export class Dialog {
       ],
       {
         title,
+        placeHolder: title,
         ignoreFocusOut: true,
       }
     );

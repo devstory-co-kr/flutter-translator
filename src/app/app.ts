@@ -48,6 +48,8 @@ export class FlutterTranslator implements App {
     [Cmd.ArbOpenGoogleSheet]: () => this.registry.arbOpenGoogleSheetCmd.run(),
     [Cmd.ArbChangeKeys]: () => this.registry.arbChangeKeysCmd.run(),
     [Cmd.ArbDeleteKeys]: () => this.registry.arbDeleteKeysCmd.run(),
+    [Cmd.MetadataAddLanguages]: () =>
+      this.registry.metadataAddLanguageCmd.run(),
   };
 
   public init = async () => {

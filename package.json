@@ -110,12 +110,16 @@
         "title": "Flutter Translator: Arb - Open Google Sheet"
       },
       {
-        "command": "flutter-translator.arb.changeArbKeys",
+        "command": "flutter-translator.arb.changeKeys",
         "title": "Flutter Translator: Arb - Change Keys"
       },
       {
-        "command": "flutter-translator.arb.deleteArbKeys",
+        "command": "flutter-translator.arb.deleteKeys",
         "title": "Flutter Translator: Arb - Delete Keys"
+      },
+      {
+        "command": "flutter-translator.metadata.addLanguages",
+        "title": "Flutter Translator: Metadata - Add Languages"
       }
     ]
   },

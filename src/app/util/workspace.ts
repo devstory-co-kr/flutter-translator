@@ -19,14 +19,21 @@ export class Workspace {
       .then((document) => vscode.window.showTextDocument(document));
   }
 
+  public static getRoot() {
+    return vscode.workspace.workspaceFolders![0].uri.path;
+  }
+
   public static getPath(...paths: string[]) {
-    const workspacePath = vscode.workspace.workspaceFolders![0].uri.path;
-    return path.join(workspacePath, ".vscode", ...paths);
+    return path.join(Workspace.getRoot(), ".vscode", ...paths);
   }
 
   public static getWorkspaceAppPath(...paths: string[]) {
-    const workspacePath = vscode.workspace.workspaceFolders![0].uri.path;
-    return path.join(workspacePath, ".vscode", Constant.appName, ...paths);
+    return path.join(
+      Workspace.getRoot(),
+      ".vscode",
+      Constant.appName,
+      ...paths
+    );
   }
 
   public static createPath(filePath: string): boolean {

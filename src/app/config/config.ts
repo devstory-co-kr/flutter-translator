@@ -20,11 +20,11 @@ export interface Config {
 }
 
 export interface ConfigParams {
+  sourceArbFilePath?: ArbFilePath;
+  targetLanguageCodeList?: LanguageCode[];
+  googleAPIKey?: string;
   arbFilePrefix?: string;
   customArbFileName?: Record<LanguageCode, ArbFileName>;
-  sourceArbFilePath?: ArbFilePath;
-  googleAPIKey?: string;
-  targetLanguageCodeList?: LanguageCode[];
   googleSheet?: GoogleSheetConfig;
   validateLanguageCodeList?: LanguageCode[];
 }

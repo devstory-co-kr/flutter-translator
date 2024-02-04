@@ -13,6 +13,7 @@ import { ArbCreateTranslationCacheCmd } from "./command/arb/translate/create_tra
 import { ArbTranslateCmd } from "./command/arb/translate/translate.cmd";
 import { ArbDecodeAllHtmlEntitiesCmd } from "./command/arb/validate/decode_all_html_entities.cmd";
 import { ArbValidateTranslationCmd } from "./command/arb/validate/validate_translation.cmd";
+import { MetadataAddLanguagesCmd } from "./command/metadata/metadata_add_languages.cmd";
 import { ConfigRepository } from "./config/config.repository";
 import { ConfigService } from "./config/config.service";
 import { GoogleAuthService } from "./google_sheet/google_auth.service";
@@ -21,6 +22,8 @@ import { GoogleSheetService } from "./google_sheet/google_sheet.service";
 import { HistoryRepository } from "./history/history.repository";
 import { HistoryService } from "./history/history.service";
 import { LanguageService } from "./language/language.service";
+import { MetadataRepository } from "./metadata/metadata.repository";
+import { MetadataService } from "./metadata/metadata.service";
 import { MigrationService } from "./migration/migration.service";
 import { VersionRepository } from "./migration/version.repository";
 import { TranslationCacheDataSource } from "./translation/cache/translation_cache.datasource";
@@ -46,6 +49,7 @@ export class Registry {
   private configRepository: ConfigRepository;
   private googleSheetRepository: GoogleSheetRepository;
   private versionRepository: VersionRepository;
+  private metadataRepository: MetadataRepository;
 
   /**
    * Service
@@ -59,6 +63,8 @@ export class Registry {
   private arbValidationService: ArbValidationService;
   private googleAuthService: GoogleAuthService;
   private googleSheetService: GoogleSheetService;
+  private metadataService: MetadataService;
+
   public migrationService: MigrationService;
 
   /**
@@ -75,6 +81,7 @@ export class Registry {
   public arbOpenGoogleSheetCmd: ArbOpenGoogleSheetCmd;
   public arbChangeKeysCmd: ArbChangeKeysCmd;
   public arbDeleteKeysCmd: ArbDeleteKeysCmd;
+  public metadataAddLanguageCmd: MetadataAddLanguagesCmd;
 
   constructor() {
     // data source
@@ -94,6 +101,7 @@ export class Registry {
     this.configRepository = new ConfigRepository();
     this.googleSheetRepository = new GoogleSheetRepository();
     this.versionRepository = new VersionRepository();
+    this.metadataRepository = new MetadataRepository();
 
     // service
     this.historyService = new HistoryService({
@@ -127,6 +135,9 @@ export class Registry {
     });
     this.migrationService = new MigrationService({
       versionRepository: this.versionRepository,
+    });
+    this.metadataService = new MetadataService({
+      metadataRepository: this.metadataRepository,
     });
 
     // cmd
@@ -192,6 +203,9 @@ export class Registry {
       historyService: this.historyService,
       configService: this.configService,
       arbService: this.arbService,
+    });
+    this.metadataAddLanguageCmd = new MetadataAddLanguagesCmd({
+      metadataService: this.metadataService,
     });
   }
 

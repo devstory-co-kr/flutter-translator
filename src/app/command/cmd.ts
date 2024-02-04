@@ -10,6 +10,8 @@ export enum Cmd {
   ArbOpenGoogleSheet = "flutter-translator.arb.openGoogleSheet",
   ArbChangeKeys = "flutter-translator.arb.changeKeys",
   ArbDeleteKeys = "flutter-translator.arb.deleteKeys",
+  // Metadata Command
+  MetadataAddLanguages = "flutter-translator.metadata.addLanguages",
 }
 
 export const cmdName: Record<Cmd, string> = {
@@ -27,4 +29,5 @@ export const cmdName: Record<Cmd, string> = {
   [Cmd.ArbOpenGoogleSheet]: "Flutter Translator: Arb - Open Google Sheet",
   [Cmd.ArbChangeKeys]: "Flutter Translator: Arb - Change Keys",
   [Cmd.ArbDeleteKeys]: "Flutter Translator: Arb - Delete Keys",
+  [Cmd.MetadataAddLanguages]: "Flutter Translator: Metadata - Add Languages",
 };

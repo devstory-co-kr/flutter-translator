@@ -60,7 +60,7 @@ export class MetadataRepository {
       const dataPath = path.join(metadata.languagePath, data.fileName);
       if (fs.existsSync(dataPath)) {
         // exist -> read previous text
-        data.text = fs.readFileSync(dataPath, "utf8");
+        data.text = fs.readFileSync(dataPath, "utf8").trim();
       } else {
         // not exist
       }
@@ -88,7 +88,7 @@ export class MetadataRepository {
       const dataPath = path.join(metadata.languagePath, data.fileName);
       if (fs.existsSync(dataPath)) {
         // exist -> read previous text
-        data.text = fs.readFileSync(dataPath, "utf8");
+        data.text = fs.readFileSync(dataPath, "utf8").trim();
       } else {
         // not exist -> create
         Workspace.createPath(dataPath);

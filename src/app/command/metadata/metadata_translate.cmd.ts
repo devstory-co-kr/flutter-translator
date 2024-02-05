@@ -1,10 +1,13 @@
 import path from "path";
 import * as vscode from "vscode";
 import {
+  Metadata,
+  MetadataText,
   MetadataType,
   MetadataUrlFilesProcessingPolicy,
 } from "../../metadata/metadata";
 import { MetadataService } from "../../metadata/metadata.service";
+import { TranslationType } from "../../translation/translation";
 import { TranslationService } from "../../translation/translation.service";
 import { Dialog } from "../../util/dialog";
 import { Toast } from "../../util/toast";
@@ -79,7 +82,7 @@ export class MetadataTranslateCmd {
     );
 
     // select a list of text files to translate
-    const textListToTranslate =
+    const textListToTranslate: MetadataText[] =
       await this.metadataService.selectFilesToTranslate(sourceMetadata);
     if (textListToTranslate.length === 0) {
       return;
@@ -99,54 +102,45 @@ export class MetadataTranslateCmd {
       return;
     }
 
-    for (const targetMetadataLanguage of targetMetadataLanguages) {
-      // get folders and files.
-      const targetMetadata = this.metadataService.createMetadataFile(
-        platform,
-        targetMetadataLanguage
-      );
+    const total = targetMetadataLanguages.length;
+    let totalTranslated = 0;
 
-      for (const sourceData of sourceMetadata.dataList) {
-        const targetFilePath = path.join(
-          targetMetadata.languagePath,
-          sourceData.fileName
-        );
-        switch (sourceData.type) {
-          case MetadataType.text:
-            if (!textListToTranslate.includes(sourceData)) {
-              continue;
-            }
-            // translate
-            const result = await this.translationService.translate({
-              type: translationType,
-              queries: sourceData.text.split("\n"),
-              sourceLang: sourceMetadata.language.translateLanguage,
-              targetLang: targetMetadata.language.translateLanguage,
-            });
-            const translatedText = result.data.join("\n");
-            this.metadataService.updateMetadataText(
-              targetFilePath,
-              translatedText
-            );
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        cancellable: true,
+      },
+      async (progress, token) => {
+        for (const targetMetadataLanguage of targetMetadataLanguages) {
+          if (token.isCancellationRequested) {
+            // cancel
+            Toast.i(`🟠 Canceled`);
             break;
-          case MetadataType.url:
-            if (
-              urlFilesProcessingPolicy ===
-              MetadataUrlFilesProcessingPolicy.override
-            ) {
-              this.metadataService.updateMetadataText(
-                targetFilePath,
-                sourceData.text
-              );
-            }
-            break;
+          }
+
+          // get folders and files.
+          const targetMetadata = this.metadataService.createMetadataFile(
+            platform,
+            targetMetadataLanguage
+          );
+          await this.translate({
+            sourceMetadata,
+            targetMetadata,
+            textListToTranslate,
+            urlFilesProcessingPolicy,
+            translationType,
+          });
+          totalTranslated += 1;
+
+          progress.report({
+            increment: 100 / total,
+            message: `${platform}/${targetMetadataLanguage.locale} translated. (${totalTranslated} / ${total})`,
+          });
         }
       }
-    }
-
-    Toast.i(
-      `${platform} ${targetMetadataLanguages.length} language metadata translated.`
     );
+
+    Toast.i(`${platform} ${totalTranslated} language metadata translated.`);
 
     // check
     const isPreceedValidation = await Dialog.showConfirmDialog({
@@ -154,6 +148,57 @@ export class MetadataTranslateCmd {
     });
     if (isPreceedValidation) {
       await vscode.commands.executeCommand(Cmd.MetadataCheck);
+    }
+  }
+
+  private async translate({
+    sourceMetadata,
+    targetMetadata,
+    textListToTranslate,
+    urlFilesProcessingPolicy,
+    translationType,
+  }: {
+    sourceMetadata: Metadata;
+    targetMetadata: Metadata;
+    textListToTranslate: MetadataText[];
+    urlFilesProcessingPolicy: MetadataUrlFilesProcessingPolicy;
+    translationType: TranslationType;
+  }): Promise<void> {
+    for (const sourceData of sourceMetadata.dataList) {
+      const targetFilePath = path.join(
+        targetMetadata.languagePath,
+        sourceData.fileName
+      );
+      switch (sourceData.type) {
+        case MetadataType.text:
+          if (!textListToTranslate.includes(sourceData)) {
+            continue;
+          }
+          // translate
+          const result = await this.translationService.translate({
+            type: translationType,
+            queries: sourceData.text.split("\n"),
+            sourceLang: sourceMetadata.language.translateLanguage,
+            targetLang: targetMetadata.language.translateLanguage,
+          });
+          const translatedText = result.data.join("\n");
+          this.metadataService.updateMetadataText(
+            targetFilePath,
+            translatedText
+          );
+          break;
+        case MetadataType.url:
+          if (
+            urlFilesProcessingPolicy ===
+            MetadataUrlFilesProcessingPolicy.override
+          ) {
+            this.metadataService.updateMetadataText(
+              targetFilePath,
+              sourceData.text
+            );
+          }
+          break;
+      }
     }
   }
 }

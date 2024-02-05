@@ -187,7 +187,7 @@ export class ArbTranslateCmd {
               );
 
             progress.report({
-              increment: total / 100,
+              increment: 100 / total,
               message: `${targetArbFileName} translated. (${totalTranslated} / ${total})`,
             });
             translationStatisticList.push(translationStatistic);

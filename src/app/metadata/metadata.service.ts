@@ -81,8 +81,7 @@ export class MetadataService {
       languages
         .filter((language) => !(excludeLanguages ?? []).includes(language))
         .map((language) => ({
-          label: language.name,
-          description: language.locale,
+          label: `${language.name} (${language.locale})`,
           picked: selectedLanguages.includes(language),
           language,
         })),

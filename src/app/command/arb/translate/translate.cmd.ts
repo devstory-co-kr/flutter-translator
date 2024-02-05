@@ -13,7 +13,6 @@ import { TranslationService } from "../../../translation/translation.service";
 import { TranslationStatistic } from "../../../translation/translation.statistic";
 import { Dialog } from "../../../util/dialog";
 import {
-  APIKeyRequiredException,
   ConfigNotFoundException,
   ConfigurationRequiredException,
   FileNotFoundException,
@@ -93,7 +92,8 @@ export class ArbTranslateCmd {
     }
 
     // select translation type
-    const translationType = await this.selectTranslationType();
+    const translationType =
+      await this.translationService.selectTranslationType();
     if (!translationType) {
       return;
     }
@@ -113,39 +113,6 @@ export class ArbTranslateCmd {
     if (isPreceedValidation) {
       await vscode.commands.executeCommand(Cmd.ArbValidateTranslation);
     }
-  }
-
-  /**
-   * Select translation type
-   * @throws APIKeyRequiredException
-   */
-  private async selectTranslationType(): Promise<TranslationType | undefined> {
-    // select translation type
-    const items: vscode.QuickPickItem[] = [
-      {
-        label: TranslationType.free,
-        description: "Limit to approximately 100 requests per hour",
-      },
-      { label: TranslationType.paid, description: "Google API key required" },
-    ];
-    const selectedItem = await vscode.window.showQuickPick(items, {
-      title: "Please select a translation method.",
-      canPickMany: false,
-    });
-    if (!selectedItem) {
-      return undefined;
-    }
-
-    const type = <TranslationType>selectedItem.label;
-
-    // check google API key if type is paid
-    if (
-      type === TranslationType.paid &&
-      !this.configService.config.googleAPIKey
-    ) {
-      throw new APIKeyRequiredException();
-    }
-    return type;
   }
 
   private checkValidation(): void {
@@ -313,19 +280,12 @@ export class ArbTranslateCmd {
     const nWillTranslate: number = willTranslateKeys.length;
     if (nWillTranslate > 0) {
       // translate
-      const translateResult =
-        translationType === TranslationType.paid
-          ? await this.translationService.paidTranslate({
-              apiKey: this.configService.config.googleAPIKey,
-              queries: willTranslateValues,
-              sourceLang: sourceArb.language,
-              targetLang: targetArb.language,
-            })
-          : await this.translationService.freeTranslate({
-              queries: willTranslateValues,
-              sourceLang: sourceArb.language,
-              targetLang: targetArb.language,
-            });
+      const translateResult = await this.translationService.translate({
+        type: translationType,
+        queries: willTranslateValues,
+        sourceLang: sourceArb.language,
+        targetLang: targetArb.language,
+      });
       willTranslateKeys.forEach(
         (key, index) => (nextTargetArbData[key] = translateResult.data[index])
       );

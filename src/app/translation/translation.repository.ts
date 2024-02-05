@@ -7,7 +7,7 @@ export interface PaidTranslateRepositoryParams {
   targetLang: Language;
 }
 
-interface FreeTranslateRepositoryParams {
+export interface FreeTranslateRepositoryParams {
   query: string;
   sourceLang: Language;
   targetLang: Language;

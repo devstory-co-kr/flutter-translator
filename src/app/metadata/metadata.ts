@@ -1,3 +1,4 @@
+import { Language } from "../language/language";
 import { AndroidMetadata } from "./android/android.metadata";
 import { IOSMetadata } from "./ios/ios.metadata";
 
@@ -20,6 +21,7 @@ export enum MetadataSupportPlatform {
 export type MetadataLanguage = {
   name: string;
   locale: string;
+  language: Language;
 };
 
 export enum MetadataType {

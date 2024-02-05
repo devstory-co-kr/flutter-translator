@@ -3,6 +3,7 @@ import { TranslationFailureException } from "../../util/exceptions";
 import { TranslationCacheRepository } from "../cache/translation_cache.repository";
 import { TranslationDataSource } from "../translation.datasource";
 import {
+  FreeTranslateRepositoryParams,
   PaidTranslateRepositoryParams,
   TranslationRepository,
 } from "../translation.repository";
@@ -44,7 +45,7 @@ export class GoogleTranslationRepository implements TranslationRepository {
     query,
     sourceLang,
     targetLang,
-  }: PaidTranslateRepositoryParams): Promise<string> {
+  }: FreeTranslateRepositoryParams): Promise<string> {
     return this.translate(query, (text: string) =>
       this.translationDataSource.freeTranslate({
         text,

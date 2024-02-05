@@ -110,11 +110,11 @@ export class MetadataService {
     return selectedLocale?.language;
   }
 
-  public createMetadataFiles(
+  public getMetadataFile(
     platform: MetadataSupportPlatform,
     language: MetadataLanguage
   ): Metadata {
-    return this.metadataRepository.createMetadataFiles(platform, language);
+    return this.metadataRepository.getMetadataFile(platform, language);
   }
 
   public saveMetadata(metadata: Metadata): Metadata {

@@ -36,7 +36,7 @@ export class MetadataRepository {
     }
   }
 
-  public createMetadataFiles(
+  public getMetadataFile(
     platform: MetadataSupportPlatform,
     language: MetadataLanguage
   ): Metadata {

@@ -1,8 +1,11 @@
+import * as vscode from "vscode";
+import { ConfigService } from "../../config/config.service";
 import { Language } from "../../language/language";
+import { APIKeyRequiredException } from "../../util/exceptions";
 import { Logger } from "../../util/logger";
 import { TranslationCacheKey } from "../cache/translation_cache";
 import { TranslationCacheRepository } from "../cache/translation_cache.repository";
-import { TranslationResult } from "../translation";
+import { TranslationResult, TranslationType } from "../translation";
 import { TranslationRepository } from "../translation.repository";
 import {
   FreeTranslateServiceParams,
@@ -13,6 +16,7 @@ import {
 interface InitParams {
   translationCacheRepository: TranslationCacheRepository;
   translationRepository: TranslationRepository;
+  configService: ConfigService;
 }
 interface TranslateParams {
   queries: string[];
@@ -24,13 +28,49 @@ interface TranslateParams {
 export class GoogleTranslationService implements TranslationService {
   private translationCacheRepository: TranslationCacheRepository;
   private translationRepository: TranslationRepository;
+  private configService: ConfigService;
 
   constructor({
     translationCacheRepository,
     translationRepository,
+    configService,
   }: InitParams) {
     this.translationCacheRepository = translationCacheRepository;
     this.translationRepository = translationRepository;
+    this.configService = configService;
+  }
+
+  /**
+   * Select translation type
+   * @throws APIKeyRequiredException
+   */
+  public async selectTranslationType(): Promise<TranslationType | undefined> {
+    // select translation type
+    const items: vscode.QuickPickItem[] = [
+      {
+        label: TranslationType.free,
+        description: "Limit to approximately 100 requests per hour",
+      },
+      { label: TranslationType.paid, description: "Google API key required" },
+    ];
+    const selectedItem = await vscode.window.showQuickPick(items, {
+      title: "Please select a translation method.",
+      canPickMany: false,
+    });
+    if (!selectedItem) {
+      return undefined;
+    }
+
+    const type = <TranslationType>selectedItem.label;
+
+    // check google API key if type is paid
+    if (
+      type === TranslationType.paid &&
+      !this.configService.config.googleAPIKey
+    ) {
+      throw new APIKeyRequiredException();
+    }
+    return type;
   }
 
   public getTranslateWebsiteUrl(
@@ -52,7 +92,7 @@ export class GoogleTranslationService implements TranslationService {
    * @returns Promise<string[] | undefined>
    * @throws APIKeyRequiredException, TranslationFailureException
    */
-  public async paidTranslate({
+  private async paidTranslate({
     apiKey,
     queries,
     sourceLang,
@@ -74,6 +114,37 @@ export class GoogleTranslationService implements TranslationService {
   }
 
   /**
+   * Translate
+   */
+  public translate({
+    type,
+    queries,
+    sourceLang,
+    targetLang,
+  }: {
+    type: TranslationType;
+    queries: string[];
+    sourceLang: Language;
+    targetLang: Language;
+  }): Promise<TranslationResult> {
+    switch (type) {
+      case TranslationType.paid:
+        return this.paidTranslate({
+          apiKey: this.configService.config.googleAPIKey,
+          queries: queries,
+          sourceLang: sourceLang,
+          targetLang: targetLang,
+        });
+      case TranslationType.free:
+        return this.freeTranslate({
+          queries: queries,
+          sourceLang: sourceLang,
+          targetLang: targetLang,
+        });
+    }
+  }
+
+  /**
    * Translate without charge
    * @param queries
    * @param sourceLang
@@ -81,7 +152,7 @@ export class GoogleTranslationService implements TranslationService {
    * @returns Promise<string[] | undefined>
    * @throws TranslationFailureException
    */
-  async freeTranslate({
+  private async freeTranslate({
     queries,
     sourceLang,
     targetLang,

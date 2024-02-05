@@ -1,5 +1,5 @@
 import { Language } from "../language/language";
-import { TranslationResult } from "./translation";
+import { TranslationResult, TranslationType } from "./translation";
 
 export interface PaidTranslateServiceParams {
   apiKey: string;
@@ -15,22 +15,23 @@ export interface FreeTranslateServiceParams {
 }
 
 export interface TranslationService {
+  selectTranslationType(): Promise<TranslationType | undefined>;
+
   getTranslateWebsiteUrl(
     sourceLanguage: Language,
     targetLanguage: Language,
     text: string
   ): string;
 
-  paidTranslate({
-    apiKey,
+  translate({
+    type,
     queries,
     sourceLang,
     targetLang,
-  }: PaidTranslateServiceParams): Promise<TranslationResult>;
-
-  freeTranslate({
-    queries,
-    sourceLang,
-    targetLang,
-  }: FreeTranslateServiceParams): Promise<TranslationResult>;
+  }: {
+    type: TranslationType;
+    queries: string[];
+    sourceLang: Language;
+    targetLang: Language;
+  }): Promise<TranslationResult>;
 }

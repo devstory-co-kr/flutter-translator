@@ -2,6 +2,8 @@ import { ArbService } from "./arb/arb.service";
 import { ArbStatisticService } from "./arb/statistic/arb_statistic.service";
 import { ArbValidationRepository } from "./arb/validation/arb_validation.repository";
 import { ArbValidationService } from "./arb/validation/arb_validation.service";
+import { ArbCheckTranslationCmd } from "./command/arb/check/check_translation.cmd";
+import { ArbDecodeAllHtmlEntitiesCmd } from "./command/arb/check/decode_all_html_entities.cmd";
 import { ArbConfigureTargetLanguageCodeCmd } from "./command/arb/configure/configure_target_language_code.cmd";
 import { ArbExcludeTranslationCmd } from "./command/arb/configure/exclude_translation.cmd";
 import { ArbOpenGoogleSheetCmd } from "./command/arb/google_sheet/open_google_sheet.cmd";
@@ -11,8 +13,6 @@ import { ArbChangeKeysCmd } from "./command/arb/keys/change_keys.cmd";
 import { ArbDeleteKeysCmd } from "./command/arb/keys/delete_keys.cmd";
 import { ArbCreateTranslationCacheCmd } from "./command/arb/translate/create_translation_cache.cmd";
 import { ArbTranslateCmd } from "./command/arb/translate/translate.cmd";
-import { ArbDecodeAllHtmlEntitiesCmd } from "./command/arb/validate/decode_all_html_entities.cmd";
-import { ArbValidateTranslationCmd } from "./command/arb/validate/validate_translation.cmd";
 import { MetadataAddLanguagesCmd } from "./command/metadata/metadata_add_languages.cmd";
 import { MetadataEditLanguageCmd } from "./command/metadata/metadata_edit_language.cmd";
 import { MetadataTranslateCmd } from "./command/metadata/metadata_translate.cmd";
@@ -77,7 +77,7 @@ export class Registry {
   public arbCreateTranslationCacheCmd: ArbCreateTranslationCacheCmd;
   public arbExcludeTranslationCmd: ArbExcludeTranslationCmd;
   public arbSelectTargetLanguageCodeCmd: ArbConfigureTargetLanguageCodeCmd;
-  public arbValidateTranslationCmd: ArbValidateTranslationCmd;
+  public arbCheckTranslationCmd: ArbCheckTranslationCmd;
   public arbDecodeAllHtmlEntitiesCmd: ArbDecodeAllHtmlEntitiesCmd;
   public arbUploadToGoogleSheetCmd: ArbUploadToGoogleSheetCmd;
   public arbOpenGoogleSheetCmd: ArbOpenGoogleSheetCmd;
@@ -175,7 +175,7 @@ export class Registry {
         languageService: this.languageService,
       }
     );
-    this.arbValidateTranslationCmd = new ArbValidateTranslationCmd({
+    this.arbCheckTranslationCmd = new ArbCheckTranslationCmd({
       arbValidationService: this.arbValidationService,
       languageService: this.languageService,
       configService: this.configService,

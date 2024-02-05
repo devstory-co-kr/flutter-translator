@@ -39,8 +39,7 @@ export class FlutterTranslator implements App {
       this.registry.arbExcludeTranslationCmd.run(),
     [Cmd.ArbConfigureTargetLanguageCode]: () =>
       this.registry.arbSelectTargetLanguageCodeCmd.run(),
-    [Cmd.ArbValidateTranslation]: () =>
-      this.registry.arbValidateTranslationCmd.run(),
+    [Cmd.ArbCheckTranslation]: () => this.registry.arbCheckTranslationCmd.run(),
     [Cmd.ArbDecodeAllHtmlEntities]: () =>
       this.registry.arbDecodeAllHtmlEntitiesCmd.run(),
     [Cmd.ArbUploadToGoogleSheet]: () =>

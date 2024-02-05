@@ -19,7 +19,7 @@ interface InitParams {
   arbService: ArbService;
 }
 
-export class ArbValidateTranslationCmd {
+export class ArbCheckTranslationCmd {
   private arbValidationService: ArbValidationService;
   private languageService: LanguageService;
   private configService: ConfigService;

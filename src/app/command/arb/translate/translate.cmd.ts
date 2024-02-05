@@ -106,12 +106,12 @@ export class ArbTranslateCmd {
       targetLanguages: selectedTargetLanguages,
     });
 
-    // validate translation
+    // check translation
     const isPreceedValidation = await Dialog.showConfirmDialog({
-      title: "Would you like to validate the translation results?",
+      title: "Would you like to check the translation results?",
     });
     if (isPreceedValidation) {
-      await vscode.commands.executeCommand(Cmd.ArbValidateTranslation);
+      await vscode.commands.executeCommand(Cmd.ArbCheckTranslation);
     }
   }
 

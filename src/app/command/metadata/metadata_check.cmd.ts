@@ -44,6 +44,11 @@ export class MetadataCheckCmd {
       }
     }
 
+    if (itemList.length === 0) {
+      Toast.i("🟢 There is no problem with metadata.");
+      return;
+    }
+
     // show invalid metadata
     const selections = await Dialog.showSectionedPicker<
       MetadataValidationItem,

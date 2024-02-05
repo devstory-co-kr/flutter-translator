@@ -52,6 +52,6 @@ export interface Metadata {
   get languagePath(): string;
 }
 
-export interface PlatformMetadataRepository {
+export interface PlatformLanguage {
   supportLanguages: MetadataLanguage[];
 }

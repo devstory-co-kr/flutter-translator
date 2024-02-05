@@ -132,6 +132,10 @@
       {
         "command": "flutter-translator.metadata.check",
         "title": "Flutter Translator: Metadata - Check"
+      },
+      {
+        "command": "flutter-translator.metadata.changelog.create",
+        "title": "Flutter Translator: Metadata Changelog - Create"
       }
     ]
   },
@@ -149,6 +153,7 @@
   "devDependencies": {
     "@types/gapi": "^0.0.47",
     "@types/he": "^1.2.3",
+    "@types/js-yaml": "^4.0.9",
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
     "@types/vscode": "^1.84.0",
@@ -164,6 +169,7 @@
     "axios": "^1.6.2",
     "cheerio": "^1.0.0-rc.12",
     "googleapis": "^130.0.0",
-    "he": "^1.2.0"
+    "he": "^1.2.0",
+    "js-yaml": "^4.1.0"
   }
 }

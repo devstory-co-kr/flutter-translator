@@ -1,7 +1,7 @@
 import { LanguageRepository } from "../../language/language.repository";
-import { MetadataLanguage, PlatformMetadataRepository } from "../metadata";
+import { MetadataLanguage, PlatformLanguage } from "../metadata";
 
-export class AndroidMetadataRepository implements PlatformMetadataRepository {
+export class AndroidLanguage implements PlatformLanguage {
   public supportLanguages: MetadataLanguage[] = [
     {
       name: "Afrikaans",

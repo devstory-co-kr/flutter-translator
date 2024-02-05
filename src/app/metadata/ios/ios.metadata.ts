@@ -18,7 +18,6 @@ export class IOSMetadata implements Metadata {
       this.description,
       this.keywords,
       this.promotionalText,
-      this.releaseNotes,
       this.supportUrl,
       this.marketingUrl,
       this.privacyUrl,
@@ -66,14 +65,6 @@ export class IOSMetadata implements Metadata {
 
   private promotionalText: MetadataText = {
     fileName: "promotional_text.txt",
-    text: "",
-    optional: true,
-    maxLength: 170,
-    type: MetadataType.text,
-  };
-
-  private releaseNotes: MetadataText = {
-    fileName: "release_notes.txt",
     text: "",
     optional: true,
     maxLength: 170,

@@ -2,10 +2,10 @@ import * as fs from "fs";
 import path from "path";
 import {} from "../config/config.service";
 import { Workspace } from "../util/workspace";
+import { AndroidLanguage } from "./android/android.language";
 import { AndroidMetadata } from "./android/android.metadata";
-import { AndroidMetadataRepository } from "./android/android.metadata.repository";
 import { IOSMetadata } from "./ios/ios.metadata";
-import { IOSMetadataRepository } from "./ios/ios.metadata.repository";
+import { IOSLanguage } from "./ios/ios.language";
 import {
   Metadata,
   MetadataLanguage,
@@ -18,8 +18,8 @@ import {
 } from "./metadata.validation";
 
 export class MetadataRepository {
-  private androidMetadataRepository = new AndroidMetadataRepository();
-  private iosMetadataRepository = new IOSMetadataRepository();
+  private androidMetadataRepository = new AndroidLanguage();
+  private iosMetadataRepository = new IOSLanguage();
 
   public getMetadataPath(platform: MetadataSupportPlatform): string {
     switch (platform) {

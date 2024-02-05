@@ -33,6 +33,7 @@ export class FlutterTranslator implements App {
   public name: string = Constant.appName;
 
   public commands = {
+    // ARB Command
     [Cmd.ArbInitialize]: () => this.registry.initializeCmd.run(),
     [Cmd.ArbTranslate]: () => this.registry.arbTranslateCmd.run(),
     [Cmd.ArbExcludeTranslation]: () =>
@@ -47,12 +48,15 @@ export class FlutterTranslator implements App {
     [Cmd.ArbOpenGoogleSheet]: () => this.registry.arbOpenGoogleSheetCmd.run(),
     [Cmd.ArbChangeKeys]: () => this.registry.arbChangeKeysCmd.run(),
     [Cmd.ArbDeleteKeys]: () => this.registry.arbDeleteKeysCmd.run(),
+    // Metadata Command
     [Cmd.MetadataAddLanguages]: () =>
       this.registry.metadataAddLanguagesCmd.run(),
     [Cmd.MetadataEditLanguage]: () =>
       this.registry.metadataEditLanguageCmd.run(),
     [Cmd.MetadataTranslate]: () => this.registry.metadataTranslateCmd.run(),
     [Cmd.MetadataCheck]: () => this.registry.metadataCheckCmd.run(),
+    [Cmd.MetadataChangelogCreate]: () =>
+      this.registry.metadataChangelogCreateCmd.run(),
   };
 
   public init = async () => {

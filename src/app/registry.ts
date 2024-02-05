@@ -14,6 +14,7 @@ import { ArbDeleteKeysCmd } from "./command/arb/keys/delete_keys.cmd";
 import { ArbCreateTranslationCacheCmd } from "./command/arb/translate/create_translation_cache.cmd";
 import { ArbTranslateCmd } from "./command/arb/translate/translate.cmd";
 import { MetadataAddLanguagesCmd } from "./command/metadata/metadata_add_languages.cmd";
+import { MetadataChangelogCreateCmd } from "./command/metadata/metadata_changelog_create.cmd";
 import { MetadataCheckCmd } from "./command/metadata/metadata_check.cmd";
 import { MetadataEditLanguageCmd } from "./command/metadata/metadata_edit_language.cmd";
 import { MetadataTranslateCmd } from "./command/metadata/metadata_translate.cmd";
@@ -25,6 +26,8 @@ import { GoogleSheetService } from "./google_sheet/google_sheet.service";
 import { HistoryRepository } from "./history/history.repository";
 import { HistoryService } from "./history/history.service";
 import { LanguageService } from "./language/language.service";
+import { ChangelogRepository } from "./metadata/changelog.repositoroy";
+import { ChangelogService } from "./metadata/changelog.service";
 import { MetadataRepository } from "./metadata/metadata.repository";
 import { MetadataService } from "./metadata/metadata.service";
 import { MigrationService } from "./migration/migration.service";
@@ -53,6 +56,7 @@ export class Registry {
   private googleSheetRepository: GoogleSheetRepository;
   private versionRepository: VersionRepository;
   private metadataRepository: MetadataRepository;
+  private changelogRepository: ChangelogRepository;
 
   /**
    * Service
@@ -67,6 +71,7 @@ export class Registry {
   private googleAuthService: GoogleAuthService;
   private googleSheetService: GoogleSheetService;
   private metadataService: MetadataService;
+  private changelogService: ChangelogService;
 
   public migrationService: MigrationService;
 
@@ -88,6 +93,7 @@ export class Registry {
   public metadataEditLanguageCmd: MetadataEditLanguageCmd;
   public metadataTranslateCmd: MetadataTranslateCmd;
   public metadataCheckCmd: MetadataCheckCmd;
+  public metadataChangelogCreateCmd: MetadataChangelogCreateCmd;
 
   constructor() {
     // data source
@@ -108,6 +114,9 @@ export class Registry {
     this.googleSheetRepository = new GoogleSheetRepository();
     this.versionRepository = new VersionRepository();
     this.metadataRepository = new MetadataRepository();
+    this.changelogRepository = new ChangelogRepository({
+      metadataRepository: this.metadataRepository,
+    });
 
     // service
     this.historyService = new HistoryService({
@@ -145,6 +154,9 @@ export class Registry {
     });
     this.metadataService = new MetadataService({
       metadataRepository: this.metadataRepository,
+    });
+    this.changelogService = new ChangelogService({
+      changelogRepository: this.changelogRepository,
     });
 
     // cmd
@@ -223,6 +235,10 @@ export class Registry {
     });
     this.metadataCheckCmd = new MetadataCheckCmd({
       metadataService: this.metadataService,
+    });
+    this.metadataChangelogCreateCmd = new MetadataChangelogCreateCmd({
+      metadataService: this.metadataService,
+      changelogService: this.changelogService,
     });
   }
 

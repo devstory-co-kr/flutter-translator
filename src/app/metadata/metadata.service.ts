@@ -48,7 +48,7 @@ export class MetadataService {
     return this.metadataRepository.getMetadataPath(platform);
   }
 
-  public getLanguageList(
+  public getLanguageListInPlatform(
     platform: MetadataSupportPlatform
   ): MetadataLanguage[] {
     const metadataPath = this.getMetadataPath(platform);
@@ -233,7 +233,7 @@ export class MetadataService {
   public checkAll(): MetadataValidation[] {
     const validationList: MetadataValidation[] = [];
     for (const platform of Object.values(MetadataSupportPlatform)) {
-      const metadataLangauges = this.getLanguageList(platform);
+      const metadataLangauges = this.getLanguageListInPlatform(platform);
       for (const metadataLanguage of metadataLangauges) {
         const metadata = this.getExistMetadataFile(platform, metadataLanguage);
         if (metadata) {

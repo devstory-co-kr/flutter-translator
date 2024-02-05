@@ -1,7 +1,7 @@
 import { LanguageRepository } from "../../language/language.repository";
-import { PlatformMetadataRepository } from "../metadata";
+import { PlatformLanguage } from "../metadata";
 
-export class IOSMetadataRepository implements PlatformMetadataRepository {
+export class IOSLanguage implements PlatformLanguage {
   public supportLanguages = [
     {
       name: "Arabic",

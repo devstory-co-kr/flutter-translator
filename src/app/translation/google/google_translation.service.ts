@@ -186,6 +186,10 @@ export class GoogleTranslationService implements TranslationService {
     let nRequest = 0;
     const results = await Promise.all(
       queries.map(async (query) => {
+        if (query === "") {
+          return query;
+        }
+
         const cacheKey = new TranslationCacheKey({
           sourceArbValue: query,
           sourceLanguage: sourceLang,

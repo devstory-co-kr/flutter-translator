@@ -52,6 +52,7 @@ export class FlutterTranslator implements App {
       this.registry.metadataAddLanguagesCmd.run(),
     [Cmd.MetadataEditLanguage]: () =>
       this.registry.metadataEditLanguageCmd.run(),
+    [Cmd.MetadataTranslate]: () => this.registry.metadataTranslateCmd.run(),
   };
 
   public init = async () => {

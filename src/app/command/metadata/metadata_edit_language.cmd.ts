@@ -58,7 +58,7 @@ export class MetadataEditLanguageCmd {
     }
 
     // update metadata
-    const savedMetadata = this.metadataService.saveMetadata(updatedMetadata);
+    const savedMetadata = this.metadataService.updateMetadata(updatedMetadata);
     const savedMetadataPath = path.join(
       savedMetadata.metadataPath,
       savedMetadata.language.locale

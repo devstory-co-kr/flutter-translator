@@ -124,6 +124,10 @@
       {
         "command": "flutter-translator.metadata.editLanguage",
         "title": "Flutter Translator: Metadata - Edit Language"
+      },
+      {
+        "command": "flutter-translator.metadata.translate",
+        "title": "Flutter Translator: Metadata - Translate"
       }
     ]
   },

@@ -52,7 +52,7 @@ export class MetadataRepository {
     }
 
     for (const data of metadata.dataList) {
-      const dataPath = path.join(metadataPath, language.locale, data.fileName);
+      const dataPath = path.join(metadata.languagePath, data.fileName);
       if (fs.existsSync(dataPath)) {
         // exist -> read previous text
         data.text = fs.readFileSync(dataPath, "utf8");
@@ -65,15 +65,15 @@ export class MetadataRepository {
     return metadata;
   }
 
-  public saveMetadata(metadata: Metadata): Metadata {
+  public updateMetadata(metadata: Metadata): Metadata {
     for (const data of metadata.dataList) {
-      const filePath = path.join(
-        metadata.metadataPath,
-        metadata.language.locale,
-        data.fileName
-      );
+      const filePath = path.join(metadata.languagePath, data.fileName);
       fs.writeFileSync(filePath, data.text);
     }
     return metadata;
+  }
+
+  public updateMetadataText(filePath: string, text: string): void {
+    fs.writeFileSync(filePath, text);
   }
 }

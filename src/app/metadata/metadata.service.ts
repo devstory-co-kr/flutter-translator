@@ -6,7 +6,9 @@ import {
   Metadata,
   MetadataLanguage,
   MetadataSupportPlatform,
+  MetadataText,
   MetadataType,
+  MetadataUrlFilesProcessingPolicy,
 } from "./metadata";
 import { MetadataRepository } from "./metadata.repository";
 
@@ -60,22 +62,26 @@ export class MetadataService {
   public async selectLanguageList({
     platform,
     selectedLanguages,
+    excludeLanguages,
     title,
     placeHolder,
   }: {
     platform: MetadataSupportPlatform;
     selectedLanguages: MetadataLanguage[];
+    excludeLanguages?: MetadataLanguage[];
     title?: string;
     placeHolder?: string;
   }): Promise<MetadataLanguage[]> {
     const languages = this.metadataRepository.getSupportLanguages(platform);
     const selections = await vscode.window.showQuickPick(
-      languages.map((language) => ({
-        label: language.name,
-        description: language.locale,
-        picked: selectedLanguages.includes(language),
-        language,
-      })),
+      languages
+        .filter((language) => !(excludeLanguages ?? []).includes(language))
+        .map((language) => ({
+          label: language.name,
+          description: language.locale,
+          picked: selectedLanguages.includes(language),
+          language,
+        })),
       {
         title: title ?? "Select Language list",
         placeHolder: placeHolder ?? "Select Language list",
@@ -117,8 +123,52 @@ export class MetadataService {
     return this.metadataRepository.getMetadataFile(platform, language);
   }
 
-  public saveMetadata(metadata: Metadata): Metadata {
-    return this.metadataRepository.saveMetadata(metadata);
+  public updateMetadata(metadata: Metadata): Metadata {
+    return this.metadataRepository.updateMetadata(metadata);
+  }
+
+  public updateMetadataText(filePath: string, text: string): void {
+    return this.metadataRepository.updateMetadataText(filePath, text);
+  }
+
+  public async selectUrlFilesProcessingPolicy(): Promise<
+    MetadataUrlFilesProcessingPolicy | undefined
+  > {
+    const selection = await vscode.window.showQuickPick(
+      Object.entries(MetadataUrlFilesProcessingPolicy).map(
+        ([label, value]) => ({
+          label,
+          policy: value as MetadataUrlFilesProcessingPolicy,
+        })
+      ),
+      {
+        title: "Url Files Processing Policy",
+        placeHolder: "Please select a policy for handling URL files.",
+      }
+    );
+    return selection?.policy;
+  }
+
+  public async selectFilesToTranslate(
+    metadata: Metadata
+  ): Promise<MetadataText[]> {
+    const selections = await vscode.window.showQuickPick(
+      metadata.dataList
+        .filter((data) => data.type === MetadataType.text)
+        .map((data) => ({
+          label: data.fileName,
+          picked: true,
+          description: `${data.text.length.toLocaleString()} characters`,
+          data,
+        })),
+      {
+        title: "Select Files",
+        placeHolder: "Select list of files to translate",
+        ignoreFocusOut: true,
+        canPickMany: true,
+      }
+    );
+    return (selections ?? []).map((selection) => selection.data);
   }
 
   public async showMetadataInputBox(

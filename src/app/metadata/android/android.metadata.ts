@@ -1,3 +1,4 @@
+import path from "path";
 import {
   Metadata,
   MetadataLanguage,
@@ -17,6 +18,9 @@ export class AndroidMetadata implements Metadata {
       this.fullDescription,
       this.video,
     ];
+  }
+  public get languagePath(): string {
+    return path.join(this.metadataPath, this.language.locale);
   }
 
   constructor(language: MetadataLanguage, metadataPath: string) {

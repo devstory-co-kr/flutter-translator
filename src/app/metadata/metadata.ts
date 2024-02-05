@@ -21,8 +21,13 @@ export enum MetadataSupportPlatform {
 export type MetadataLanguage = {
   name: string;
   locale: string;
-  language: Language;
+  translateLanguage: Language;
 };
+
+export enum MetadataUrlFilesProcessingPolicy {
+  skip = "skip",
+  override = "override",
+}
 
 export enum MetadataType {
   text = "text",
@@ -44,6 +49,7 @@ export interface Metadata {
   platform: MetadataSupportPlatform;
   language: MetadataLanguage;
   get dataList(): MetadataText[];
+  get languagePath(): string;
 }
 
 export interface PlatformMetadataRepository {

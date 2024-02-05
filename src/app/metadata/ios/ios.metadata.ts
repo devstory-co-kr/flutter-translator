@@ -1,3 +1,4 @@
+import path from "path";
 import {
   Metadata,
   MetadataLanguage,
@@ -22,6 +23,9 @@ export class IOSMetadata implements Metadata {
       this.marketingUrl,
       this.privacyUrl,
     ];
+  }
+  public get languagePath(): string {
+    return path.join(this.metadataPath, this.language.locale);
   }
 
   constructor(language: MetadataLanguage, metadataPath: string) {

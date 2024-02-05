@@ -1,5 +1,6 @@
 import * as fs from "fs";
 import path from "path";
+import {} from "../config/config.service";
 import { Workspace } from "../util/workspace";
 import { AndroidMetadata } from "./android/android.metadata";
 import { AndroidMetadataRepository } from "./android/android.metadata.repository";
@@ -9,7 +10,12 @@ import {
   Metadata,
   MetadataLanguage,
   MetadataSupportPlatform,
+  MetadataType,
 } from "./metadata";
+import {
+  MetadataValidation,
+  MetadataValidationType,
+} from "./metadata.validation";
 
 export class MetadataRepository {
   private androidMetadataRepository = new AndroidMetadataRepository();
@@ -108,5 +114,42 @@ export class MetadataRepository {
 
   public updateMetadataText(filePath: string, text: string): void {
     fs.writeFileSync(filePath, text);
+  }
+
+  public check(metadata: Metadata): MetadataValidation {
+    const validation: MetadataValidation = {
+      metadata: metadata,
+      sectionName: `${metadata.platform}/${metadata.language.locale}`,
+      validationList: [],
+    };
+    for (const data of metadata.dataList) {
+      let type = MetadataValidationType.normal;
+      const filePath = path.join(metadata.languagePath, data.fileName);
+      if (!fs.existsSync(filePath)) {
+        // file not exist
+        type = MetadataValidationType.notExist;
+      } else if (!data.optional && data.text.trim().length === 0) {
+        // check required
+        type = MetadataValidationType.required;
+      } else {
+        switch (data.type) {
+          case MetadataType.text:
+            if (data.maxLength && data.text.length > data.maxLength) {
+              type = MetadataValidationType.overflow;
+            }
+            break;
+          case MetadataType.url:
+            if (data.text.length > 0 && !data.text.startsWith("http")) {
+              type = MetadataValidationType.invalidURL;
+            }
+            break;
+        }
+      }
+      validation.validationList.push({
+        data,
+        type,
+      });
+    }
+    return validation;
   }
 }

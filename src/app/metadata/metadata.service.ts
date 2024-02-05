@@ -11,10 +11,7 @@ import {
   MetadataUrlFilesProcessingPolicy,
 } from "./metadata";
 import { MetadataRepository } from "./metadata.repository";
-import {
-  MetadataValidation,
-  MetadataValidationType,
-} from "./metadata.validation";
+import { MetadataValidation } from "./metadata.validation";
 
 interface InitParams {
   metadataRepository: MetadataRepository;
@@ -240,47 +237,10 @@ export class MetadataService {
       for (const metadataLanguage of metadataLangauges) {
         const metadata = this.getExistMetadataFile(platform, metadataLanguage);
         if (metadata) {
-          validationList.push(this.check(metadata));
+          validationList.push(this.metadataRepository.check(metadata));
         }
       }
     }
     return validationList;
-  }
-
-  private check(metadata: Metadata): MetadataValidation {
-    const validation: MetadataValidation = {
-      metadata: metadata,
-      sectionName: `${metadata.platform}/${metadata.language.locale}`,
-      validationList: [],
-    };
-    for (const data of metadata.dataList) {
-      let type = MetadataValidationType.normal;
-      const filePath = path.join(metadata.languagePath, data.fileName);
-      if (!fs.existsSync(filePath)) {
-        // file not exist
-        type = MetadataValidationType.notExist;
-      } else if (!data.optional && data.text.trim().length === 0) {
-        // check required
-        type = MetadataValidationType.required;
-      } else {
-        switch (data.type) {
-          case MetadataType.text:
-            if (data.maxLength && data.text.length > data.maxLength) {
-              type = MetadataValidationType.overflow;
-            }
-            break;
-          case MetadataType.url:
-            if (data.text.length > 0 && !data.text.startsWith("http")) {
-              type = MetadataValidationType.invalidURL;
-            }
-            break;
-        }
-      }
-      validation.validationList.push({
-        data,
-        type,
-      });
-    }
-    return validation;
   }
 }

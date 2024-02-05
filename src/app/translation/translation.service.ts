@@ -17,12 +17,6 @@ export interface FreeTranslateServiceParams {
 export interface TranslationService {
   selectTranslationType(): Promise<TranslationType | undefined>;
 
-  getTranslateWebsiteUrl(
-    sourceLanguage: Language,
-    targetLanguage: Language,
-    text: string
-  ): string;
-
   translate({
     type,
     queries,

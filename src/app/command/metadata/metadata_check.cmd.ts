@@ -6,6 +6,7 @@ import {
   MetadataValidationType,
 } from "../../metadata/metadata.validation";
 import { Dialog } from "../../util/dialog";
+import { Link } from "../../util/link";
 import { Toast } from "../../util/toast";
 import { Workspace } from "../../util/workspace";
 
@@ -82,8 +83,13 @@ export class MetadataCheckCmd {
         await Workspace.open(filePath);
         const overflow = currentLength - maxLength;
         Toast.e(
-          `${overflow.toLocaleString()} characters overflow. (maxLength: ${maxLength.toLocaleString()})`
+          `Characters overflow (max: ${maxLength.toLocaleString()} / current: ${currentLength} / overflow: ${overflow.toLocaleString()})`
         );
+        // open google translate website
+        await Link.openGoogleTranslateWebsite({
+          sourceLanguage: validation.metadata.language.translateLanguage,
+          text: validation.data.text,
+        });
         break;
       case MetadataValidationType.required:
         await Workspace.open(filePath);

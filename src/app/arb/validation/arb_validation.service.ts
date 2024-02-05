@@ -75,11 +75,11 @@ export class ArbValidationService {
       case InvalidType.invalidParameters:
       case InvalidType.invalidParentheses:
         // open translation website
-        await this.openTranslationWebsite(
-          sourceArb.language,
-          validationResult.targetArb.language,
-          sourceArb.data[validationResult.key]
-        );
+        await Link.openGoogleTranslateWebsite({
+          sourceLanguage: sourceArb.language,
+          targetLanguage: validationResult.targetArb.language,
+          text: sourceArb.data[validationResult.key]
+        });
         break;
       case InvalidType.undecodedHtmlEntityExists:
         // decode html entity
@@ -143,25 +143,5 @@ export class ArbValidationService {
         targetValidation
       );
     }
-  }
-
-  private async openTranslationWebsite(
-    sourceLanguage: Language,
-    targetLanguage: Language,
-    text: string
-  ) {
-    const isShow = await Dialog.showConfirmDialog({
-      title: "Do you want to open the Google Translate website?",
-    });
-    if (!isShow) {
-      return;
-    }
-
-    const url = this.translationService.getTranslateWebsiteUrl(
-      sourceLanguage,
-      targetLanguage,
-      text
-    );
-    Link.show(url);
   }
 }

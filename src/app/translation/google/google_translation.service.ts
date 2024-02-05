@@ -73,16 +73,6 @@ export class GoogleTranslationService implements TranslationService {
     return type;
   }
 
-  public getTranslateWebsiteUrl(
-    sourceLanguage: Language,
-    targetLanguage: Language,
-    text: string
-  ): string {
-    const sl = sourceLanguage.gt;
-    const tl = targetLanguage.gt;
-    return `https://translate.google.co.kr/?sl=${sl}&tl=${tl}&text=${text}&op=translate`;
-  }
-
   /**
    * Translate with payment
    * @param apiKey

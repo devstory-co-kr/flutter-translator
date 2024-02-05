@@ -1,5 +1,7 @@
 import * as vscode from "vscode";
+import { Language } from "../language/language";
 import { Constant } from "./constant";
+import { Dialog } from "./dialog";
 
 export class Link {
   static show(url: string) {
@@ -9,5 +11,26 @@ export class Link {
   static showHomePage() {
     vscode.env.openExternal(vscode.Uri.parse(Constant.homePage));
   }
-}
 
+  static async openGoogleTranslateWebsite({
+    sourceLanguage,
+    targetLanguage,
+    text,
+  }: {
+    sourceLanguage?: Language;
+    targetLanguage?: Language;
+    text: string;
+  }) {
+    const isShow = await Dialog.showConfirmDialog({
+      title: "Do you want to open the Google Translate website?",
+    });
+    if (!isShow) {
+      return;
+    }
+
+    const sl = sourceLanguage?.gt ?? "auto";
+    const tl = targetLanguage?.gt ?? "auto";
+    const url = `https://translate.google.co.kr/?sl=${sl}&tl=${tl}&text=${text}&op=translate`;
+    Link.show(url);
+  }
+}

@@ -14,6 +14,7 @@ import { ArbDeleteKeysCmd } from "./command/arb/keys/delete_keys.cmd";
 import { ArbCreateTranslationCacheCmd } from "./command/arb/translate/create_translation_cache.cmd";
 import { ArbTranslateCmd } from "./command/arb/translate/translate.cmd";
 import { MetadataAddLanguagesCmd } from "./command/metadata/metadata_add_languages.cmd";
+import { MetadataCheckCmd } from "./command/metadata/metadata_check.cmd";
 import { MetadataEditLanguageCmd } from "./command/metadata/metadata_edit_language.cmd";
 import { MetadataTranslateCmd } from "./command/metadata/metadata_translate.cmd";
 import { ConfigRepository } from "./config/config.repository";
@@ -86,6 +87,7 @@ export class Registry {
   public metadataAddLanguagesCmd: MetadataAddLanguagesCmd;
   public metadataEditLanguageCmd: MetadataEditLanguageCmd;
   public metadataTranslateCmd: MetadataTranslateCmd;
+  public metadataCheckCmd: MetadataCheckCmd;
 
   constructor() {
     // data source
@@ -218,6 +220,9 @@ export class Registry {
     this.metadataTranslateCmd = new MetadataTranslateCmd({
       metadataService: this.metadataService,
       translationService: this.translationService,
+    });
+    this.metadataCheckCmd = new MetadataCheckCmd({
+      metadataService: this.metadataService,
     });
   }
 

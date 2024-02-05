@@ -69,7 +69,7 @@ export class ArbInitializeCmd {
     }
 
     // open workspace
-    Workspace.open();
+    Workspace.openSettings();
     Toast.i("Completed adding settings to .vscode/settings.json");
   }
 }

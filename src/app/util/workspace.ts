@@ -7,7 +7,7 @@ export class Workspace {
   /**
    * open .vscode/settings.json
    */
-  public static open() {
+  public static openSettings() {
     const workspacePath = vscode.workspace.workspaceFolders![0].uri.path;
     const workspaceSettingsPath = path.join(
       workspacePath,
@@ -17,6 +17,13 @@ export class Workspace {
     vscode.workspace
       .openTextDocument(workspaceSettingsPath)
       .then((document) => vscode.window.showTextDocument(document));
+  }
+
+  public static async open(
+    filePath: string
+  ): Promise<Thenable<vscode.TextEditor>> {
+    const document = await vscode.workspace.openTextDocument(filePath);
+    return vscode.window.showTextDocument(document);
   }
 
   public static getRoot() {

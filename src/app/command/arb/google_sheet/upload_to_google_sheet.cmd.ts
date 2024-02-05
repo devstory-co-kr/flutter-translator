@@ -71,7 +71,7 @@ export class ArbUploadToGoogleSheetCmd {
       !googleSheet.credentialFilePath ||
       uploadLanguageCodeList.length === 0
     ) {
-      Workspace.open();
+      Workspace.openSettings();
       this.configService.update({
         ...this.configService.config,
         googleSheet: {

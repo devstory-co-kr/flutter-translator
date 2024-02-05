@@ -36,7 +36,40 @@ export class MetadataRepository {
     }
   }
 
-  public getMetadataFile(
+  public getExistMetadataFile(
+    platform: MetadataSupportPlatform,
+    language: MetadataLanguage
+  ): Metadata | undefined {
+    const metadataPath = this.getMetadataPath(platform);
+    if (!fs.existsSync(metadataPath)) {
+      // locale not exist
+      return;
+    }
+
+    let metadata: Metadata;
+    switch (platform) {
+      case MetadataSupportPlatform.android:
+        metadata = new AndroidMetadata(language, metadataPath);
+        break;
+      case MetadataSupportPlatform.ios:
+        metadata = new IOSMetadata(language, metadataPath);
+        break;
+    }
+
+    for (const data of metadata.dataList) {
+      const dataPath = path.join(metadata.languagePath, data.fileName);
+      if (fs.existsSync(dataPath)) {
+        // exist -> read previous text
+        data.text = fs.readFileSync(dataPath, "utf8");
+      } else {
+        // not exist
+      }
+    }
+
+    return metadata;
+  }
+
+  public createMetadataFile(
     platform: MetadataSupportPlatform,
     language: MetadataLanguage
   ): Metadata {

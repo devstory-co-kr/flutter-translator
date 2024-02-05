@@ -6,6 +6,7 @@ import {
 } from "../../metadata/metadata";
 import { MetadataService } from "../../metadata/metadata.service";
 import { TranslationService } from "../../translation/translation.service";
+import { Dialog } from "../../util/dialog";
 import { Toast } from "../../util/toast";
 import { Cmd } from "../cmd";
 
@@ -72,7 +73,7 @@ export class MetadataTranslateCmd {
     }
 
     // get source metadata
-    const sourceMetadata = this.metadataService.getMetadataFile(
+    const sourceMetadata = this.metadataService.createMetadataFile(
       platform,
       sourceMetadataLanguage
     );
@@ -100,7 +101,7 @@ export class MetadataTranslateCmd {
 
     for (const targetMetadataLanguage of targetMetadataLanguages) {
       // get folders and files.
-      const targetMetadata = this.metadataService.getMetadataFile(
+      const targetMetadata = this.metadataService.createMetadataFile(
         platform,
         targetMetadataLanguage
       );
@@ -146,5 +147,13 @@ export class MetadataTranslateCmd {
     Toast.i(
       `${platform} ${targetMetadataLanguages.length} language metadata translated.`
     );
+
+    // check
+    const isPreceedValidation = await Dialog.showConfirmDialog({
+      title: "Would you like to check the results?",
+    });
+    if (isPreceedValidation) {
+      await vscode.commands.executeCommand(Cmd.MetadataCheck);
+    }
   }
 }

@@ -35,7 +35,7 @@ export class MetadataAddLanguagesCmd {
 
     // create folders and files.
     for (const language of languageList) {
-      this.metadataService.getMetadataFile(platform, language);
+      this.metadataService.createMetadataFile(platform, language);
     }
 
     await vscode.commands.executeCommand(

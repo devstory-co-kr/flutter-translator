@@ -20,7 +20,7 @@ export class ArbOpenGoogleSheetCmd {
     const { googleSheet } = this.configService.config;
 
     if (!googleSheet || !googleSheet.id) {
-      Workspace.open();
+      Workspace.openSettings();
       this.configService.update({
         ...this.configService.config,
         googleSheet: {

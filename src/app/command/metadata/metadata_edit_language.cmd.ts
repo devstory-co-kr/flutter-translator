@@ -47,7 +47,10 @@ export class MetadataEditLanguageCmd {
     }
 
     // get folders and files.
-    const metadata = this.metadataService.getMetadataFile(platform, language);
+    const metadata = this.metadataService.createMetadataFile(
+      platform,
+      language
+    );
 
     // show metadata input box.
     const updatedMetadata = await this.metadataService.showMetadataInputBox(

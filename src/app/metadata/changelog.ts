@@ -1,8 +1,12 @@
-import { MetadataLanguage, MetadataSupportPlatform } from "./metadata";
+import {
+  MetadataLanguage,
+  MetadataSupportPlatform,
+  MetadataText,
+} from "./metadata";
 
 export interface Changelog {
   platform: MetadataSupportPlatform;
   language: MetadataLanguage;
   filePath: string;
-  text: string;
+  content: MetadataText;
 }

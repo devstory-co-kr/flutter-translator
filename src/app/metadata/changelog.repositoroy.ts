@@ -32,7 +32,9 @@ export class ChangelogRepository {
     if (!fs.existsSync(changelog.filePath)) {
       Workspace.createPath(changelog.filePath);
     } else {
-      changelog.text = fs.readFileSync(changelog.filePath, "utf8").trim();
+      changelog.content.text = fs
+        .readFileSync(changelog.filePath, "utf8")
+        .trim();
     }
     return changelog;
   }
@@ -56,7 +58,9 @@ export class ChangelogRepository {
         break;
     }
     if (fs.existsSync(changelog.filePath)) {
-      changelog.text = fs.readFileSync(changelog.filePath, "utf8").trim();
+      changelog.content.text = fs
+        .readFileSync(changelog.filePath, "utf8")
+        .trim();
     }
     return changelog;
   }
@@ -76,6 +80,6 @@ export class ChangelogRepository {
     if (!fs.existsSync(changelog.filePath)) {
       Workspace.createPath(changelog.filePath);
     }
-    fs.writeFileSync(changelog.filePath, changelog.text);
+    fs.writeFileSync(changelog.filePath, changelog.content.text);
   }
 }

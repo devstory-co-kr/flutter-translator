@@ -66,7 +66,7 @@ export class MetadataChangelogTranslateCmd {
 
     // check file and text
     const changelogFileNotExist = !fs.existsSync(sourceChangelog.filePath);
-    const changelogEmpty = sourceChangelog.text.length === 0;
+    const changelogEmpty = sourceChangelog.content.text.length === 0;
     if (changelogFileNotExist || changelogEmpty) {
       Toast.i(`${sourceChangelog.filePath}`);
       const createChangelog = `Create Changelog`;
@@ -136,16 +136,16 @@ export class MetadataChangelogTranslateCmd {
           const targetLang: Language = targetMetadataLanguage.translateLanguage;
           if (sourceLang === targetLang) {
             // same language for different platforms -> paste
-            targetChangelog.text = sourceChangelog.text;
+            targetChangelog.content = sourceChangelog.content;
           } else {
             // different language -> translate
             const result = await this.translationService.translate({
               type: translationType,
-              queries: sourceChangelog.text.split("\n"),
+              queries: sourceChangelog.content.text.split("\n"),
               sourceLang,
               targetLang,
             });
-            targetChangelog.text = result.data.join("\n");
+            targetChangelog.content.text = result.data.join("\n");
           }
 
           // update target changelog

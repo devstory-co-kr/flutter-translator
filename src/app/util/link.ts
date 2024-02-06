@@ -1,5 +1,5 @@
 import * as vscode from "vscode";
-import { Language } from "../language/language";
+import { Language } from "../component/language/language";
 import { Constant } from "./constant";
 import { Dialog } from "./dialog";
 

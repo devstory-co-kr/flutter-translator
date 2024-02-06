@@ -1,6 +1,6 @@
 import * as vscode from "vscode";
 import { App, FlutterTranslator } from "./app/app";
-import { Cmd } from "./app/command/cmd";
+import { Cmd } from "./app/cmd/cmd";
 
 const app: App = new FlutterTranslator();
 

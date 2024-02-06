@@ -1,4 +1,4 @@
-import { Cmd, cmdName } from "../command/cmd";
+import { Cmd, cmdName } from "../cmd/cmd";
 
 export class BaseException extends Error {}
 

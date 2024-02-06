@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
-import { ChangelogCreateCmdArgs } from "./command/changelog/changelog_create.cmd";
-import { Cmd } from "./command/cmd";
-import { MetadataAddLanguagesCmdArgs } from "./command/metadata/metadata_add_languages.cmd";
+import { ChangelogCreateCmdArgs } from "./cmd/changelog/changelog_create.cmd";
+import { Cmd } from "./cmd/cmd";
+import { MetadataAddLanguagesCmdArgs } from "./cmd/metadata/metadata_add_languages.cmd";
 import { Registry } from "./registry";
 import { Constant } from "./util/constant";
 import { Dialog } from "./util/dialog";

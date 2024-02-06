@@ -12,7 +12,7 @@ export function activate(context: vscode.ExtensionContext) {
       try {
         await app.migrate(context);
         await app.init();
-        await app.commands[cmd](context, args);
+        await app.commands[cmd](args);
       } catch (e) {
         await app.onException(e);
       }

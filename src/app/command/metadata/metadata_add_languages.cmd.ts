@@ -1,10 +1,19 @@
 import * as vscode from "vscode";
+import {
+  MetadataLanguage,
+  MetadataSupportPlatform,
+} from "../../metadata/metadata";
 import { MetadataService } from "../../metadata/metadata.service";
 import { Toast } from "../../util/toast";
 
 interface InitParams {
   metadataService: MetadataService;
 }
+
+export type MetadataAddLanguagesCmdArgs = {
+  platform?: MetadataSupportPlatform;
+  selectedMetadataLanguages?: MetadataLanguage[];
+};
 
 export class MetadataAddLanguagesCmd {
   private metadataService: MetadataService;
@@ -13,24 +22,27 @@ export class MetadataAddLanguagesCmd {
     this.metadataService = metadataService;
   }
 
-  public async run() {
+  public async run(args?: MetadataAddLanguagesCmdArgs) {
     // select a platform.
-    const platform = await this.metadataService.selectPlatform({
-      placeHolder: `Select platform to add languages.`,
-    });
+    const platform =
+      args?.platform ??
+      (await this.metadataService.selectPlatform({
+        placeHolder: `Select platform to add languages.`,
+      }));
     if (!platform) {
       return;
     }
 
     // select language list.
-    const selectedLanguages =
+    const excludeLanguages =
       this.metadataService.getLanguageListInPlatform(platform);
     const languageList =
-      await this.metadataService.selectLanguageListInPlatform({
+      args?.selectedMetadataLanguages ??
+      (await this.metadataService.selectLanguageListInPlatform({
         platform,
-        selectedLanguages,
+        excludeLanguages,
         placeHolder: `Select languages to add.`,
-      });
+      }));
     if (languageList.length === 0) {
       return;
     }

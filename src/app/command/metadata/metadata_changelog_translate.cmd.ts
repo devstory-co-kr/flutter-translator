@@ -12,6 +12,7 @@ import { Dialog } from "../../util/dialog";
 import { Toast } from "../../util/toast";
 import { Workspace } from "../../util/workspace";
 import { Cmd } from "../cmd";
+import { MetadataChangelogCreateCmdArgs } from "./metadata_changelog_create.cmd";
 
 interface InitParams {
   metadataService: MetadataService;
@@ -75,10 +76,11 @@ export class MetadataChangelogTranslateCmd {
       );
       if (click === createChangelog) {
         if (changelogFileNotExist) {
-          await vscode.commands.executeCommand(
-            Cmd.MetadataChangelogCreate,
-            sourceMetadataLanguage
-          );
+          await vscode.commands.executeCommand(Cmd.MetadataChangelogCreate, <
+            MetadataChangelogCreateCmdArgs
+          >{
+            sourceMetadataLanguage,
+          });
         } else {
           await Workspace.open(sourceChangelog.filePath);
         }

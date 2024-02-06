@@ -12,6 +12,10 @@ interface InitParams {
   changelogService: ChangelogService;
 }
 
+export type MetadataChangelogCreateCmdArgs = {
+  sourceMetadataLanguage?: MetadataLanguage;
+};
+
 export class MetadataChangelogCreateCmd {
   private metadataService: MetadataService;
   private changelogService: ChangelogService;
@@ -21,11 +25,11 @@ export class MetadataChangelogCreateCmd {
     this.changelogService = changelogService;
   }
 
-  public async run(sourceMetadataLanguage: MetadataLanguage | undefined) {
+  public async run(args?: MetadataChangelogCreateCmdArgs) {
     // select metadata language in android
     const platform = MetadataSupportPlatform.android;
     const language =
-      sourceMetadataLanguage ??
+      args?.sourceMetadataLanguage ??
       (await this.metadataService.selectLanguage({
         languageList: this.metadataService.getLanguageListInPlatform(platform),
         title: "Select Language",

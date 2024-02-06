@@ -70,7 +70,7 @@ export class MetadataService {
     placeHolder,
   }: {
     platform: MetadataSupportPlatform;
-    selectedLanguages: MetadataLanguage[];
+    selectedLanguages?: MetadataLanguage[];
     excludeLanguages?: MetadataLanguage[];
     title?: string;
     placeHolder?: string;
@@ -81,7 +81,7 @@ export class MetadataService {
         .filter((language) => !(excludeLanguages ?? []).includes(language))
         .map((language) => ({
           label: `${language.name} (${language.locale})`,
-          picked: selectedLanguages.includes(language),
+          picked: selectedLanguages?.includes(language),
           language,
         })),
       {

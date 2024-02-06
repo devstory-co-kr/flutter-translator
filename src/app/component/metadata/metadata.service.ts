@@ -1,5 +1,3 @@
-import * as fs from "fs";
-import path from "path";
 import * as vscode from "vscode";
 import { Dialog } from "../../util/dialog";
 import {} from "../config/config.service";
@@ -50,16 +48,10 @@ export class MetadataService {
     return this.metadataRepository.getMetadataPath(platform);
   }
 
-  public getLanguageListInPlatform(
+  public getLanguagesInPlatform(
     platform: MetadataSupportPlatform
   ): MetadataLanguage[] {
-    const metadataPath = this.getMetadataPath(platform);
-    const supportLanguages =
-      this.metadataRepository.getSupportLanguages(platform);
-    return supportLanguages.filter((language) => {
-      const languagePath = path.join(metadataPath, language.locale);
-      return fs.existsSync(languagePath);
-    });
+    return this.metadataRepository.getLanguagesInPlatform(platform);
   }
 
   public async selectLanguageListInPlatform({
@@ -114,7 +106,7 @@ export class MetadataService {
   > {
     const platformLanguages: MetadataPlatformLanguage[] = [];
     for (const platform of Object.values(MetadataSupportPlatform)) {
-      for (const language of this.getLanguageListInPlatform(platform)) {
+      for (const language of this.getLanguagesInPlatform(platform)) {
         if (excludePlatformLanguages) {
           const excludePlatform = excludePlatformLanguages[platform];
           if (excludePlatform.includes(language)) {
@@ -292,12 +284,15 @@ export class MetadataService {
   public checkAll(): MetadataValidation[] {
     const validationList: MetadataValidation[] = [];
     for (const platform of Object.values(MetadataSupportPlatform)) {
-      const metadataLangauges = this.getLanguageListInPlatform(platform);
+      const metadataLangauges = this.getLanguagesInPlatform(platform);
       for (const metadataLanguage of metadataLangauges) {
         const metadata = this.getExistMetadataFile(platform, metadataLanguage);
-        if (metadata) {
-          validationList.push(this.metadataRepository.check(metadata));
+        if (!metadata) {
+          continue;
         }
+
+        const validation = this.metadataRepository.check(metadata);
+        validationList.push(validation);
       }
     }
     return validationList;

@@ -4,7 +4,10 @@ import {
 } from "../metadata/metadata";
 import { Changelog } from "./changelog";
 import { ChangelogRepository } from "./changelog.repositoroy";
-import { ChangelogValidation } from "./changelog.validation";
+import {
+  ChangelogValidation,
+  ChangelogValidationType,
+} from "./changelog.validation";
 
 interface InitParams {
   changelogRepository: ChangelogRepository;
@@ -57,11 +60,14 @@ export class ChangelogService {
     return this.changelogRepository.getFlutterBuildNumber();
   }
 
-  public checkAll(): ChangelogValidation[] {
+  public getInvalidList(): ChangelogValidation[] {
     const buildNumber = this.getBuildBumber();
     const changelogList = this.changelogRepository.getAllChangelog(buildNumber);
-    return changelogList.map((changelog) =>
-      this.changelogRepository.check(changelog)
-    );
+    return changelogList
+      .map((changelog) => this.changelogRepository.check(changelog))
+      .filter(
+        (validation) =>
+          validation.validationType !== ChangelogValidationType.normal
+      );
   }
 }

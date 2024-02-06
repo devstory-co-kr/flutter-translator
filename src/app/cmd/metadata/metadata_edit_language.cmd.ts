@@ -24,8 +24,7 @@ export class MetadataEditLanguageCmd {
     }
 
     // get list of selected platform languages
-    const languageList =
-      this.metadataService.getLanguageListInPlatform(platform);
+    const languageList = this.metadataService.getLanguagesInPlatform(platform);
     if (languageList.length === 0) {
       const title = `There is no language to edit in ${platform}.`;
       const answer = await vscode.window.showInformationMessage(

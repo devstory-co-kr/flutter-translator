@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { ChangelogCreateCmdArgs } from "./cmd/changelog/changelog_create.cmd";
+import { ChangelogTranslateCmdArgs } from "./cmd/changelog/changelog_translate.cmd";
 import { Cmd } from "./cmd/cmd";
 import { MetadataAddLanguagesCmdArgs } from "./cmd/metadata/metadata_add_languages.cmd";
 import { Registry } from "./registry";
@@ -36,7 +37,7 @@ export class FlutterTranslator implements App {
 
   public commands = {
     // ARB Command
-    [Cmd.ArbInitialize]: () => this.registry.initializeCmd.run(),
+    [Cmd.ArbInitialize]: () => this.registry.ArbInitializeCmd.run(),
     [Cmd.ArbTranslate]: () => this.registry.arbTranslateCmd.run(),
     [Cmd.ArbExcludeTranslation]: () =>
       this.registry.arbExcludeTranslationCmd.run(),
@@ -57,9 +58,12 @@ export class FlutterTranslator implements App {
       this.registry.metadataEditLanguageCmd.run(),
     [Cmd.MetadataTranslate]: () => this.registry.metadataTranslateCmd.run(),
     [Cmd.MetadataCheck]: () => this.registry.metadataCheckCmd.run(),
+    // Changelog Command
     [Cmd.ChangelogCreate]: (args?: ChangelogCreateCmdArgs) =>
       this.registry.changelogCreateCmd.run(args),
-    [Cmd.ChangelogTranslate]: () => this.registry.changelogTranslateCmd.run(),
+    [Cmd.ChangelogTranslate]: (args?: ChangelogTranslateCmdArgs) =>
+      this.registry.changelogTranslateCmd.run(args),
+    [Cmd.ChangelogCheck]: () => this.registry.changelogCheckCmd.run(),
   };
 
   public init = async () => {

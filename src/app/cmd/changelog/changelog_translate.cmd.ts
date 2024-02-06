@@ -20,6 +20,14 @@ interface InitParams {
   translationService: TranslationService;
 }
 
+export type ChangelogTranslateCmdArgs = {
+  sourceMetadataLanguage?: MetadataLanguage;
+  targetPlatformLanguages?: {
+    platform: MetadataSupportPlatform;
+    language: MetadataLanguage;
+  }[];
+};
+
 export class ChangelogTranslateCmd {
   private metadataService: MetadataService;
   private changelogService: ChangelogService;
@@ -35,17 +43,19 @@ export class ChangelogTranslateCmd {
     this.translationService = translationService;
   }
 
-  public async run() {
+  public async run(args?: ChangelogTranslateCmdArgs) {
     // select source metadata language in android
     const sourcePlatform = MetadataSupportPlatform.android;
     const metadataLanguageList =
-      this.metadataService.getLanguageListInPlatform(sourcePlatform);
-    const sourceMetadataLanguage = await this.metadataService.selectLanguage({
-      languageList: metadataLanguageList,
-      title: "Select Source Language",
-      placeHolder:
-        "Select the source language that will be the translation source.",
-    });
+      this.metadataService.getLanguagesInPlatform(sourcePlatform);
+    const sourceMetadataLanguage =
+      args?.sourceMetadataLanguage ??
+      (await this.metadataService.selectLanguage({
+        languageList: metadataLanguageList,
+        title: "Select Source Language",
+        placeHolder:
+          "Select the source language that will be the translation source.",
+      }));
     if (!sourceMetadataLanguage) {
       return;
     }
@@ -88,13 +98,15 @@ export class ChangelogTranslateCmd {
     const targetPlatformLanguages: {
       platform: MetadataSupportPlatform;
       language: MetadataLanguage;
-    }[] = await this.metadataService.selectPlatformLanguages({
-      picked: true,
-      excludePlatformLanguages: {
-        [sourcePlatform]: [sourceMetadataLanguage],
-        ios: [],
-      },
-    });
+    }[] =
+      args?.targetPlatformLanguages ??
+      (await this.metadataService.selectPlatformLanguages({
+        picked: true,
+        excludePlatformLanguages: {
+          [sourcePlatform]: [sourceMetadataLanguage],
+          ios: [],
+        },
+      }));
     if (targetPlatformLanguages.length === 0) {
       return;
     }
@@ -162,7 +174,7 @@ export class ChangelogTranslateCmd {
       title: "Would you like to check the results?",
     });
     if (isPreceedValidation) {
-      await vscode.commands.executeCommand(Cmd.MetadataCheck);
+      await vscode.commands.executeCommand(Cmd.ChangelogCheck);
     }
   }
 }

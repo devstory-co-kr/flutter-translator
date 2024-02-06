@@ -34,7 +34,8 @@ export class ChangelogRepository {
   public getAllChangelog(buildNumber: string): Changelog[] {
     return Object.values(MetadataSupportPlatform)
       .map((platform) => {
-        const languages = this.metadataRepository.getSupportLanguages(platform);
+        const languages =
+          this.metadataRepository.getLanguagesInPlatform(platform);
         return languages
           .map((language) => this.getChangelog(platform, language, buildNumber))
           .flat();

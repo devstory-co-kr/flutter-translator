@@ -140,12 +140,19 @@
         "command": "flutter-translator.changelog.create",
         "title": "Flutter Translator: Changelog - Create",
         "args": [
-          "sourceMetadataLanguage"
+          "args"
         ]
       },
       {
         "command": "flutter-translator.changelog.translate",
-        "title": "Flutter Translator: Changelog - Translate"
+        "title": "Flutter Translator: Changelog - Translate",
+        "args": [
+          "args"
+        ]
+      },
+      {
+        "command": "flutter-translator.changelog.check",
+        "title": "Flutter Translator: Changelog - Check"
       }
     ]
   },

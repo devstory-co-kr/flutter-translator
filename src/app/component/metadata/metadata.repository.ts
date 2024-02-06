@@ -42,6 +42,18 @@ export class MetadataRepository {
     }
   }
 
+  public getLanguagesInPlatform(
+    platform: MetadataSupportPlatform
+  ): MetadataLanguage[] {
+    const metadataPath = this.getMetadataPath(platform);
+    const supportLanguages =
+      this.getSupportLanguages(platform);
+    return supportLanguages.filter((language) => {
+      const languagePath = path.join(metadataPath, language.locale);
+      return fs.existsSync(languagePath);
+    });
+  }
+
   public getExistMetadataFile(
     platform: MetadataSupportPlatform,
     language: MetadataLanguage

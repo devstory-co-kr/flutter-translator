@@ -30,7 +30,7 @@ export class ChangelogCreateCmd {
     const language =
       args?.sourceMetadataLanguage ??
       (await this.metadataService.selectLanguage({
-        languageList: this.metadataService.getLanguageListInPlatform(platform),
+        languageList: this.metadataService.getLanguagesInPlatform(platform),
         title: "Select Language",
         placeHolder: "Select language to add changelog.",
       }));

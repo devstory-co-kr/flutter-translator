@@ -9,6 +9,7 @@ import { ArbChangeKeysCmd } from "./cmd/arb/keys/change_keys.cmd";
 import { ArbDeleteKeysCmd } from "./cmd/arb/keys/delete_keys.cmd";
 import { ArbCreateTranslationCacheCmd } from "./cmd/arb/translate/create_translation_cache.cmd";
 import { ArbTranslateCmd } from "./cmd/arb/translate/translate.cmd";
+import { ChangelogCheckCmd } from "./cmd/changelog/changelog_check.cmd";
 import { ChangelogCreateCmd } from "./cmd/changelog/changelog_create.cmd";
 import { ChangelogTranslateCmd } from "./cmd/changelog/changelog_translate.cmd";
 import { MetadataAddLanguagesCmd } from "./cmd/metadata/metadata_add_languages.cmd";
@@ -79,7 +80,7 @@ export class Registry {
   /**
    * Command
    */
-  public initializeCmd: ArbInitializeCmd;
+  public ArbInitializeCmd: ArbInitializeCmd;
   public arbTranslateCmd: ArbTranslateCmd;
   public arbCreateTranslationCacheCmd: ArbCreateTranslationCacheCmd;
   public arbExcludeTranslationCmd: ArbExcludeTranslationCmd;
@@ -96,6 +97,7 @@ export class Registry {
   public metadataCheckCmd: MetadataCheckCmd;
   public changelogCreateCmd: ChangelogCreateCmd;
   public changelogTranslateCmd: ChangelogTranslateCmd;
+  public changelogCheckCmd: ChangelogCheckCmd;
 
   constructor() {
     // data source
@@ -162,7 +164,7 @@ export class Registry {
     });
 
     // cmd
-    this.initializeCmd = new ArbInitializeCmd({
+    this.ArbInitializeCmd = new ArbInitializeCmd({
       configService: this.configService,
       arbService: this.arbService,
     });
@@ -246,6 +248,9 @@ export class Registry {
       metadataService: this.metadataService,
       changelogService: this.changelogService,
       translationService: this.translationService,
+    });
+    this.changelogCheckCmd = new ChangelogCheckCmd({
+      changelogService: this.changelogService,
     });
   }
 

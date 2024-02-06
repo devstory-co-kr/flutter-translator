@@ -1,5 +1,4 @@
 import path from "path";
-import * as vscode from "vscode";
 import { MetadataService } from "../../component/metadata/metadata.service";
 import {
   MetadataValidationItem,
@@ -83,6 +82,7 @@ export class MetadataCheckCmd {
 
     const currentLength = validation.data.text.length;
     const maxLength = validation.data.maxLength ?? 0;
+    const { platform, language } = validation.metadata;
     switch (validation.type) {
       case MetadataValidationType.overflow:
         await Workspace.open(filePath);
@@ -116,34 +116,29 @@ export class MetadataCheckCmd {
         const notExistItemList = itemList.filter(
           (item) => item.type === MetadataValidationType.notExist
         );
-        const fileName = `${validation.metadata.platform}/${validation.metadata.language.locale}/${validation.data.fileName}`;
-        const answer = await vscode.window.showQuickPick([
-          {
-            label: `Create all missing ${notExistItemList.length} files`,
-            value: "all",
-          },
-          {
-            label: `Create only ${fileName}`,
-            value: "one",
-          },
-        ]);
-        if (!answer) {
+        if (notExistItemList.length === 1) {
+          // create one
+          Workspace.createPath(filePath);
+          const fileName = `${platform}/${language.locale}/${validation.data.fileName}`;
+          Toast.i(`${fileName} created.`);
+          await Workspace.open(filePath);
+          return;
+        }
+
+        const isConfirm = Dialog.showConfirmDialog({
+          title: `Do you want to create all missing ${notExistItemList.length} files?`,
+        });
+        if (!isConfirm) {
           // canceled
           return;
-        } else if (answer.value === "all") {
-          // create many
+        } else {
+          // confirm
           for (const item of notExistItemList) {
             Workspace.createPath(
               path.join(item.metadata.languagePath, item.data.fileName)
             );
           }
           Toast.i(`${notExistItemList.length} files created.`);
-          return;
-        } else {
-          // create one
-          Workspace.createPath(filePath);
-          Toast.i(`${filePath} created.`);
-          await Workspace.open(filePath);
           return;
         }
       case MetadataValidationType.normal:

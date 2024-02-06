@@ -18,6 +18,7 @@ export enum Cmd {
   // Changelog Command
   ChangelogCreate = "flutter-translator.changelog.create",
   ChangelogTranslate = "flutter-translator.changelog.translate",
+  ChangelogCheck = "flutter-translator.changelog.check",
 }
 
 export const cmdName: Record<Cmd, string> = {
@@ -40,4 +41,5 @@ export const cmdName: Record<Cmd, string> = {
   [Cmd.MetadataCheck]: "Flutter Translator: Metadata - Check",
   [Cmd.ChangelogCreate]: "Flutter Translator: Changelog - Create",
   [Cmd.ChangelogTranslate]: "Flutter Translator: Changelog - Translate",
+  [Cmd.ChangelogCheck]: "Flutter Translator: Changelog - Check",
 };

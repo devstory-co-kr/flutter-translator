@@ -35,7 +35,7 @@ export class MetadataAddLanguagesCmd {
 
     // select language list.
     const excludeLanguages =
-      this.metadataService.getLanguageListInPlatform(platform);
+      this.metadataService.getLanguagesInPlatform(platform);
     const languageList =
       args?.selectedMetadataLanguages ??
       (await this.metadataService.selectLanguageListInPlatform({

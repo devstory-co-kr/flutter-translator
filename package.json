@@ -137,6 +137,10 @@
         "title": "Flutter Translator: Metadata - Check"
       },
       {
+        "command": "flutter-translator.metadata.open",
+        "title": "Flutter Translator: Metadata - Open"
+      },
+      {
         "command": "flutter-translator.changelog.create",
         "title": "Flutter Translator: Changelog - Create",
         "args": [

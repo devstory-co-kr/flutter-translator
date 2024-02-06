@@ -118,8 +118,8 @@
         "title": "Flutter Translator: Arb - Delete Keys"
       },
       {
-        "command": "flutter-translator.metadata.addLanguages",
-        "title": "Flutter Translator: Metadata - Add Languages",
+        "command": "flutter-translator.metadata.create",
+        "title": "Flutter Translator: Metadata - Create",
         "args": [
           "args"
         ]

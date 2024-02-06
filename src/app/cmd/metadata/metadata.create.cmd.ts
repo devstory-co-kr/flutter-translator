@@ -10,19 +10,19 @@ interface InitParams {
   metadataService: MetadataService;
 }
 
-export type MetadataAddLanguagesCmdArgs = {
+export type MetadataCreateCmdArgs = {
   platform?: MetadataSupportPlatform;
   selectedMetadataLanguages?: MetadataLanguage[];
 };
 
-export class MetadataAddLanguagesCmd {
+export class MetadataCreateCmd {
   private metadataService: MetadataService;
 
   constructor({ metadataService }: InitParams) {
     this.metadataService = metadataService;
   }
 
-  public async run(args?: MetadataAddLanguagesCmdArgs) {
+  public async run(args?: MetadataCreateCmdArgs) {
     // select a platform.
     const platform =
       args?.platform ??

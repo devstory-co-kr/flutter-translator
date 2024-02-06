@@ -12,8 +12,8 @@ import { ArbTranslateCmd } from "./cmd/arb/translate/arb.translate.cmd";
 import { ChangelogCheckCmd } from "./cmd/changelog/changelog.check.cmd";
 import { ChangelogCreateCmd } from "./cmd/changelog/changelog.create.cmd";
 import { ChangelogTranslateCmd } from "./cmd/changelog/changelog.translate.cmd";
-import { MetadataAddLanguagesCmd } from "./cmd/metadata/metadata.add_languages.cmd";
 import { MetadataCheckCmd } from "./cmd/metadata/metadata.check.cmd";
+import { MetadataCreateCmd } from "./cmd/metadata/metadata.create.cmd";
 import { MetadataEditLanguageCmd } from "./cmd/metadata/metadata.edit_language.cmd";
 import { MetadataOpenCmd } from "./cmd/metadata/metadata.open.cmd";
 import { MetadataTranslateCmd } from "./cmd/metadata/metadata.translate.cmd";
@@ -92,7 +92,7 @@ export class Registry {
   public arbOpenGoogleSheetCmd: ArbOpenGoogleSheetCmd;
   public arbChangeKeysCmd: ArbChangeKeysCmd;
   public arbDeleteKeysCmd: ArbDeleteKeysCmd;
-  public metadataAddLanguagesCmd: MetadataAddLanguagesCmd;
+  public metadataCreateCmd: MetadataCreateCmd;
   public metadataEditLanguageCmd: MetadataEditLanguageCmd;
   public metadataTranslateCmd: MetadataTranslateCmd;
   public metadataCheckCmd: MetadataCheckCmd;
@@ -229,7 +229,7 @@ export class Registry {
       configService: this.configService,
       arbService: this.arbService,
     });
-    this.metadataAddLanguagesCmd = new MetadataAddLanguagesCmd({
+    this.metadataCreateCmd = new MetadataCreateCmd({
       metadataService: this.metadataService,
     });
     this.metadataEditLanguageCmd = new MetadataEditLanguageCmd({

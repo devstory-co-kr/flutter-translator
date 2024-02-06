@@ -2,7 +2,7 @@ import * as vscode from "vscode";
 import { ChangelogCreateCmdArgs } from "./cmd/changelog/changelog.create.cmd";
 import { ChangelogTranslateCmdArgs } from "./cmd/changelog/changelog.translate.cmd";
 import { Cmd } from "./cmd/cmd";
-import { MetadataAddLanguagesCmdArgs } from "./cmd/metadata/metadata.add_languages.cmd";
+import { MetadataCreateCmdArgs } from "./cmd/metadata/metadata.create.cmd";
 import { Registry } from "./registry";
 import { Constant } from "./util/constant";
 import { Dialog } from "./util/dialog";
@@ -52,8 +52,8 @@ export class FlutterTranslator implements App {
     [Cmd.ArbChangeKeys]: () => this.registry.arbChangeKeysCmd.run(),
     [Cmd.ArbDeleteKeys]: () => this.registry.arbDeleteKeysCmd.run(),
     // Metadata Command
-    [Cmd.MetadataAddLanguages]: (args?: MetadataAddLanguagesCmdArgs) =>
-      this.registry.metadataAddLanguagesCmd.run(args),
+    [Cmd.MetadataCreate]: (args?: MetadataCreateCmdArgs) =>
+      this.registry.metadataCreateCmd.run(args),
     [Cmd.MetadataEditLanguage]: () =>
       this.registry.metadataEditLanguageCmd.run(),
     [Cmd.MetadataTranslate]: () => this.registry.metadataTranslateCmd.run(),

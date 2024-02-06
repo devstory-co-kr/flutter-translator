@@ -12,7 +12,7 @@ import { TranslationService } from "../../component/translation/translation.serv
 import { Dialog } from "../../util/dialog";
 import { Toast } from "../../util/toast";
 import { Cmd } from "../cmd";
-import { MetadataAddLanguagesCmdArgs } from "./metadata.add_languages.cmd";
+import { MetadataCreateCmdArgs } from "./metadata.create.cmd";
 
 interface InitParams {
   metadataService: MetadataService;
@@ -46,8 +46,8 @@ export class MetadataTranslateCmd {
         "Add Languages"
       );
       if (answer === "Add Languages") {
-        await vscode.commands.executeCommand(Cmd.MetadataAddLanguages, <
-          MetadataAddLanguagesCmdArgs
+        await vscode.commands.executeCommand(Cmd.MetadataCreate, <
+          MetadataCreateCmdArgs
         >{
           platform,
         });

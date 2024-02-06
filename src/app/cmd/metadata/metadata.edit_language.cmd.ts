@@ -32,7 +32,7 @@ export class MetadataEditLanguageCmd {
         "Add Languages"
       );
       if (answer === "Add Languages") {
-        await vscode.commands.executeCommand(Cmd.MetadataAddLanguages);
+        await vscode.commands.executeCommand(Cmd.MetadataCreate);
       }
       return;
     }

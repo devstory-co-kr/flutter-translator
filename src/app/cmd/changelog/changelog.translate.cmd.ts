@@ -77,7 +77,7 @@ export class ChangelogTranslateCmd {
       Toast.i(`${sourceChangelog.filePath}`);
       const createChangelog = `Create Changelog`;
       const click = await vscode.window.showInformationMessage(
-        "There is currently no changelog corresponding to buildNumber.",
+        `There is currently no changelog corresponding to buildNumber(${buildNumber}).`,
         createChangelog
       );
       if (click === createChangelog) {

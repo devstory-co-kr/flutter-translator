@@ -153,6 +153,10 @@
       {
         "command": "flutter-translator.changelog.check",
         "title": "Flutter Translator: Changelog - Check"
+      },
+      {
+        "command": "flutter-translator.changelog.open",
+        "title": "Flutter Translator: Changelog - Open"
       }
     ]
   },

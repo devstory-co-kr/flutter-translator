@@ -11,6 +11,7 @@ import { ArbCreateTranslationCacheCmd } from "./cmd/arb/translate/arb.create_tra
 import { ArbTranslateCmd } from "./cmd/arb/translate/arb.translate.cmd";
 import { ChangelogCheckCmd } from "./cmd/changelog/changelog.check.cmd";
 import { ChangelogCreateCmd } from "./cmd/changelog/changelog.create.cmd";
+import { ChangelogOpenCmd } from "./cmd/changelog/changelog.open.cmd";
 import { ChangelogTranslateCmd } from "./cmd/changelog/changelog.translate.cmd";
 import { MetadataCheckCmd } from "./cmd/metadata/metadata.check.cmd";
 import { MetadataCreateCmd } from "./cmd/metadata/metadata.create.cmd";
@@ -98,6 +99,7 @@ export class Registry {
   public changelogCreateCmd: ChangelogCreateCmd;
   public changelogTranslateCmd: ChangelogTranslateCmd;
   public changelogCheckCmd: ChangelogCheckCmd;
+  public changelogOpenCmd: ChangelogOpenCmd;
 
   constructor() {
     // data source
@@ -251,6 +253,10 @@ export class Registry {
     });
     this.changelogCheckCmd = new ChangelogCheckCmd({
       changelogService: this.changelogService,
+    });
+    this.changelogOpenCmd = new ChangelogOpenCmd({
+      changelogService: this.changelogService,
+      metadataService: this.metadataService,
     });
   }
 

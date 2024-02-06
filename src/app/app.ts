@@ -63,6 +63,7 @@ export class FlutterTranslator implements App {
     [Cmd.ChangelogTranslate]: (args?: ChangelogTranslateCmdArgs) =>
       this.registry.changelogTranslateCmd.run(args),
     [Cmd.ChangelogCheck]: () => this.registry.changelogCheckCmd.run(),
+    [Cmd.ChangelogOpen]: () => this.registry.changelogOpenCmd.run(),
   };
 
   public init = async () => {

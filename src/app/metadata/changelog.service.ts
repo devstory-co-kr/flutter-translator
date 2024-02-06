@@ -1,5 +1,6 @@
 import { Changelog } from "./changelog";
 import { ChangelogRepository } from "./changelog.repositoroy";
+import { ChangelogValidation } from "./changelog.validation";
 import { MetadataLanguage, MetadataSupportPlatform } from "./metadata";
 
 interface InitParams {
@@ -49,7 +50,15 @@ export class ChangelogService {
     return this.changelogRepository.updateChangelog(changelog);
   }
 
-  public getBuildBumber(): string | undefined {
+  public getBuildBumber(): string {
     return this.changelogRepository.getFlutterBuildNumber();
+  }
+
+  public checkAll(): ChangelogValidation[] {
+    const buildNumber = this.getBuildBumber();
+    const changelogList = this.changelogRepository.getAllChangelog(buildNumber);
+    return changelogList.map((changelog) =>
+      this.changelogRepository.check(changelog)
+    );
   }
 }

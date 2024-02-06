@@ -41,10 +41,6 @@ export class MetadataChangelogCreateCmd {
 
     // enter changelog build number
     const buildNumber = this.changelogService.getBuildBumber();
-    if (!buildNumber) {
-      Toast.e("Failed to get build number from pubspec.yaml.");
-      return;
-    }
 
     // create changelog
     const changelog = this.changelogService.createChangelog({

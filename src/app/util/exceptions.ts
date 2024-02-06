@@ -6,6 +6,12 @@ export class ConfigurationRequiredException extends BaseException {}
 
 export class APIKeyRequiredException extends BaseException {}
 
+export class InvalidBuildNumberException extends BaseException {
+  constructor() {
+    super("Failed to get build number from pubspec.yaml.");
+  }
+}
+
 export class MigrationFailureException extends BaseException {
   constructor() {
     super("Failed to migrate");

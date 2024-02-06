@@ -2,9 +2,14 @@ import * as fs from "fs";
 import * as yaml from "js-yaml";
 import path from "path";
 import {} from "../config/config.service";
+import { InvalidBuildNumberException } from "../util/exceptions";
 import { Workspace } from "../util/workspace";
 import { AndroidChangelog } from "./android/android.changelog";
 import { Changelog } from "./changelog";
+import {
+  ChangelogValidation,
+  ChangelogValidationType,
+} from "./changelog.validation";
 import { IOSChangelog } from "./ios/ios.changelog";
 import { MetadataLanguage, MetadataSupportPlatform } from "./metadata";
 import { MetadataRepository } from "./metadata.repository";
@@ -23,6 +28,17 @@ export class ChangelogRepository {
     this.metadataRepository = metadataRepository;
   }
 
+  public getAllChangelog(buildNumber: string): Changelog[] {
+    return Object.values(MetadataSupportPlatform)
+      .map((platform) => {
+        const languages = this.metadataRepository.getSupportLanguages(platform);
+        return languages
+          .map((language) => this.getChangelog(platform, language, buildNumber))
+          .flat();
+      })
+      .flat();
+  }
+
   public createChangelog(
     platform: MetadataSupportPlatform,
     language: MetadataLanguage,
@@ -32,9 +48,7 @@ export class ChangelogRepository {
     if (!fs.existsSync(changelog.filePath)) {
       Workspace.createPath(changelog.filePath);
     } else {
-      changelog.content.text = fs
-        .readFileSync(changelog.filePath, "utf8")
-        .trim();
+      changelog.file.text = fs.readFileSync(changelog.filePath, "utf8").trim();
     }
     return changelog;
   }
@@ -58,21 +72,19 @@ export class ChangelogRepository {
         break;
     }
     if (fs.existsSync(changelog.filePath)) {
-      changelog.content.text = fs
-        .readFileSync(changelog.filePath, "utf8")
-        .trim();
+      changelog.file.text = fs.readFileSync(changelog.filePath, "utf8").trim();
     }
     return changelog;
   }
 
-  public getFlutterBuildNumber(): string | undefined {
+  public getFlutterBuildNumber(): string {
     try {
       const pubspecPath = path.join(Workspace.getRoot(), "pubspec.yaml");
       const pubspecContent = fs.readFileSync(pubspecPath, "utf-8");
       const pubspecData: any = yaml.load(pubspecContent);
       return pubspecData.version.split("+")[1].toString();
     } catch (error) {
-      return;
+      throw new InvalidBuildNumberException();
     }
   }
 
@@ -80,6 +92,30 @@ export class ChangelogRepository {
     if (!fs.existsSync(changelog.filePath)) {
       Workspace.createPath(changelog.filePath);
     }
-    fs.writeFileSync(changelog.filePath, changelog.content.text);
+    fs.writeFileSync(changelog.filePath, changelog.file.text);
+  }
+
+  public check(changelog: Changelog): ChangelogValidation {
+    if (!fs.existsSync(changelog.filePath)) {
+      return {
+        changelog,
+        validationType: ChangelogValidationType.notExist,
+      };
+    } else if (changelog.file.text.trim().length === 0) {
+      return {
+        changelog,
+        validationType: ChangelogValidationType.empty,
+      };
+    } else if (changelog.file.text.trim().length > changelog.file.maxLength) {
+      return {
+        changelog,
+        validationType: ChangelogValidationType.overflow,
+      };
+    } else {
+      return {
+        changelog,
+        validationType: ChangelogValidationType.normal,
+      };
+    }
   }
 }

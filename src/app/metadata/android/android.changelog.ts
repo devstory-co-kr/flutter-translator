@@ -1,17 +1,12 @@
 import path from "path";
-import { Changelog } from "../changelog";
-import {
-  MetadataLanguage,
-  MetadataSupportPlatform,
-  MetadataText,
-  MetadataType,
-} from "../metadata";
+import { Changelog, ChangelogFile } from "../changelog";
+import { MetadataLanguage, MetadataSupportPlatform } from "../metadata";
 
 export class AndroidChangelog implements Changelog {
   public platform: MetadataSupportPlatform = MetadataSupportPlatform.android;
   public language: MetadataLanguage;
   public filePath: string;
-  public content: MetadataText;
+  public file: ChangelogFile;
 
   constructor(
     buildNumber: string,
@@ -26,12 +21,10 @@ export class AndroidChangelog implements Changelog {
       "changelogs",
       fileName
     );
-    this.content = {
+    this.file = {
       fileName,
       text: "",
-      optional: true,
       maxLength: 500,
-      type: MetadataType.text,
     };
   }
 }

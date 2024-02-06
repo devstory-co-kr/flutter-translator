@@ -108,7 +108,7 @@ export class ArbUploadToGoogleSheetCmd {
     if (validationResultList.length > 0) {
       // invalid
       Toast.e("Invalid translation result. Please correct it and try again.");
-      return await vscode.commands.executeCommand(Cmd.ArbCheckTranslation);
+      return await vscode.commands.executeCommand(Cmd.ArbCheck);
     }
 
     // get google auth

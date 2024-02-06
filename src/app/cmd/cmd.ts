@@ -4,7 +4,7 @@ export enum Cmd {
   ArbTranslate = "flutter-translator.arb.translate",
   ArbExcludeTranslation = "flutter-translator.arb.excludeTranslation",
   ArbConfigureTargetLanguageCode = "flutter-translator.arb.configureTargetLanguageCode",
-  ArbCheckTranslation = "flutter-translator.arb.checkTranslation",
+  ArbCheck = "flutter-translator.arb.check",
   ArbDecodeAllHtmlEntities = "flutter-translator.arb.decodeAllHtmlEntities",
   ArbUploadToGoogleSheet = "flutter-translator.arb.uploadToGoogleSheet",
   ArbOpenGoogleSheet = "flutter-translator.arb.openGoogleSheet",
@@ -24,7 +24,7 @@ export enum Cmd {
 export const cmdName: Record<Cmd, string> = {
   [Cmd.ArbInitialize]: "Flutter Translator: Arb - Initialize",
   [Cmd.ArbTranslate]: "Flutter Translator: Arb - Translate",
-  [Cmd.ArbCheckTranslation]: "Flutter Translator: Arb - Check Translation",
+  [Cmd.ArbCheck]: "Flutter Translator: Arb - Check",
   [Cmd.ArbExcludeTranslation]: "Flutter Translator: Arb - Exclude Translation",
   [Cmd.ArbConfigureTargetLanguageCode]:
     "Flutter Translator: Arb - Configure Target Language Code",

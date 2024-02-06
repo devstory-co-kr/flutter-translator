@@ -94,8 +94,8 @@
         "title": "Flutter Translator: Arb - Configure Target Language Code"
       },
       {
-        "command": "flutter-translator.arb.checkTranslation",
-        "title": "Flutter Translator: Arb - Check Translation"
+        "command": "flutter-translator.arb.check",
+        "title": "Flutter Translator: Arb - Check"
       },
       {
         "command": "flutter-translator.arb.decodeAllHtmlEntities",

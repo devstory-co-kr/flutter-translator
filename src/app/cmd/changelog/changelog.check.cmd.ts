@@ -9,7 +9,7 @@ import { Link } from "../../util/link";
 import { Toast } from "../../util/toast";
 import { Workspace } from "../../util/workspace";
 import { Cmd } from "../cmd";
-import { ChangelogTranslateCmdArgs } from "./changelog_translate.cmd";
+import { ChangelogTranslateCmdArgs } from "./changelog.translate.cmd";
 
 interface InitParams {
   changelogService: ChangelogService;

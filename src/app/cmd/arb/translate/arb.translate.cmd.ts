@@ -111,7 +111,7 @@ export class ArbTranslateCmd {
       title: "Would you like to check the translation results?",
     });
     if (isPreceedValidation) {
-      await vscode.commands.executeCommand(Cmd.ArbCheckTranslation);
+      await vscode.commands.executeCommand(Cmd.ArbCheck);
     }
   }
 

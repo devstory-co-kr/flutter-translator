@@ -12,7 +12,7 @@ import { Dialog } from "../../util/dialog";
 import { Toast } from "../../util/toast";
 import { Workspace } from "../../util/workspace";
 import { Cmd } from "../cmd";
-import { ChangelogCreateCmdArgs } from "./changelog_create.cmd";
+import { ChangelogCreateCmdArgs } from "./changelog.create.cmd";
 
 interface InitParams {
   metadataService: MetadataService;

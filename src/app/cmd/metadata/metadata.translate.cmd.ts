@@ -12,7 +12,7 @@ import { TranslationService } from "../../component/translation/translation.serv
 import { Dialog } from "../../util/dialog";
 import { Toast } from "../../util/toast";
 import { Cmd } from "../cmd";
-import { MetadataAddLanguagesCmdArgs } from "./metadata_add_languages.cmd";
+import { MetadataAddLanguagesCmdArgs } from "./metadata.add_languages.cmd";
 
 interface InitParams {
   metadataService: MetadataService;

@@ -1,21 +1,21 @@
-import { ArbCheckTranslationCmd } from "./cmd/arb/check/check_translation.cmd";
-import { ArbDecodeAllHtmlEntitiesCmd } from "./cmd/arb/check/decode_all_html_entities.cmd";
-import { ArbConfigureTargetLanguageCodeCmd } from "./cmd/arb/configure/configure_target_language_code.cmd";
-import { ArbExcludeTranslationCmd } from "./cmd/arb/configure/exclude_translation.cmd";
-import { ArbOpenGoogleSheetCmd } from "./cmd/arb/google_sheet/open_google_sheet.cmd";
-import { ArbUploadToGoogleSheetCmd } from "./cmd/arb/google_sheet/upload_to_google_sheet.cmd";
-import { ArbInitializeCmd } from "./cmd/arb/initialize.cmd";
-import { ArbChangeKeysCmd } from "./cmd/arb/keys/change_keys.cmd";
-import { ArbDeleteKeysCmd } from "./cmd/arb/keys/delete_keys.cmd";
-import { ArbCreateTranslationCacheCmd } from "./cmd/arb/translate/create_translation_cache.cmd";
-import { ArbTranslateCmd } from "./cmd/arb/translate/translate.cmd";
-import { ChangelogCheckCmd } from "./cmd/changelog/changelog_check.cmd";
-import { ChangelogCreateCmd } from "./cmd/changelog/changelog_create.cmd";
-import { ChangelogTranslateCmd } from "./cmd/changelog/changelog_translate.cmd";
-import { MetadataAddLanguagesCmd } from "./cmd/metadata/metadata_add_languages.cmd";
-import { MetadataCheckCmd } from "./cmd/metadata/metadata_check.cmd";
-import { MetadataEditLanguageCmd } from "./cmd/metadata/metadata_edit_language.cmd";
-import { MetadataTranslateCmd } from "./cmd/metadata/metadata_translate.cmd";
+import { ArbInitializeCmd } from "./cmd/arb/arb.initialize.cmd";
+import { ArbCheckCmd } from "./cmd/arb/check/arb.check.cmd";
+import { ArbDecodeAllHtmlEntitiesCmd } from "./cmd/arb/check/arb.decode_all_html_entities.cmd";
+import { ArbConfigureTargetLanguageCodeCmd } from "./cmd/arb/configure/arb.configure_target_language_code.cmd";
+import { ArbExcludeTranslationCmd } from "./cmd/arb/configure/arb.exclude_translation.cmd";
+import { ArbOpenGoogleSheetCmd } from "./cmd/arb/google_sheet/arb.open_google_sheet.cmd";
+import { ArbUploadToGoogleSheetCmd } from "./cmd/arb/google_sheet/arb.upload_to_google_sheet.cmd";
+import { ArbChangeKeysCmd } from "./cmd/arb/keys/arb.change_keys.cmd";
+import { ArbDeleteKeysCmd } from "./cmd/arb/keys/arb.delete_keys.cmd";
+import { ArbCreateTranslationCacheCmd } from "./cmd/arb/translate/arb.create_translation_cache.cmd";
+import { ArbTranslateCmd } from "./cmd/arb/translate/arb.translate.cmd";
+import { ChangelogCheckCmd } from "./cmd/changelog/changelog.check.cmd";
+import { ChangelogCreateCmd } from "./cmd/changelog/changelog.create.cmd";
+import { ChangelogTranslateCmd } from "./cmd/changelog/changelog.translate.cmd";
+import { MetadataAddLanguagesCmd } from "./cmd/metadata/metadata.add_languages.cmd";
+import { MetadataCheckCmd } from "./cmd/metadata/metadata.check.cmd";
+import { MetadataEditLanguageCmd } from "./cmd/metadata/metadata.edit_language.cmd";
+import { MetadataTranslateCmd } from "./cmd/metadata/metadata.translate.cmd";
 import { ArbService } from "./component/arb/arb.service";
 import { ArbStatisticService } from "./component/arb/statistic/arb_statistic.service";
 import { ArbValidationRepository } from "./component/arb/validation/arb_validation.repository";
@@ -80,12 +80,12 @@ export class Registry {
   /**
    * Command
    */
-  public ArbInitializeCmd: ArbInitializeCmd;
+  public arbInitializeCmd: ArbInitializeCmd;
   public arbTranslateCmd: ArbTranslateCmd;
   public arbCreateTranslationCacheCmd: ArbCreateTranslationCacheCmd;
   public arbExcludeTranslationCmd: ArbExcludeTranslationCmd;
   public arbSelectTargetLanguageCodeCmd: ArbConfigureTargetLanguageCodeCmd;
-  public arbCheckTranslationCmd: ArbCheckTranslationCmd;
+  public arbCheckCmd: ArbCheckCmd;
   public arbDecodeAllHtmlEntitiesCmd: ArbDecodeAllHtmlEntitiesCmd;
   public arbUploadToGoogleSheetCmd: ArbUploadToGoogleSheetCmd;
   public arbOpenGoogleSheetCmd: ArbOpenGoogleSheetCmd;
@@ -164,7 +164,7 @@ export class Registry {
     });
 
     // cmd
-    this.ArbInitializeCmd = new ArbInitializeCmd({
+    this.arbInitializeCmd = new ArbInitializeCmd({
       configService: this.configService,
       arbService: this.arbService,
     });
@@ -193,7 +193,7 @@ export class Registry {
         languageService: this.languageService,
       }
     );
-    this.arbCheckTranslationCmd = new ArbCheckTranslationCmd({
+    this.arbCheckCmd = new ArbCheckCmd({
       arbValidationService: this.arbValidationService,
       languageService: this.languageService,
       configService: this.configService,

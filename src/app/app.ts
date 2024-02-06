@@ -1,8 +1,8 @@
 import * as vscode from "vscode";
-import { ChangelogCreateCmdArgs } from "./cmd/changelog/changelog_create.cmd";
-import { ChangelogTranslateCmdArgs } from "./cmd/changelog/changelog_translate.cmd";
+import { ChangelogCreateCmdArgs } from "./cmd/changelog/changelog.create.cmd";
+import { ChangelogTranslateCmdArgs } from "./cmd/changelog/changelog.translate.cmd";
 import { Cmd } from "./cmd/cmd";
-import { MetadataAddLanguagesCmdArgs } from "./cmd/metadata/metadata_add_languages.cmd";
+import { MetadataAddLanguagesCmdArgs } from "./cmd/metadata/metadata.add_languages.cmd";
 import { Registry } from "./registry";
 import { Constant } from "./util/constant";
 import { Dialog } from "./util/dialog";
@@ -37,13 +37,13 @@ export class FlutterTranslator implements App {
 
   public commands = {
     // ARB Command
-    [Cmd.ArbInitialize]: () => this.registry.ArbInitializeCmd.run(),
+    [Cmd.ArbInitialize]: () => this.registry.arbInitializeCmd.run(),
     [Cmd.ArbTranslate]: () => this.registry.arbTranslateCmd.run(),
     [Cmd.ArbExcludeTranslation]: () =>
       this.registry.arbExcludeTranslationCmd.run(),
     [Cmd.ArbConfigureTargetLanguageCode]: () =>
       this.registry.arbSelectTargetLanguageCodeCmd.run(),
-    [Cmd.ArbCheckTranslation]: () => this.registry.arbCheckTranslationCmd.run(),
+    [Cmd.ArbCheck]: () => this.registry.arbCheckCmd.run(),
     [Cmd.ArbDecodeAllHtmlEntities]: () =>
       this.registry.arbDecodeAllHtmlEntitiesCmd.run(),
     [Cmd.ArbUploadToGoogleSheet]: () =>

@@ -25,11 +25,12 @@ export class MetadataAddLanguagesCmd {
     // select language list.
     const selectedLanguages =
       this.metadataService.getLanguageListInPlatform(platform);
-    const languageList = await this.metadataService.selectLanguageList({
-      platform,
-      selectedLanguages,
-      placeHolder: `Select languages to add.`,
-    });
+    const languageList =
+      await this.metadataService.selectLanguageListInPlatform({
+        platform,
+        selectedLanguages,
+        placeHolder: `Select languages to add.`,
+      });
     if (languageList.length === 0) {
       return;
     }

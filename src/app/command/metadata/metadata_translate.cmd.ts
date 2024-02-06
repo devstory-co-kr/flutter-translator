@@ -65,7 +65,7 @@ export class MetadataTranslateCmd {
     const selectedMetadataLanguages =
       this.metadataService.getLanguageListInPlatform(platform);
     const targetMetadataLanguages =
-      await this.metadataService.selectLanguageList({
+      await this.metadataService.selectLanguageListInPlatform({
         platform,
         selectedLanguages: selectedMetadataLanguages,
         excludeLanguages: [sourceMetadataLanguage],

@@ -15,6 +15,7 @@ import { ArbCreateTranslationCacheCmd } from "./command/arb/translate/create_tra
 import { ArbTranslateCmd } from "./command/arb/translate/translate.cmd";
 import { MetadataAddLanguagesCmd } from "./command/metadata/metadata_add_languages.cmd";
 import { MetadataChangelogCreateCmd } from "./command/metadata/metadata_changelog_create.cmd";
+import { MetadataChangelogTranslateCmd } from "./command/metadata/metadata_changelog_translate.cmd";
 import { MetadataCheckCmd } from "./command/metadata/metadata_check.cmd";
 import { MetadataEditLanguageCmd } from "./command/metadata/metadata_edit_language.cmd";
 import { MetadataTranslateCmd } from "./command/metadata/metadata_translate.cmd";
@@ -94,6 +95,7 @@ export class Registry {
   public metadataTranslateCmd: MetadataTranslateCmd;
   public metadataCheckCmd: MetadataCheckCmd;
   public metadataChangelogCreateCmd: MetadataChangelogCreateCmd;
+  public metadataChangelogTranslateCmd: MetadataChangelogTranslateCmd;
 
   constructor() {
     // data source
@@ -239,6 +241,11 @@ export class Registry {
     this.metadataChangelogCreateCmd = new MetadataChangelogCreateCmd({
       metadataService: this.metadataService,
       changelogService: this.changelogService,
+    });
+    this.metadataChangelogTranslateCmd = new MetadataChangelogTranslateCmd({
+      metadataService: this.metadataService,
+      changelogService: this.changelogService,
+      translationService: this.translationService,
     });
   }
 

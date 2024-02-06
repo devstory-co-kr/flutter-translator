@@ -1,5 +1,6 @@
 import * as vscode from "vscode";
 import { Cmd } from "./command/cmd";
+import { MetadataLanguage } from "./metadata/metadata";
 import { Registry } from "./registry";
 import { Constant } from "./util/constant";
 import { Dialog } from "./util/dialog";
@@ -15,7 +16,7 @@ import { Toast } from "./util/toast";
 
 export interface App {
   name: string;
-  commands: Record<Cmd, (context: vscode.ExtensionContext) => void>;
+  commands: Record<Cmd, (context: vscode.ExtensionContext, args: any) => void>;
   init: () => any;
   migrate: (context: vscode.ExtensionContext) => Promise<void>;
   disposed: () => void;
@@ -55,8 +56,12 @@ export class FlutterTranslator implements App {
       this.registry.metadataEditLanguageCmd.run(),
     [Cmd.MetadataTranslate]: () => this.registry.metadataTranslateCmd.run(),
     [Cmd.MetadataCheck]: () => this.registry.metadataCheckCmd.run(),
-    [Cmd.MetadataChangelogCreate]: () =>
-      this.registry.metadataChangelogCreateCmd.run(),
+    [Cmd.MetadataChangelogCreate]: (
+      context: vscode.ExtensionContext,
+      sourceMetadataLanguage: MetadataLanguage | undefined
+    ) => this.registry.metadataChangelogCreateCmd.run(sourceMetadataLanguage),
+    [Cmd.MetadataChangelogTranslate]: () =>
+      this.registry.metadataChangelogTranslateCmd.run(),
   };
 
   public init = async () => {

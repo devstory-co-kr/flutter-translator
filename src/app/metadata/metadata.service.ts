@@ -2,9 +2,11 @@ import * as fs from "fs";
 import path from "path";
 import * as vscode from "vscode";
 import {} from "../config/config.service";
+import { Dialog } from "../util/dialog";
 import {
   Metadata,
   MetadataLanguage,
+  MetadataPlatformLanguage,
   MetadataSupportPlatform,
   MetadataText,
   MetadataType,
@@ -60,7 +62,7 @@ export class MetadataService {
     });
   }
 
-  public async selectLanguageList({
+  public async selectLanguageListInPlatform({
     platform,
     selectedLanguages,
     excludeLanguages,
@@ -90,6 +92,63 @@ export class MetadataService {
       }
     );
     return (selections ?? []).map((selection) => selection.language);
+  }
+
+  public async selectPlatformLanguages({
+    excludePlatformLanguages,
+    title,
+    placeHolder,
+    picked,
+  }: {
+    excludePlatformLanguages?: {
+      [platform in MetadataSupportPlatform]: MetadataLanguage[];
+    };
+    title?: string;
+    placeHolder?: string;
+    picked?: boolean;
+  }): Promise<
+    {
+      platform: MetadataSupportPlatform;
+      language: MetadataLanguage;
+    }[]
+  > {
+    const platformLanguages: MetadataPlatformLanguage[] = [];
+    for (const platform of Object.values(MetadataSupportPlatform)) {
+      for (const language of this.getLanguageListInPlatform(platform)) {
+        if (excludePlatformLanguages) {
+          const excludePlatform = excludePlatformLanguages[platform];
+          if (excludePlatform.includes(language)) {
+            continue;
+          }
+        }
+        platformLanguages.push({
+          platform,
+          language,
+        });
+      }
+    }
+    const selections = await Dialog.showSectionedPicker<
+      MetadataPlatformLanguage,
+      MetadataPlatformLanguage
+    >({
+      sectionLabelList: Object.keys(MetadataSupportPlatform),
+      itemList: platformLanguages,
+      itemBuilder: (pl) => {
+        return {
+          section: pl.platform,
+          item: {
+            label: `${pl.language.name} (${pl.language.locale})`,
+            picked: picked,
+            language: pl,
+          },
+          data: pl,
+        };
+      },
+      canPickMany: true,
+      title: title ?? "Select Language list",
+      placeHolder: placeHolder ?? "Select Language list",
+    });
+    return selections ?? [];
   }
 
   public async selectLanguage({

@@ -4,8 +4,8 @@ import {} from "../config/config.service";
 import { Workspace } from "../util/workspace";
 import { AndroidLanguage } from "./android/android.language";
 import { AndroidMetadata } from "./android/android.metadata";
-import { IOSMetadata } from "./ios/ios.metadata";
 import { IOSLanguage } from "./ios/ios.language";
+import { IOSMetadata } from "./ios/ios.metadata";
 import {
   Metadata,
   MetadataLanguage,
@@ -113,6 +113,9 @@ export class MetadataRepository {
   }
 
   public updateMetadataText(filePath: string, text: string): void {
+    if (!fs.existsSync(filePath)) {
+      Workspace.createPath(filePath);
+    }
     fs.writeFileSync(filePath, text);
   }
 

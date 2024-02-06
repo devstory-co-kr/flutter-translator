@@ -24,6 +24,11 @@ export type MetadataLanguage = {
   translateLanguage: Language;
 };
 
+export type MetadataPlatformLanguage = {
+  platform: MetadataSupportPlatform;
+  language: MetadataLanguage;
+};
+
 export enum MetadataUrlFilesProcessingPolicy {
   skip = "skip",
   override = "override",

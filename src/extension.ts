@@ -8,11 +8,11 @@ export function activate(context: vscode.ExtensionContext) {
   // register command
   for (const cmdKey of Object.keys(app.commands)) {
     const cmd: Cmd = <Cmd>cmdKey;
-    const disposable = vscode.commands.registerCommand(cmdKey, async () => {
+    const disposable = vscode.commands.registerCommand(cmdKey, async (args) => {
       try {
         await app.migrate(context);
         await app.init();
-        await app.commands[cmd](context);
+        await app.commands[cmd](context, args);
       } catch (e) {
         await app.onException(e);
       }

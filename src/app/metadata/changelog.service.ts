@@ -29,6 +29,26 @@ export class ChangelogService {
     );
   }
 
+  public getChangelog({
+    platform,
+    language,
+    buildNumber,
+  }: {
+    platform: MetadataSupportPlatform;
+    language: MetadataLanguage;
+    buildNumber: string;
+  }): Changelog {
+    return this.changelogRepository.getChangelog(
+      platform,
+      language,
+      buildNumber
+    );
+  }
+
+  public updateChangelog(changelog: Changelog): void {
+    return this.changelogRepository.updateChangelog(changelog);
+  }
+
   public getBuildBumber(): string | undefined {
     return this.changelogRepository.getFlutterBuildNumber();
   }

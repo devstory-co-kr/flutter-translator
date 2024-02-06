@@ -31,28 +31,37 @@ export class ChangelogRepository {
     const changelog = this.getChangelog(platform, language, buildNumber);
     if (!fs.existsSync(changelog.filePath)) {
       Workspace.createPath(changelog.filePath);
+    } else {
+      changelog.text = fs.readFileSync(changelog.filePath, "utf8").trim();
     }
     return changelog;
   }
 
-  private getChangelog(
+  public getChangelog(
     platform: MetadataSupportPlatform,
     language: MetadataLanguage,
     buildNumber: string
   ): Changelog {
+    let changelog: Changelog;
     switch (platform) {
       case MetadataSupportPlatform.android:
-        return new AndroidChangelog(
+        changelog = new AndroidChangelog(
           buildNumber,
           language,
           this.getMetadataPath(MetadataSupportPlatform.android)
         );
+        break;
       case MetadataSupportPlatform.ios:
-        return new IOSChangelog(
+        changelog = new IOSChangelog(
           language,
           this.getMetadataPath(MetadataSupportPlatform.android)
         );
+        break;
     }
+    if (fs.existsSync(changelog.filePath)) {
+      changelog.text = fs.readFileSync(changelog.filePath, "utf8").trim();
+    }
+    return changelog;
   }
 
   public getFlutterBuildNumber(): string | undefined {
@@ -64,5 +73,12 @@ export class ChangelogRepository {
     } catch (error) {
       return;
     }
+  }
+
+  public updateChangelog(changelog: Changelog): void {
+    if (!fs.existsSync(changelog.filePath)) {
+      Workspace.createPath(changelog.filePath);
+    }
+    fs.writeFileSync(changelog.filePath, changelog.text);
   }
 }

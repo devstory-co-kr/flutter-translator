@@ -6,6 +6,7 @@ export class AndroidChangelog implements Changelog {
   public platform: MetadataSupportPlatform = MetadataSupportPlatform.android;
   public language: MetadataLanguage;
   public filePath: string;
+  public text: string = "";
 
   constructor(
     buildNumber: string,

@@ -1,5 +1,8 @@
 import { ChangelogService } from "../../metadata/changelog.service";
-import { MetadataSupportPlatform } from "../../metadata/metadata";
+import {
+  MetadataLanguage,
+  MetadataSupportPlatform,
+} from "../../metadata/metadata";
 import { MetadataService } from "../../metadata/metadata.service";
 import { Toast } from "../../util/toast";
 import { Workspace } from "../../util/workspace";
@@ -18,16 +21,16 @@ export class MetadataChangelogCreateCmd {
     this.changelogService = changelogService;
   }
 
-  public async run() {
+  public async run(sourceMetadataLanguage: MetadataLanguage | undefined) {
     // select metadata language in android
     const platform = MetadataSupportPlatform.android;
-    const metadataLanguageList =
-      this.metadataService.getLanguageListInPlatform(platform);
-    const language = await this.metadataService.selectLanguage({
-      languageList: metadataLanguageList,
-      title: "Select Language",
-      placeHolder: "Select language to add changelog.",
-    });
+    const language =
+      sourceMetadataLanguage ??
+      (await this.metadataService.selectLanguage({
+        languageList: this.metadataService.getLanguageListInPlatform(platform),
+        title: "Select Language",
+        placeHolder: "Select language to add changelog.",
+      }));
     if (!language) {
       return;
     }

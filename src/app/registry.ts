@@ -14,7 +14,6 @@ import { ChangelogCreateCmd } from "./cmd/changelog/changelog.create.cmd";
 import { ChangelogTranslateCmd } from "./cmd/changelog/changelog.translate.cmd";
 import { MetadataCheckCmd } from "./cmd/metadata/metadata.check.cmd";
 import { MetadataCreateCmd } from "./cmd/metadata/metadata.create.cmd";
-import { MetadataEditLanguageCmd } from "./cmd/metadata/metadata.edit_language.cmd";
 import { MetadataOpenCmd } from "./cmd/metadata/metadata.open.cmd";
 import { MetadataTranslateCmd } from "./cmd/metadata/metadata.translate.cmd";
 import { ArbService } from "./component/arb/arb.service";
@@ -93,7 +92,6 @@ export class Registry {
   public arbChangeKeysCmd: ArbChangeKeysCmd;
   public arbDeleteKeysCmd: ArbDeleteKeysCmd;
   public metadataCreateCmd: MetadataCreateCmd;
-  public metadataEditLanguageCmd: MetadataEditLanguageCmd;
   public metadataTranslateCmd: MetadataTranslateCmd;
   public metadataCheckCmd: MetadataCheckCmd;
   public metadataOpenCmd: MetadataOpenCmd;
@@ -230,9 +228,6 @@ export class Registry {
       arbService: this.arbService,
     });
     this.metadataCreateCmd = new MetadataCreateCmd({
-      metadataService: this.metadataService,
-    });
-    this.metadataEditLanguageCmd = new MetadataEditLanguageCmd({
       metadataService: this.metadataService,
     });
     this.metadataTranslateCmd = new MetadataTranslateCmd({

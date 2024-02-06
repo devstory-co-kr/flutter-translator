@@ -2,6 +2,8 @@ import { ArbService } from "./arb/arb.service";
 import { ArbStatisticService } from "./arb/statistic/arb_statistic.service";
 import { ArbValidationRepository } from "./arb/validation/arb_validation.repository";
 import { ArbValidationService } from "./arb/validation/arb_validation.service";
+import { ChangelogRepository } from "./changelog/changelog.repositoroy";
+import { ChangelogService } from "./changelog/changelog.service";
 import { ArbCheckTranslationCmd } from "./command/arb/check/check_translation.cmd";
 import { ArbDecodeAllHtmlEntitiesCmd } from "./command/arb/check/decode_all_html_entities.cmd";
 import { ArbConfigureTargetLanguageCodeCmd } from "./command/arb/configure/configure_target_language_code.cmd";
@@ -13,9 +15,9 @@ import { ArbChangeKeysCmd } from "./command/arb/keys/change_keys.cmd";
 import { ArbDeleteKeysCmd } from "./command/arb/keys/delete_keys.cmd";
 import { ArbCreateTranslationCacheCmd } from "./command/arb/translate/create_translation_cache.cmd";
 import { ArbTranslateCmd } from "./command/arb/translate/translate.cmd";
+import { ChangelogCreateCmd } from "./command/changelog/changelog_create.cmd";
+import { ChangelogTranslateCmd } from "./command/changelog/changelog_translate.cmd";
 import { MetadataAddLanguagesCmd } from "./command/metadata/metadata_add_languages.cmd";
-import { MetadataChangelogCreateCmd } from "./command/metadata/metadata_changelog_create.cmd";
-import { MetadataChangelogTranslateCmd } from "./command/metadata/metadata_changelog_translate.cmd";
 import { MetadataCheckCmd } from "./command/metadata/metadata_check.cmd";
 import { MetadataEditLanguageCmd } from "./command/metadata/metadata_edit_language.cmd";
 import { MetadataTranslateCmd } from "./command/metadata/metadata_translate.cmd";
@@ -27,8 +29,6 @@ import { GoogleSheetService } from "./google_sheet/google_sheet.service";
 import { HistoryRepository } from "./history/history.repository";
 import { HistoryService } from "./history/history.service";
 import { LanguageService } from "./language/language.service";
-import { ChangelogRepository } from "./metadata/changelog.repositoroy";
-import { ChangelogService } from "./metadata/changelog.service";
 import { MetadataRepository } from "./metadata/metadata.repository";
 import { MetadataService } from "./metadata/metadata.service";
 import { MigrationService } from "./migration/migration.service";
@@ -94,8 +94,8 @@ export class Registry {
   public metadataEditLanguageCmd: MetadataEditLanguageCmd;
   public metadataTranslateCmd: MetadataTranslateCmd;
   public metadataCheckCmd: MetadataCheckCmd;
-  public metadataChangelogCreateCmd: MetadataChangelogCreateCmd;
-  public metadataChangelogTranslateCmd: MetadataChangelogTranslateCmd;
+  public changelogCreateCmd: ChangelogCreateCmd;
+  public changelogTranslateCmd: ChangelogTranslateCmd;
 
   constructor() {
     // data source
@@ -238,11 +238,11 @@ export class Registry {
     this.metadataCheckCmd = new MetadataCheckCmd({
       metadataService: this.metadataService,
     });
-    this.metadataChangelogCreateCmd = new MetadataChangelogCreateCmd({
+    this.changelogCreateCmd = new ChangelogCreateCmd({
       metadataService: this.metadataService,
       changelogService: this.changelogService,
     });
-    this.metadataChangelogTranslateCmd = new MetadataChangelogTranslateCmd({
+    this.changelogTranslateCmd = new ChangelogTranslateCmd({
       metadataService: this.metadataService,
       changelogService: this.changelogService,
       translationService: this.translationService,

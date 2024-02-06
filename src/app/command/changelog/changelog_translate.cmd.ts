@@ -1,7 +1,7 @@
 import * as fs from "fs";
 import * as vscode from "vscode";
+import { ChangelogService } from "../../changelog/changelog.service";
 import { Language } from "../../language/language";
-import { ChangelogService } from "../../metadata/changelog.service";
 import {
   MetadataLanguage,
   MetadataSupportPlatform,
@@ -12,7 +12,7 @@ import { Dialog } from "../../util/dialog";
 import { Toast } from "../../util/toast";
 import { Workspace } from "../../util/workspace";
 import { Cmd } from "../cmd";
-import { MetadataChangelogCreateCmdArgs } from "./metadata_changelog_create.cmd";
+import { ChangelogCreateCmdArgs } from "./changelog_create.cmd";
 
 interface InitParams {
   metadataService: MetadataService;
@@ -20,7 +20,7 @@ interface InitParams {
   translationService: TranslationService;
 }
 
-export class MetadataChangelogTranslateCmd {
+export class ChangelogTranslateCmd {
   private metadataService: MetadataService;
   private changelogService: ChangelogService;
   private translationService: TranslationService;
@@ -72,8 +72,8 @@ export class MetadataChangelogTranslateCmd {
       );
       if (click === createChangelog) {
         if (changelogFileNotExist) {
-          await vscode.commands.executeCommand(Cmd.MetadataChangelogCreate, <
-            MetadataChangelogCreateCmdArgs
+          await vscode.commands.executeCommand(Cmd.ChangelogCreate, <
+            ChangelogCreateCmdArgs
           >{
             sourceMetadataLanguage,
           });

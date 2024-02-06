@@ -1,10 +1,9 @@
-import { ChangelogService } from "../../metadata/changelog.service";
+import { ChangelogService } from "../../changelog/changelog.service";
 import {
   MetadataLanguage,
   MetadataSupportPlatform,
 } from "../../metadata/metadata";
 import { MetadataService } from "../../metadata/metadata.service";
-import { Toast } from "../../util/toast";
 import { Workspace } from "../../util/workspace";
 
 interface InitParams {
@@ -12,11 +11,11 @@ interface InitParams {
   changelogService: ChangelogService;
 }
 
-export type MetadataChangelogCreateCmdArgs = {
+export type ChangelogCreateCmdArgs = {
   sourceMetadataLanguage?: MetadataLanguage;
 };
 
-export class MetadataChangelogCreateCmd {
+export class ChangelogCreateCmd {
   private metadataService: MetadataService;
   private changelogService: ChangelogService;
 
@@ -25,7 +24,7 @@ export class MetadataChangelogCreateCmd {
     this.changelogService = changelogService;
   }
 
-  public async run(args?: MetadataChangelogCreateCmdArgs) {
+  public async run(args?: ChangelogCreateCmdArgs) {
     // select metadata language in android
     const platform = MetadataSupportPlatform.android;
     const language =

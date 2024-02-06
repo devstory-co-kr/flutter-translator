@@ -1,5 +1,5 @@
 import path from "path";
-import { Changelog, ChangelogFile } from "../changelog";
+import { Changelog, ChangelogFile } from "../../changelog/changelog";
 import { MetadataLanguage, MetadataSupportPlatform } from "../metadata";
 
 export class AndroidChangelog implements Changelog {

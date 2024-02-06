@@ -1,7 +1,10 @@
+import {
+  MetadataLanguage,
+  MetadataSupportPlatform,
+} from "../metadata/metadata";
 import { Changelog } from "./changelog";
 import { ChangelogRepository } from "./changelog.repositoroy";
 import { ChangelogValidation } from "./changelog.validation";
-import { MetadataLanguage, MetadataSupportPlatform } from "./metadata";
 
 interface InitParams {
   changelogRepository: ChangelogRepository;

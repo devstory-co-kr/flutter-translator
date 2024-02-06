@@ -2,17 +2,20 @@ import * as fs from "fs";
 import * as yaml from "js-yaml";
 import path from "path";
 import {} from "../config/config.service";
+import { AndroidChangelog } from "../metadata/android/android.changelog";
+import { IOSChangelog } from "../metadata/ios/ios.changelog";
+import {
+  MetadataLanguage,
+  MetadataSupportPlatform,
+} from "../metadata/metadata";
+import { MetadataRepository } from "../metadata/metadata.repository";
 import { InvalidBuildNumberException } from "../util/exceptions";
 import { Workspace } from "../util/workspace";
-import { AndroidChangelog } from "./android/android.changelog";
 import { Changelog } from "./changelog";
 import {
   ChangelogValidation,
   ChangelogValidationType,
 } from "./changelog.validation";
-import { IOSChangelog } from "./ios/ios.changelog";
-import { MetadataLanguage, MetadataSupportPlatform } from "./metadata";
-import { MetadataRepository } from "./metadata.repository";
 
 interface InitParams {
   metadataRepository: MetadataRepository;

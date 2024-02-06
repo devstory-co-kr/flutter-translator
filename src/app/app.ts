@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
+import { ChangelogCreateCmdArgs } from "./command/changelog/changelog_create.cmd";
 import { Cmd } from "./command/cmd";
 import { MetadataAddLanguagesCmdArgs } from "./command/metadata/metadata_add_languages.cmd";
-import { MetadataChangelogCreateCmdArgs } from "./command/metadata/metadata_changelog_create.cmd";
 import { Registry } from "./registry";
 import { Constant } from "./util/constant";
 import { Dialog } from "./util/dialog";
@@ -57,10 +57,9 @@ export class FlutterTranslator implements App {
       this.registry.metadataEditLanguageCmd.run(),
     [Cmd.MetadataTranslate]: () => this.registry.metadataTranslateCmd.run(),
     [Cmd.MetadataCheck]: () => this.registry.metadataCheckCmd.run(),
-    [Cmd.MetadataChangelogCreate]: (args?: MetadataChangelogCreateCmdArgs) =>
-      this.registry.metadataChangelogCreateCmd.run(args),
-    [Cmd.MetadataChangelogTranslate]: () =>
-      this.registry.metadataChangelogTranslateCmd.run(),
+    [Cmd.ChangelogCreate]: (args?: ChangelogCreateCmdArgs) =>
+      this.registry.changelogCreateCmd.run(args),
+    [Cmd.ChangelogTranslate]: () => this.registry.changelogTranslateCmd.run(),
   };
 
   public init = async () => {

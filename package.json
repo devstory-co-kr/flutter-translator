@@ -137,15 +137,15 @@
         "title": "Flutter Translator: Metadata - Check"
       },
       {
-        "command": "flutter-translator.metadata.changelog.create",
-        "title": "Flutter Translator: Metadata Changelog - Create",
+        "command": "flutter-translator.changelog.create",
+        "title": "Flutter Translator: Changelog - Create",
         "args": [
           "sourceMetadataLanguage"
         ]
       },
       {
-        "command": "flutter-translator.metadata.changelog.translate",
-        "title": "Flutter Translator: Metadata Changelog - Translate"
+        "command": "flutter-translator.changelog.translate",
+        "title": "Flutter Translator: Changelog - Translate"
       }
     ]
   },

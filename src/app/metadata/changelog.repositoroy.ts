@@ -48,14 +48,11 @@ export class ChangelogRepository {
         changelog = new AndroidChangelog(
           buildNumber,
           language,
-          this.getMetadataPath(MetadataSupportPlatform.android)
+          this.getMetadataPath(platform)
         );
         break;
       case MetadataSupportPlatform.ios:
-        changelog = new IOSChangelog(
-          language,
-          this.getMetadataPath(MetadataSupportPlatform.android)
-        );
+        changelog = new IOSChangelog(language, this.getMetadataPath(platform));
         break;
     }
     if (fs.existsSync(changelog.filePath)) {

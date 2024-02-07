@@ -76,22 +76,33 @@ export class MetadataService {
     placeHolder?: string;
   }): Promise<MetadataLanguage[]> {
     const languages = this.metadataRepository.getSupportLanguages(platform);
-    const selections = await vscode.window.showQuickPick(
-      languages
-        .filter((language) => !(excludeLanguages ?? []).includes(language))
-        .map((language) => ({
-          label: `${language.name} (${language.locale})`,
-          picked: selectedLanguages?.includes(language),
-          language,
-        })),
-      {
-        title: title ?? "Select Language list",
-        placeHolder: placeHolder ?? "Select Language list",
-        canPickMany: true,
-        ignoreFocusOut: true,
-      }
-    );
-    return (selections ?? []).map((selection) => selection.language);
+    const [selected, notSelected] = ["Selected", "Not Selected"];
+    const selections = await Dialog.showSectionedPicker<
+      MetadataLanguage,
+      MetadataLanguage
+    >({
+      sectionLabelList: [selected, notSelected],
+      canPickMany: true,
+      title: title ?? "Select Language list",
+      placeHolder: placeHolder ?? "Select Language list",
+      itemList: languages.filter(
+        (language) => !(excludeLanguages ?? []).includes(language)
+      ),
+      itemBuilder: (language) => {
+        const picked = selectedLanguages?.includes(language);
+        return {
+          section: selectedLanguages?.includes(language)
+            ? selected
+            : notSelected,
+          item: {
+            label: `${language.name} (${language.locale})`,
+            picked,
+          },
+          data: language,
+        };
+      },
+    });
+    return selections ?? [];
   }
 
   public async selectPlatformLanguages({
@@ -223,7 +234,7 @@ export class MetadataService {
         .filter((data) => data.type === MetadataType.text)
         .map((data) => ({
           label: data.fileName,
-          picked: true,
+          picked: data.text.length > 0,
           description: `${data.text.length.toLocaleString()} characters`,
           data,
         })),

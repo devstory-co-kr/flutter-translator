@@ -132,8 +132,13 @@ export class MetadataTranslateCmd {
     }
 
     // select url files processing policy
+    const urlTypeList = textListToTranslate.filter(
+      (text) => text.type === MetadataType.url
+    );
     const urlFilesProcessingPolicy =
-      await this.metadataService.selectUrlFilesProcessingPolicy();
+      urlTypeList.length === 0
+        ? MetadataUrlFilesProcessingPolicy.skip
+        : await this.metadataService.selectUrlFilesProcessingPolicy();
     if (!urlFilesProcessingPolicy) {
       return;
     }

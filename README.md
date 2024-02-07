@@ -1,77 +1,176 @@
 # Flutter Translator
-It supports the internationalization of flutter applications using Google Translator.
-- [ARB(Application Resource Bundle)](https://github.com/google/app-resource-bundle/wiki/ApplicationResourceBundleSpecification) files Translation
+## Table of Contents
+- [Introduction](#introduction)
+- [Features](#features)
+- [Usage](#usage)
+  - [ARB](#arb)
+  - [Metadata](#metadata)
+  - [Changelog](#changelog)
+- [Configuration](#configuration)
+- [Troubleshooting](#troubleshooting)
+- [Contributing](#contributing)
+- [License](#license)
 
-## How to start
-The starting method differs depending on whether you already have an arb file translated or not.
+## Introduction
+Supports [internationalization of Flutter applications](https://docs.flutter.dev/ui/accessibility-and-internationalization/internationalization) using [Google Translate](https://cloud.google.com/translate/docs/basic/translating-text).
+This is a extension created based on an environment using **Flutter** and **Fastlane**.
+- Support platform
+  - `Android`
+  - `iOS`
+- Support Languages
+  - [Show List](https://gist.github.com/nero-angela/37984030bcc5dd0e62dc3143bb8c053d)
+  - ARB : 133 Languages ([Google Translate](https://cloud.google.com/translate/docs/basic/discovering-supported-languages))
+  - Android : 86 Languages ([PlayStore](https://support.google.com/googleplay/android-developer/answer/9844778?visit_id=638424490119108924-4187109290&rd=1#zippy=%2Cview-list-of-available-languages%2C%EC%82%AC%EC%9A%A9-%EA%B0%80%EB%8A%A5%ED%95%9C-%EC%96%B8%EC%96%B4-%EB%AA%A9%EB%A1%9D-%EB%B3%B4%EA%B8%B0) : exclude `Romansh`)
+  - iOS : 39 Languages ([Fastlane Deliver](https://docs.fastlane.tools/actions/deliver/#:~:text=Tips-,Available,-language%20codes) / [AppStore](https://developer.apple.com/help/app-store-connect/reference/app-store-localizations))
 
-### If there is no translated arb file
-1. Prepare an arb file that will be the source of translation.
-1. Run `Arb Translator : Initialize`.
-1. Select source arb file.
-1. Select `Select directly from language list.`.
-1. Select the languages you want to translate to.
-1. Run `Arb Translator : Translate`.
+## Features
+- [ARB](#arb)
+  - Initialize
+  - Translate
+  - Exclude Translation
+  - Configure Target Language Code
+  - Check
+  - Decode All Html Entities
+  - Change Keys
+  - Delete Keys
+  - Open Google Sheet
+  - Upload To Google Sheet
+- [Metadata](#metadata)
+  - Translate
+  - Create
+  - Check
+  - Open
+- [Changelog](#changelog)
+  - Translate
+  - Create
+  - Check
+  - Open
 
-<img src="https://github.com/nero-angela/arb-translator/assets/26322627/0e65908d-f4de-4924-aaab-fa1454831f20" alt="arb translator initialize gif"/>
+## Usage
 
+### ARB
+- **If there is no translated arb file.**
+  1. Configure the Flutter project localizations environment by referring to the [documentation](https://docs.flutter.dev/ui/accessibility-and-internationalization/internationalization).
+  1. Run `Flutter Translator: Arb - Initialize`.
+  1. Select source arb file.
+  1. Select `Select directly from language list.`.
+  1. Select the languages you want to translate to.
+  1. Run `Flutter Translator: Arb - Translate`.
 
-### If there are translated arb files
-1. Run `Arb Translator : Initialize`.
-1. Select source arb file.
-1. Select `Load languages from arb files.`
-1. Run `Arb Translator: Exclude Translation` command to avoid duplicate translation of already translated values.
+- **If there are translated arb files.**
+  1. Run `Flutter Translator: Arb - Initialize`.
+  1. Select source arb file.
+  1. Select `Load languages from arb files.`
+  1. Run `Arb Translator: Exclude Translation` command to avoid duplicate translation of already translated values.
 
-<img src="https://github.com/nero-angela/arb-translator/assets/26322627/6858cfe2-4985-4116-a148-c19b678d02e2" alt="arb translator migration gif](https://github.com/nero-angela/arb-translator/assets/26322627/b94b1f99-a37c-4f20-9ad0-e7dfa258898d)" />
-
-## Terms
-- `arb` : Application Resource Bundle (abbr. ARB) is a JSON-based localization resource format.
-- `languageCode` : This is a unique language identifier. Please refer to [the link](https://gist.github.com/nero-angela/37984030bcc5dd0e62dc3143bb8c053d) for a full list of supported languages.
-- `sourceArb` : ARB file as translation source.
-- `targetArb` : ARB file as a result of translating sourceArb into each language.
-- `history` : A history of the last translated sourceArb to track changes to the sourceArb file.
-- `cache` : This is a file that caches Google Translate results.
-
-## Settings
-Settings are required to use the extension, and you can easily add required settings by executing the `Arb Translator : Initialize` command.
-
-Because settings may differ for each project, adding settings to the project workspace(`.vscode/settings.json`) is recommended.
+### Metadata
+- **If there is no metadata to use as a translation source.**
+  1. 
+- FolderStructure
+  - Android : [Fastlane - upload_to_play_store](https://docs.fastlane.tools/actions/upload_to_play_store/)
+  - Ios : [Fastlane - upload_to_app_store](https://docs.fastlane.tools/actions/upload_to_app_store/)
+  - The folder structure below is automatically created when the command is executed.
   ```
-  {
-    "arbTranslator.config": {
-      "sourceArbFilePath": "/project/intl_en.arb",
-      "targetLanguageCodeList": ["ko", "zh_CN", "fr"],
-      "arbFilePrefix": "intl_",
-      "googleAPIKey": "YOUR_GOOGLE_API_KEY",
-      "customArbFileName": {
-        "zh_CN": "intl_zh_Hant"
-      },
-      "googleSheet": {
-        id: "YOUR_GOOGLE_SHEET_ID",
-        name: "YOUR_GOOGLE_SHEET_NAME",
-        credentialFilePath: "YOUR_CREDENTIAL_JSON_FILE_ABSOLUTE_PATH",
-        uploadLanguageCodeList: ["ko", "zh_CN", "fr"]
-      },
-      "validateLanguageCodeList: ["ko", "zh_CN", "fr", "en]
-    }
+  Flutter Project
+      ├── android
+      │    └── fastlane
+      │        └── metadata
+      │            └── android
+      │                ├── en-US
+      │                │   └── changelogs
+      │                │       ├── full_description.txt
+      │                │       ├── short_description.txt
+      │                │       ├── title.txt
+      │                │       └── video.txt
+      │                └── ko-KR
+      │                        ├── full_description.txt
+      │                        ├── short_description.txt
+      │                        ├── title.txt
+      │                        └── video.txt
+      └── ios
+          └── fastlane
+              └── metadata
+                  ├── en-US
+                  │   └── description.txt
+                  │   └── keywords.txt
+                  │   └── marketing_url.txt
+                  │   └── name.txt
+                  │   └── privacy_url.txt
+                  │   └── subtitle.txt
+                  │   └── support_url.txt
+                  └── ko-KR
+                      └── description.txt
+                      └── keywords.txt
+                      └── marketing_url.txt
+                      └── name.txt
+                      └── privacy_url.txt
+                      └── subtitle.txt
+                      └── support_url.txt
+  ```
+
+### Changelog
+- Folder Structure
+  - Android : [Fastline - upload_to_play_store](https://docs.fastlane.tools/actions/upload_to_play_store/)
+  - Ios : [Fastlane - upload_to_app_store](https://docs.fastlane.tools/actions/upload_to_app_store/)
+  - The folder structure below is automatically created when the command is executed.
+  ```
+  Flutter Project
+      ├── android
+      │    └── fastlane
+      │        └── metadata
+      │            └── android
+      │                ├── en-US
+      │                │   └── changelogs
+      │                │       ├── default.txt
+      │                │       ├── 1.txt
+      │                │       └── 2.txt
+      │                └── ko-KR
+      │                    └── changelogs
+      │                        ├── default.txt
+      │                        ├── 1.txt
+      │                        └── 2.txt
+      └── ios
+          └── fastlane
+              └── metadata
+                  ├── en-US
+                  │   └── promotional_text.txt
+                  └── ko-KR
+                      └── promotional_text.txt
+  ```
+
+## Configuration
+It is recommended to set the configuration in the project workspace(`.vscode/settings.json`).
+```
+{
+  "flutterTranslator.config": {
+    "sourceArbFilePath": "/project/intl_en.arb",
+    "targetLanguageCodeList": ["ko", "zh_CN", "fr"],
+    "arbFilePrefix": "intl_",
+    "googleAPIKey": "YOUR_GOOGLE_API_KEY",
+    "customArbFileName": {
+      "zh_CN": "intl_zh_Hant"
+    },
+    "googleSheet": {
+      id: "YOUR_GOOGLE_SHEET_ID",
+      name: "YOUR_GOOGLE_SHEET_NAME",
+      credentialFilePath: "YOUR_CREDENTIAL_JSON_FILE_ABSOLUTE_PATH",
+      uploadLanguageCodeList: ["ko", "zh_CN", "fr"]
+    },
+    "validateLanguageCodeList: ["ko", "zh_CN", "fr", "en]
   }
-  ```
-- **Required Settings**
-  - `sourceArbFilePath` : Absolute path to the source arb file you want to translate.
-  - `targetLanguageCodeList` : List of languageCode you want to translate. You can add the desired languageCode with the `Arb Translator : Select target language code` command.
-
-- **Optional Settings**
-  - `arbFilePrefix` : Arb common string to prepend to file name. (e.g. `intl_` : `intl_ko.arb`, `intl_hi.arb`, `intl_fr.arb`)
-  - `googleAPIKey` : This is a Google API key and is required when using the paid translation function.
-  - `customArbFileName` : You can customize the arb file name for languageCode in the format `{LanguageCode: CUSTOM_NAME}` and arbFilePrefix is not applied.
-  - `googleSheet` : These settings are required to upload an ARB file to Google Sheets.
-    - `id` : You can find the spreadsheet ID in a Google Sheets URL: `https://docs.google.com/spreadsheets/d/<GOOGLE_SHEET_ID>/edit#gid=0`
-    - `name` : Sheet name at the bottom of google sheet.
-    - `credentialFilePath` : Absolute path to JSON key files created after creating a [service account](https://developers.google.com/workspace/guides/create-credentials?#service-account) on the Google Cloud console.
-    - `uploadLanguageCodeList` : List of languageCode you want to upload to google sheet. When omitted, use `targetLanguageCodeList`.
-  - `validateLanguageCodeList` : List of languageCode you want to validate. When omitted, use `targetLanguageCodeList`.
-
-
+}
+```
+- `sourceArbFilePath` : Absolute path to the source arb file you want to translate.
+- `targetLanguageCodeList` : List of languageCode you want to translate. You can add the desired languageCode with the `Arb Translator : Select target language code` command.
+- `arbFilePrefix` : Arb common string to prepend to file name. (e.g. `intl_` : `intl_ko.arb`, `intl_hi.arb`, `intl_fr.arb`)
+- `googleAPIKey` : This is a Google API key and is required when using the paid translation function.
+- `customArbFileName` : You can customize the arb file name for languageCode in the format `{LanguageCode: CUSTOM_NAME}` and arbFilePrefix is not applied.
+- `googleSheet` : These settings are required to upload an ARB file to Google Sheets.
+  - `id` : You can find the spreadsheet ID in a Google Sheets URL: `https://docs.google.com/spreadsheets/d/<GOOGLE_SHEET_ID>/edit#gid=0`
+  - `name` : Sheet name at the bottom of google sheet.
+  - `credentialFilePath` : Absolute path to JSON key files created after creating a [service account](https://developers.google.com/workspace/guides/create-credentials?#service-account) on the Google Cloud console.
+  - `uploadLanguageCodeList` : List of languageCode you want to upload to google sheet. When omitted, use `targetLanguageCodeList`.
+- `validateLanguageCodeList` : List of languageCode you want to validate. When omitted, use `targetLanguageCodeList`.
 
 
 # Command
@@ -165,3 +264,20 @@ Because settings may differ for each project, adding settings to the project wor
 
 ## Delete Arb Keys
 - Command to delete the keys of arb files.
+
+
+
+
+
+
+## Configuration
+Explain any configuration options available to users. Describe how users can customize settings or behavior.
+
+## Troubleshooting
+Provide guidance for users encountering common issues or errors. Include troubleshooting steps or links to resources.
+
+## Contributing
+Encourage users to contribute to your extension. Provide guidelines for contributing code, reporting bugs, or requesting features.
+
+## License
+Specify the license under which your extension is distributed. Include any licensing terms or conditions.

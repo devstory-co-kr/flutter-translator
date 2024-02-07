@@ -7,6 +7,10 @@ import {
   MetadataUrlFilesProcessingPolicy,
 } from "../../component/metadata/metadata";
 import { MetadataService } from "../../component/metadata/metadata.service";
+import {
+  MetadataValidationItem,
+  MetadataValidationType,
+} from "../../component/metadata/metadata.validation";
 import { TranslationType } from "../../component/translation/translation";
 import { TranslationService } from "../../component/translation/translation.service";
 import { Dialog } from "../../util/dialog";
@@ -65,6 +69,46 @@ export class MetadataTranslateCmd {
       return;
     }
 
+    // get source metadata
+    const sourceMetadata = this.metadataService.createMetadataFile(
+      platform,
+      sourceMetadataLanguage
+    );
+
+    // check source metadata validation
+    const sourceValidation = this.metadataService.check(sourceMetadata);
+    const sourceValidationItems = sourceValidation.validationList
+      .filter((validation) => validation.type !== MetadataValidationType.normal)
+      .map((validation) => {
+        return <MetadataValidationItem>{
+          sectionName: sourceMetadata.platform,
+          metadata: sourceMetadata,
+          data: validation.data,
+          type: validation.type,
+        };
+      });
+    if (sourceValidationItems.length > 0) {
+      const placeHolder = `There is a problem with the selected source metadata.`;
+      Toast.e(placeHolder);
+
+      // select invalid metadata
+      const validation = await this.metadataService.selectValidationItem({
+        sectionLabelList: [sourceMetadata.platform],
+        itemList: sourceValidationItems,
+        title: `Invalid Metadata : ${sourceMetadata.platform}/${sourceMetadata.language.locale}`,
+        placeHolder,
+      });
+      if (!validation) {
+        return;
+      }
+
+      await this.metadataService.handleValidationItem({
+        validation,
+        validationItemList: sourceValidationItems,
+      });
+      return;
+    }
+
     // select target metadata languages
     const selectedMetadataLanguages =
       this.metadataService.getLanguagesInPlatform(platform);
@@ -79,12 +123,6 @@ export class MetadataTranslateCmd {
     if (targetMetadataLanguages.length === 0) {
       return;
     }
-
-    // get source metadata
-    const sourceMetadata = this.metadataService.createMetadataFile(
-      platform,
-      sourceMetadataLanguage
-    );
 
     // select a list of text files to translate
     const textListToTranslate: MetadataText[] =

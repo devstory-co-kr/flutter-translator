@@ -1,5 +1,9 @@
+import path from "path";
 import * as vscode from "vscode";
 import { Dialog } from "../../util/dialog";
+import { Link } from "../../util/link";
+import { Toast } from "../../util/toast";
+import { Workspace } from "../../util/workspace";
 import {} from "../config/config.service";
 import {
   Metadata,
@@ -11,7 +15,11 @@ import {
   MetadataUrlFilesProcessingPolicy,
 } from "./metadata";
 import { MetadataRepository } from "./metadata.repository";
-import { MetadataValidation } from "./metadata.validation";
+import {
+  MetadataValidation,
+  MetadataValidationItem,
+  MetadataValidationType,
+} from "./metadata.validation";
 
 interface InitParams {
   metadataRepository: MetadataRepository;
@@ -281,6 +289,10 @@ export class MetadataService {
     return metadata;
   }
 
+  public check(metadata: Metadata): MetadataValidation {
+    return this.metadataRepository.check(metadata);
+  }
+
   public checkAll(): MetadataValidation[] {
     const validationList: MetadataValidation[] = [];
     for (const platform of Object.values(MetadataSupportPlatform)) {
@@ -296,5 +308,121 @@ export class MetadataService {
       }
     }
     return validationList;
+  }
+
+  public async selectValidationItem({
+    sectionLabelList,
+    itemList,
+    title,
+    placeHolder,
+  }: {
+    sectionLabelList: string[];
+    itemList: MetadataValidationItem[];
+    title?: string;
+    placeHolder?: string;
+  }): Promise<MetadataValidationItem | undefined> {
+    const selections = await Dialog.showSectionedPicker<
+      MetadataValidationItem,
+      MetadataValidationItem
+    >({
+      title: title ?? "Invalid Metadata List",
+      placeHolder: placeHolder,
+      canPickMany: false,
+      sectionLabelList,
+      itemList,
+      itemBuilder: (item) => {
+        return {
+          section: item.sectionName,
+          item: {
+            label: item.data.fileName,
+            detail: item.type,
+            picked: false,
+          },
+          data: item,
+        };
+      },
+    });
+    if (!selections || selections.length === 0) {
+      return;
+    }
+    return selections[0];
+  }
+
+  public async handleValidationItem({
+    validation,
+    validationItemList,
+  }: {
+    validation: MetadataValidationItem;
+    validationItemList: MetadataValidationItem[];
+  }) {
+    const filePath = path.join(
+      validation.metadata.languagePath,
+      validation.data.fileName
+    );
+
+    const currentLength = validation.data.text.length;
+    const maxLength = validation.data.maxLength ?? 0;
+    const { platform, language } = validation.metadata;
+    switch (validation.type) {
+      case MetadataValidationType.overflow:
+        await Workspace.open(filePath);
+        const overflow = currentLength - maxLength;
+        Toast.e(
+          `Characters overflow (max: ${maxLength.toLocaleString()} / current: ${currentLength} / overflow: ${overflow.toLocaleString()})`
+        );
+        // open google translate website
+        await Link.openGoogleTranslateWebsite({
+          sourceLanguage: validation.metadata.language.translateLanguage,
+          text: validation.data.text,
+        });
+        break;
+      case MetadataValidationType.required:
+        await Workspace.open(filePath);
+        Toast.e(
+          `${
+            validation.data.fileName
+          } is required (maxLength: ${maxLength.toLocaleString()})`
+        );
+        break;
+      case MetadataValidationType.invalidURL:
+        await Workspace.open(filePath);
+        const message = validation.data.optional
+          ? `${validation.data.fileName} can enter a URL starting with http or leave it blank.`
+          : `${validation.data.fileName} must enter a URL starting with http.`;
+        Toast.e(message);
+        break;
+      case MetadataValidationType.notExist:
+        const notExistItemList = validationItemList.filter(
+          (item) => item.type === MetadataValidationType.notExist
+        );
+        // show create files confirm
+        if (notExistItemList.length === 1) {
+          // create one
+          Workspace.createPath(filePath);
+          const fileName = `${platform}/${language.locale}/${validation.data.fileName}`;
+          Toast.i(`${fileName} created.`);
+          await Workspace.open(filePath);
+          return;
+        }
+
+        const isConfirm = Dialog.showConfirmDialog({
+          title: `Do you want to create all missing ${notExistItemList.length} files?`,
+        });
+        if (!isConfirm) {
+          // canceled
+          return;
+        } else {
+          // confirm
+          for (const item of notExistItemList) {
+            Workspace.createPath(
+              path.join(item.metadata.languagePath, item.data.fileName)
+            );
+          }
+          Toast.i(`${notExistItemList.length} files created.`);
+          return;
+        }
+      case MetadataValidationType.normal:
+        break;
+    }
   }
 }

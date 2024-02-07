@@ -6,6 +6,8 @@ import {
 
 export class AndroidLanguage implements PlatformLanguage {
   public supportLanguages: MetadataLanguage[] = [
+    // Google translation not support
+    // { name: "Romansh", locale: "rm", },
     {
       name: "Afrikaans",
       locale: "af",
@@ -342,8 +344,6 @@ export class AndroidLanguage implements PlatformLanguage {
       locale: "ro",
       translateLanguage: LanguageRepository.romanian,
     },
-    // Google translation not support
-    // { name: "Romansh", locale: "rm", },
     {
       name: "Russian",
       locale: "ru-RU",

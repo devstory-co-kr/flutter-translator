@@ -190,7 +190,7 @@ export class IOSLanguage implements PlatformLanguage {
       translateLanguage: LanguageRepository.ukrainian,
     },
     {
-      name: "Vietnamese.",
+      name: "Vietnamese",
       locale: "vi",
       translateLanguage: LanguageRepository.vietnamese,
     },

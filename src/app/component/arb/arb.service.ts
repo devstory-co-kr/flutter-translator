@@ -1,6 +1,7 @@
 import * as vscode from "vscode";
 import {
   InvalidArgumentsException,
+  SourceArbFilePathRequiredException,
   WorkspaceNotFoundException,
 } from "../../util/exceptions";
 import { Language } from "../language/language";
@@ -50,8 +51,20 @@ export class ArbService {
    * @returns
    * @throws FileNotFoundException
    */
-  public getArbFiles(sourceArbFilePath: string): string[] {
-    return this.arbRepository.getArbFileList(sourceArbFilePath);
+  public getArbFilePathList(sourceArbFilePath: string): string[] {
+    return this.arbRepository.getArbFilePathList(sourceArbFilePath);
+  }
+
+  /**
+   * Get language list in source arb file directory
+   * @param sourceArbFilePath
+   * @returns
+   */
+  public getLanguages(sourceArbFilePath: string): Language[] {
+    const arbFilePathList = this.getArbFilePathList(sourceArbFilePath);
+    return arbFilePathList.map((arbFilePath) => {
+      return this.languageService.getLanguageFromArbFilePath(arbFilePath);
+    });
   }
 
   /**
@@ -61,6 +74,9 @@ export class ArbService {
    * @throws FileNotFoundException
    */
   public async getArb(arbFilePath: string): Promise<Arb> {
+    if (!arbFilePath) {
+      throw new SourceArbFilePathRequiredException();
+    }
     const language =
       this.languageService.getLanguageFromArbFilePath(arbFilePath);
     const data = await this.arbRepository.read(arbFilePath);

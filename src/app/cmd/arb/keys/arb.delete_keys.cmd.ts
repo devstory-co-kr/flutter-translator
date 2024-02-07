@@ -46,7 +46,8 @@ export class ArbDeleteKeysCmd {
     const deleteKeys = selections.map((selection) => selection.label);
 
     // delete keys
-    const arbFilePathList = this.arbService.getArbFiles(sourceArbFilePath);
+    const arbFilePathList =
+      this.arbService.getArbFilePathList(sourceArbFilePath);
     for (const arbFilePath of arbFilePathList) {
       await this.arbService.deleteKeys(arbFilePath, deleteKeys);
     }

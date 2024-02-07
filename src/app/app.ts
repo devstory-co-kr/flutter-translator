@@ -11,6 +11,7 @@ import {
   ConfigNotFoundException,
   ConfigurationRequiredException,
   MigrationFailureException,
+  SourceArbFilePathRequiredException,
   WorkspaceNotFoundException,
 } from "./util/exceptions";
 import { Logger } from "./util/logger";
@@ -42,7 +43,7 @@ export class FlutterTranslator implements App {
     [Cmd.ArbExcludeTranslation]: () =>
       this.registry.arbExcludeTranslationCmd.run(),
     [Cmd.ArbConfigureTargetLanguageCode]: () =>
-      this.registry.arbSelectTargetLanguageCodeCmd.run(),
+      this.registry.arbConfigureTargetLanguageCodeCmd.run(),
     [Cmd.ArbCheck]: () => this.registry.arbCheckCmd.run(),
     [Cmd.ArbDecodeAllHtmlEntities]: () =>
       this.registry.arbDecodeAllHtmlEntitiesCmd.run(),
@@ -96,6 +97,8 @@ export class FlutterTranslator implements App {
       Dialog.showTargetLanguageCodeListRequiredDialog();
     } else if (e instanceof APIKeyRequiredException) {
       Dialog.showAPIKeyRequiredDialog();
+    } else if (e instanceof SourceArbFilePathRequiredException) {
+      Dialog.showSourceArbPathRequiredDialog();
     } else {
       Toast.e(e.message);
     }

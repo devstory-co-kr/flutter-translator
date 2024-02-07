@@ -7,12 +7,12 @@ import { Language } from "../language/language";
 
 export class ArbRepository {
   /**
-   * Return all files in the same folder as source arb file
+   * Return file path list in the same folder as source arb file
    * @param sourceArbFilePath
    * @returns
    * @throws FileNotFoundException
    */
-  public getArbFileList(sourceArbFilePath: string): string[] {
+  public getArbFilePathList(sourceArbFilePath: string): string[] {
     if (!fs.existsSync(sourceArbFilePath)) {
       throw new FileNotFoundException(sourceArbFilePath);
     }

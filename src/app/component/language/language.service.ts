@@ -277,20 +277,20 @@ export class LanguageService {
   }
 
   /**
-   * Select language code list except source arb language code
-   * @param sourceArbLanguage
+   * Select language code list
    * @returns selected language code list
    */
-  public async selectLanguageCodeList(
-    sourceArbLanguage: Language,
-    picked: (languageCode: LanguageCode) => boolean
-  ): Promise<LanguageCode[] | undefined> {
-    const currentLanguageCodeList =
-      this.configService.config.targetLanguageCodeList;
+  public async selectLanguageCodeList({
+    excludeLanguageList,
+    picked,
+  }: {
+    excludeLanguageList?: Language[];
+    picked: (languageCode: LanguageCode) => boolean;
+  }): Promise<LanguageCode[] | undefined> {
     const supportLanguageList: Language[] = this.supportLanguages.reduce<
       Language[]
     >((prev, curr) => {
-      if (curr !== sourceArbLanguage) {
+      if (!(excludeLanguageList ?? []).includes(curr)) {
         prev.push(curr);
       }
       return prev;

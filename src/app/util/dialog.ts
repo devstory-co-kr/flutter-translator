@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { Cmd } from "../cmd/cmd";
 import { Link } from "./link";
 
 type SectionLabel = string;
@@ -34,6 +35,19 @@ export class Dialog {
       .then(async (answer) => {
         if (answer === "Open document") {
           Link.show("https://cloud.google.com/translate/docs/setup");
+        }
+      });
+  }
+
+  public static showSourceArbPathRequiredDialog() {
+    vscode.window
+      .showErrorMessage(
+        "Please add arbTranslator.config.sourceArbFilePath to the .vscode/settings.json file.",
+        "Run ARB Initialize"
+      )
+      .then(async (answer) => {
+        if (answer === "Run ARB Initialize") {
+          vscode.commands.executeCommand(Cmd.ArbInitialize);
         }
       });
   }

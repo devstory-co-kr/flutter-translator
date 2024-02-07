@@ -1,15 +1,11 @@
-import path from "path";
 import * as vscode from "vscode";
 import { ArbService } from "../../../component/arb/arb.service";
 import { LanguageCode } from "../../../component/config/config";
 import { ConfigService } from "../../../component/config/config.service";
+import { Language } from "../../../component/language/language";
 import { LanguageService } from "../../../component/language/language.service";
+import { Dialog } from "../../../util/dialog";
 import { Toast } from "../../../util/toast";
-
-enum Action {
-  select = "Select",
-  load = "Load",
-}
 
 interface InitParams {
   arbService: ArbService;
@@ -29,88 +25,85 @@ export class ArbConfigureTargetLanguageCodeCmd {
 
   public async run() {
     const config = this.configService.config;
-    const sourceArb = await this.arbService.getArb(config.sourceArbFilePath);
+    const { sourceArbFilePath, targetLanguageCodeList } = config;
+    const sourceArb = await this.arbService.getArb(sourceArbFilePath);
+    const supportLanguageList: Language[] =
+      this.languageService.supportLanguages;
+    const existLanguageList: Language[] = this.arbService.getLanguages(
+      sourceArb.filePath
+    );
 
-    // select action
-    const action: Action | undefined = await this.selectAction();
-    if (!action) {
-      return;
+    // select whether load language or not
+    let isLoadLangauge: boolean = false;
+    const missingLanguages = existLanguageList.filter(
+      (l) => !targetLanguageCodeList.includes(l.languageCode)
+    );
+    if (missingLanguages.length > 0) {
+      const isLoadLangaugeSelection = await vscode.window.showQuickPick(
+        [
+          {
+            label: "Select directly from language list.",
+            action: false,
+          },
+          {
+            label: "Load languages from arb files.",
+            action: true,
+          },
+        ],
+        {
+          title: "Please select a list of language to translate to.",
+        }
+      );
+      if (!isLoadLangaugeSelection) {
+        return;
+      }
+      isLoadLangauge = isLoadLangaugeSelection.action;
     }
 
-    let newLanguageCodeList: LanguageCode[] | undefined;
-    switch (action) {
-      case Action.select:
-        newLanguageCodeList = await this.languageService.selectLanguageCodeList(
-          sourceArb.language,
-          (languageCode) => config.targetLanguageCodeList.includes(languageCode)
+    // select
+    const [selected, exist, notExist] = [
+      "Selected",
+      "Exist / Not Selected",
+      "Not Exist / Not Selected",
+    ];
+    const selectedTargetLanguageCodeList = await Dialog.showSectionedPicker<
+      Language,
+      LanguageCode
+    >({
+      canPickMany: true,
+      sectionLabelList: [selected, exist, notExist],
+      itemList: supportLanguageList,
+      itemBuilder: (language) => {
+        const isInConfig = targetLanguageCodeList.includes(
+          language.languageCode
         );
-        if (!newLanguageCodeList) {
-          return;
-        }
-        break;
-      case Action.load:
-        newLanguageCodeList = await this.loadLanguageCode(sourceArb.filePath);
-        if (newLanguageCodeList.length === 0) {
-          const directory = path.dirname(sourceArb.filePath);
-          Toast.i(
-            `There are no arb files except sourceArb in the ${directory}`
-          );
-          return;
-        }
-        break;
+        const isExist = existLanguageList.includes(language);
+        const isPicked = isLoadLangauge ? isExist || isInConfig : isInConfig;
+        const section = isPicked ? selected : isExist ? exist : notExist;
+        return {
+          section,
+          item: {
+            label: `${language.name} / ${language.languageCode}`,
+            description: isPicked && !isInConfig ? "NEW" : "",
+            picked: isPicked,
+          },
+          data: language.languageCode,
+        };
+      },
+    });
+
+    if (!selectedTargetLanguageCodeList) {
+      return;
     }
 
     // update config
     this.configService.update({
       ...config,
-      targetLanguageCodeList: newLanguageCodeList,
+      targetLanguageCodeList: selectedTargetLanguageCodeList,
     });
 
     Toast.i(
-      `targetLanguageCodeList updated (${newLanguageCodeList.length} selected)`
+      `targetLanguageCodeList updated (${selectedTargetLanguageCodeList.length} selected)`
     );
-  }
-
-  /**
-   * Select action
-   */
-  private async selectAction(): Promise<Action | undefined> {
-    const select = await vscode.window.showQuickPick(
-      [
-        {
-          label: "Select directly from language list.",
-          action: Action.select.toString(),
-        },
-        {
-          label: "Load languages from arb files.",
-          action: Action.load.toString(),
-        },
-      ],
-      {
-        title: "Please select a list of language to translate to.",
-      }
-    );
-    if (!select) {
-      return undefined;
-    }
-    return <Action>select.action;
-  }
-
-  /**
-   * Get list of language codes from arb files
-   * @param sourceArbFilePath
-   */
-  private async loadLanguageCode(
-    sourceArbFilePath: string
-  ): Promise<LanguageCode[]> {
-    const arbFiles = this.arbService.getArbFiles(sourceArbFilePath);
-    return arbFiles.reduce<LanguageCode[]>((result, arbFile) => {
-      if (arbFile !== sourceArbFilePath) {
-        const languageCode =
-          this.languageService.getLanguageCodeFromArbFilePath(arbFile);
-        result.push(languageCode);
-      }
-      return result;
-    }, []);
   }
 }

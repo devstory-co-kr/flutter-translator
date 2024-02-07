@@ -83,7 +83,8 @@ export class ArbChangeKeysCmd {
     const newKeys = this.split(newKeysInput);
 
     // update keys
-    const arbFilePathList = this.arbService.getArbFiles(sourceArbFilePath);
+    const arbFilePathList =
+      this.arbService.getArbFilePathList(sourceArbFilePath);
     for (const arbFilePath of arbFilePathList) {
       await this.arbService.updateKeys(arbFilePath, oldKeys, newKeys);
     }

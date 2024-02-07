@@ -52,11 +52,6 @@ export class InitializeRequiredException extends BaseException {
   }
 }
 export class SourceArbFilePathRequiredException extends BaseException {
-  constructor() {
-    super(
-      "Please add arbTranslator.config.sourceArbFilePath to the .vscode/settings.json file."
-    );
-  }
 }
 
 export class ArbFileNotFoundException extends BaseException {

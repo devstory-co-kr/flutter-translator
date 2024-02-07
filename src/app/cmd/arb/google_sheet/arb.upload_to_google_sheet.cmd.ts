@@ -51,14 +51,14 @@ export class ArbUploadToGoogleSheetCmd {
 
     // Select upload language code list
     const uploadLanguageCodeList =
-      (await this.languageService.selectLanguageCodeList(
-        sourceArb.language,
-        (languageCode) => {
+      (await this.languageService.selectLanguageCodeList({
+        excludeLanguageList: [sourceArb.language],
+        picked: (languageCode) => {
           return (
             googleSheet?.uploadLanguageCodeList ?? targetLanguageCodeList
           ).includes(languageCode);
         }
-      )) ?? [];
+      })) ?? [];
     if (!uploadLanguageCodeList) {
       return;
     }

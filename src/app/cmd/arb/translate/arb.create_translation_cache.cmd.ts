@@ -64,7 +64,7 @@ export class ArbCreateTranslationCacheCmd {
   }
 
   private getArbFileList(sourceArbFilePath: string): string[] {
-    const arbFiles = this.arbService.getArbFiles(sourceArbFilePath);
+    const arbFiles = this.arbService.getArbFilePathList(sourceArbFilePath);
 
     // return excluding source arb file
     return arbFiles.filter((arbFile) => arbFile !== sourceArbFilePath);

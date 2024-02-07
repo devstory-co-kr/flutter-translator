@@ -85,7 +85,7 @@ export class Registry {
   public arbTranslateCmd: ArbTranslateCmd;
   public arbCreateTranslationCacheCmd: ArbCreateTranslationCacheCmd;
   public arbExcludeTranslationCmd: ArbExcludeTranslationCmd;
-  public arbSelectTargetLanguageCodeCmd: ArbConfigureTargetLanguageCodeCmd;
+  public arbConfigureTargetLanguageCodeCmd: ArbConfigureTargetLanguageCodeCmd;
   public arbCheckCmd: ArbCheckCmd;
   public arbDecodeAllHtmlEntitiesCmd: ArbDecodeAllHtmlEntitiesCmd;
   public arbUploadToGoogleSheetCmd: ArbUploadToGoogleSheetCmd;
@@ -188,13 +188,12 @@ export class Registry {
       configService: this.configService,
       historyService: this.historyService,
     });
-    this.arbSelectTargetLanguageCodeCmd = new ArbConfigureTargetLanguageCodeCmd(
-      {
+    this.arbConfigureTargetLanguageCodeCmd =
+      new ArbConfigureTargetLanguageCodeCmd({
         arbService: this.arbService,
         configService: this.configService,
         languageService: this.languageService,
-      }
-    );
+      });
     this.arbCheckCmd = new ArbCheckCmd({
       arbValidationService: this.arbValidationService,
       languageService: this.languageService,

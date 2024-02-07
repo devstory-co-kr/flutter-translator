@@ -30,31 +30,35 @@ export class ArbInitializeCmd {
 
     // sourceArbFilePath
     if (!isSourceArbFile) {
-      // search arb files in workspace
-      const arbFiles: string[] = await this.arbService.searchArbFiles();
-      if (arbFiles.length === 0) {
+      const arbFilePathList: string[] =
+        await this.arbService.getArbFilePathListInWorkspace();
+      if (arbFilePathList.length === 0) {
         // no arb file
         throw new ArbFileNotFoundException();
       }
 
       // select source arb file
-      const selectItems: vscode.QuickPickItem[] = arbFiles.map((arbFile) => {
-        return {
-          label: arbFile,
-        };
-      });
-      const title =
-        "Please select the source arb file that will be the source of translation.";
-      Toast.i(title);
-      const selectedItem = await vscode.window.showQuickPick(selectItems, {
-        title,
-      });
+      const rootPath = Workspace.getRoot();
+      const selectedItem = await vscode.window.showQuickPick(
+        arbFilePathList.map((arbFilePath) => {
+          return {
+            label: arbFilePath.replace(rootPath, ""),
+            arbFilePath,
+          };
+        }),
+        {
+          title: "Select Source ARB File",
+          placeHolder:
+            "Please select the source arb file that will be the source of translation.",
+          ignoreFocusOut: true,
+        }
+      );
       if (!selectedItem) {
         return;
       }
 
       // update sourceArbFilePath
-      sourceArbFilePath = selectedItem.label;
+      sourceArbFilePath = selectedItem.arbFilePath;
       const prefix = "intl_";
       const isPrefix = path.basename(sourceArbFilePath).startsWith(prefix);
       await this.configService.update({

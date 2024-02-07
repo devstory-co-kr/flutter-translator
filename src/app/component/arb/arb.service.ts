@@ -21,10 +21,10 @@ export class ArbService {
   }
 
   /**
-   * Search arb file in workspace
+   * Get arb file path list in workspace
    * @returns
    */
-  public async searchArbFiles(): Promise<string[]> {
+  public async getArbFilePathListInWorkspace(): Promise<string[]> {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders) {
       throw new WorkspaceNotFoundException();

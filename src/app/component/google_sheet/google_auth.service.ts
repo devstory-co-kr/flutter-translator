@@ -1,24 +1,27 @@
 import * as fs from "fs";
 import { JWT, JWTInput } from "google-auth-library";
 import { google } from "googleapis";
-import { Toast } from "../../util/toast";
+import { ConfigService } from "../config/config";
+
+interface InitParams {
+  configService: ConfigService;
+}
 
 export class GoogleAuthService {
-  private getCredential(credentialFilePath: string): JWTInput | undefined {
-    if (!fs.existsSync(credentialFilePath)) {
-      Toast.e(`There is not ${credentialFilePath} file.`);
-    }
-    const credentialContent = fs.readFileSync(credentialFilePath, "utf-8");
-    const credential: JWTInput = JSON.parse(credentialContent);
-    return credential;
+  private configService: ConfigService;
+  constructor({ configService }: InitParams) {
+    this.configService = configService;
   }
 
-  public getAuth(credentialFilePath: string): JWT | undefined {
-    const credential = this.getCredential(credentialFilePath);
-    if (!credential) {
-      return;
-    }
+  private async getCredential(): Promise<JWTInput> {
+    const credential = await this.configService.getGoogleAuthCredential();
+    const credentialData = fs.readFileSync(credential, "utf-8");
+    const jwt: JWTInput = JSON.parse(credentialData);
+    return jwt;
+  }
 
+  public async getAuth(): Promise<JWT> {
+    const credential = await this.getCredential();
     return new google.auth.JWT({
       email: credential.client_email,
       key: credential.private_key,

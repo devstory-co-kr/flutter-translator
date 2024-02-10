@@ -1,6 +1,6 @@
-import { ArbFileName, LanguageCode } from "../config/config";
+import { ARBFileName, LanguageCode } from "../config/config";
 
-export interface Language {
+export type Language = {
   // google translation parameter
   gt: string;
 
@@ -9,10 +9,10 @@ export interface Language {
 
   // iso639-1
   languageCode: string;
-}
+};
 
-export interface CustomArbFileName {
-  data: Record<LanguageCode, ArbFileName>;
+export type CustomARBFileName = {
+  data: Record<LanguageCode, ARBFileName>;
   languageCodeList: LanguageCode[];
-  arbFileNameList: ArbFileName[];
-}
+  arbFileNameList: ARBFileName[];
+};

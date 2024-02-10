@@ -2,14 +2,14 @@ import * as vscode from "vscode";
 import { BaseDisposable } from "../../../util/base/base_disposable";
 import { Editor } from "../../../util/editor";
 import { Highlight, HighlightType } from "../../../util/highlight";
-import { Arb } from "../arb";
+import { ARB } from "../arb";
 import { ArbValidation, InvalidType, ValidationResult } from "./arb_validation";
 
-export class ArbValidationRepository extends BaseDisposable {
+export class ARBValidationRepository extends BaseDisposable {
   public async *generateValidationResult(
-    sourceArb: Arb,
+    sourceArb: ARB,
     sourceValidation: ArbValidation,
-    targetArb: Arb,
+    targetArb: ARB,
     targetValidation: ArbValidation
   ): AsyncGenerator<ValidationResult, undefined, ValidationResult> {
     const sourceValidationKeys = Object.keys(sourceValidation);
@@ -75,7 +75,7 @@ export class ArbValidationRepository extends BaseDisposable {
    * @param key
    * @param sourceArbValidationData
    */
-  public async highlight(sourceArb: Arb, targetArb: Arb, key: string) {
+  public async highlight(sourceArb: ARB, targetArb: ARB, key: string) {
     try {
       // clear remain decorations
       Highlight.clear();
@@ -187,7 +187,7 @@ export class ArbValidationRepository extends BaseDisposable {
     }
   }
 
-  public getParamsValidation(arb: Arb): ArbValidation {
+  public getParamsValidation(arb: ARB): ArbValidation {
     const parmsValidation: ArbValidation = {};
     for (const [key, value] of Object.entries(arb.data)) {
       if (key !== "@@locale" && key.includes("@")) {

@@ -1,8 +1,5 @@
 import axios from "axios";
-import {
-  APIKeyRequiredException,
-  TranslationFailureException,
-} from "../../../util/exceptions";
+import { TranslationFailureException } from "../../../util/exceptions";
 import { hasHtmlTags } from "../../../util/html";
 import {
   FreeTranslateDataSourceParams,
@@ -61,10 +58,6 @@ export class GoogleTranslationDataSource implements TranslationDataSource {
     sourceLang,
     targetLang,
   }: PaidTranslateDataSourceParams): Promise<string> {
-    if (!apiKey) {
-      throw new APIKeyRequiredException();
-    }
-
     const format = hasHtmlTags(text) ? "html" : "text";
     const q = encodeURIComponent(text);
     const response = await axios.get(

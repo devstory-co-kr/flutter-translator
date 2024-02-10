@@ -1,7 +1,6 @@
 import * as vscode from "vscode";
-import { APIKeyRequiredException } from "../../../util/exceptions";
 import { Logger } from "../../../util/logger";
-import { ConfigService } from "../../config/config.service";
+import { ConfigService } from "../../config/config";
 import { Language } from "../../language/language";
 import { TranslationCacheKey } from "../cache/translation_cache";
 import { TranslationCacheRepository } from "../cache/translation_cache.repository";
@@ -62,14 +61,6 @@ export class GoogleTranslationService implements TranslationService {
     }
 
     const type = <TranslationType>selectedItem.label;
-
-    // check google API key if type is paid
-    if (
-      type === TranslationType.paid &&
-      !this.configService.config.googleAPIKey
-    ) {
-      throw new APIKeyRequiredException();
-    }
     return type;
   }
 
@@ -106,7 +97,7 @@ export class GoogleTranslationService implements TranslationService {
   /**
    * Translate
    */
-  public translate({
+  public async translate({
     type,
     queries,
     sourceLang,
@@ -120,7 +111,7 @@ export class GoogleTranslationService implements TranslationService {
     switch (type) {
       case TranslationType.paid:
         return this.paidTranslate({
-          apiKey: this.configService.config.googleAPIKey,
+          apiKey: await this.configService.getGoogleAuthAPIKey(),
           queries: queries,
           sourceLang: sourceLang,
           targetLang: targetLang,

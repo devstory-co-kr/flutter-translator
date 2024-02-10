@@ -78,20 +78,12 @@
     },
     "commands": [
       {
-        "command": "flutter-translator.arb.initialize",
-        "title": "Flutter Translator: ARB - Initialize"
-      },
-      {
         "command": "flutter-translator.arb.translate",
         "title": "Flutter Translator: ARB - Translate"
       },
       {
         "command": "flutter-translator.arb.excludeTranslation",
         "title": "Flutter Translator: ARB - Exclude Translation"
-      },
-      {
-        "command": "flutter-translator.arb.configureTargetLanguageCode",
-        "title": "Flutter Translator: ARB - Configure Target Language Code"
       },
       {
         "command": "flutter-translator.arb.check",

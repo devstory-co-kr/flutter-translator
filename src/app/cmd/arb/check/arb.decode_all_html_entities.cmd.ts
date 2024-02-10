@@ -1,56 +1,38 @@
-import { Arb } from "../../../component/arb/arb";
-import { ArbService } from "../../../component/arb/arb.service";
+import { ARB, ARBService } from "../../../component/arb/arb";
 import {
   InvalidType,
   ValidationResult,
 } from "../../../component/arb/validation/arb_validation";
-import { ArbValidationService } from "../../../component/arb/validation/arb_validation.service";
-import { ConfigService } from "../../../component/config/config.service";
+import { ARBValidationService } from "../../../component/arb/validation/arb_validation.service";
 import { Language } from "../../../component/language/language";
-import { LanguageService } from "../../../component/language/language.service";
 import { Dialog } from "../../../util/dialog";
 import { Toast } from "../../../util/toast";
 
 interface InitParams {
-  arbValidationService: ArbValidationService;
-  languageService: LanguageService;
-  configService: ConfigService;
-  arbService: ArbService;
+  arbValidationService: ARBValidationService;
+  arbService: ARBService;
 }
 
-export class ArbDecodeAllHtmlEntitiesCmd {
-  private arbValidationService: ArbValidationService;
-  private languageService: LanguageService;
-  private configService: ConfigService;
-  private arbService: ArbService;
-  constructor({
-    arbValidationService,
-    languageService,
-    configService,
-    arbService,
-  }: InitParams) {
+export class ARBDecodeAllHtmlEntitiesCmd {
+  private arbValidationService: ARBValidationService;
+  private arbService: ARBService;
+  constructor({ arbValidationService, arbService }: InitParams) {
     this.arbValidationService = arbValidationService;
-    this.languageService = languageService;
-    this.configService = configService;
     this.arbService = arbService;
   }
 
   async run() {
     // load source arb
-    const sourceArb: Arb = await this.arbService.getArb(
-      this.configService.config.sourceArbFilePath
-    );
+    const sourceArb: ARB = await this.arbService.getSourceARB();
 
     // list of languages to be translated
-    const targetLanguages: Language[] =
-      this.configService.config.targetLanguageCodeList.map((languageCode) => {
-        return this.languageService.getLanguageByLanguageCode(languageCode);
-      });
+    const targetLanguageList: Language[] =
+      await this.arbService.getTargetLanguageList();
 
     const validationResultList =
       await this.arbValidationService.getValidationResultList(
         sourceArb,
-        targetLanguages
+        targetLanguageList
       );
     const undecodedHtmlEntities: {
       [filePath: string]: ValidationResult[];

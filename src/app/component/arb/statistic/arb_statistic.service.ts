@@ -6,20 +6,19 @@ import { Language } from "../../language/language";
 import { LanguageService } from "../../language/language.service";
 import { TranslationCacheKey } from "../../translation/cache/translation_cache";
 import { TranslationCacheRepository } from "../../translation/cache/translation_cache.repository";
-import { Arb } from "../arb";
-import { ArbService } from "../arb.service";
-import { APIStatistic, ActionStatistic, ArbStatistic } from "./arb_statistic";
+import { ARB, ARBService } from "../arb";
+import { APIStatistic, ARBStatistic, ActionStatistic } from "./arb_statistic";
 
 interface InitParams {
   translationCacheRepository: TranslationCacheRepository;
   languageService: LanguageService;
-  arbService: ArbService;
+  arbService: ARBService;
 }
 
-export class ArbStatisticService {
+export class ARBStatisticService {
   private translationCacheRepository: TranslationCacheRepository;
   private languageService: LanguageService;
-  private arbService: ArbService;
+  private arbService: ARBService;
 
   constructor({
     translationCacheRepository,
@@ -31,13 +30,22 @@ export class ArbStatisticService {
     this.arbService = arbService;
   }
 
-  public async showTranslationPreview(
-    title: string,
-    sourceArb: Arb,
-    targetLanguages: Language[],
-    history: History
-  ): Promise<Language[]> {
-    const arbStatistic: ArbStatistic = await this.getArbStatistic(
+  public async showTranslationPreview({
+    title,
+    placeHolder,
+    sourceArb,
+    targetLanguages,
+    excludeLanguages,
+    history,
+  }: {
+    title?: string;
+    placeHolder?: string;
+    sourceArb: ARB;
+    excludeLanguages: Language[];
+    targetLanguages: Language[];
+    history: History;
+  }): Promise<Language[]> {
+    const arbStatistic: ARBStatistic = await this.getArbStatistic(
       sourceArb,
       targetLanguages,
       history
@@ -45,36 +53,56 @@ export class ArbStatisticService {
 
     const translationRequiredItems = "Translation Required";
     const noChangesItems = "No Changes";
+    const excludedLanguages = "Excluded";
+    const noneTarget = "No Files";
 
-    const sectionLabelList = [translationRequiredItems, noChangesItems];
+    const sectionLabelList = [
+      translationRequiredItems,
+      noChangesItems,
+      excludedLanguages,
+      noneTarget,
+    ];
     const keys = Object.keys(arbStatistic);
     const selectItem = await Dialog.showSectionedPicker<string, Language>({
       sectionLabelList,
       itemList: keys,
       canPickMany: true,
+      title,
+      placeHolder,
       itemBuilder: (key) => {
         const s = arbStatistic[key];
-        const label = path.basename(s.filePath);
         const language = s.language;
-        const section = s.isTranslationRequired
-          ? translationRequiredItems
-          : noChangesItems;
-        const detail = s.isTranslationRequired
-          ? Object.entries({
-              ...s.action,
-              ...s.api,
-              retain: 0,
-            })
-              .filter(([, value]) => value > 0)
-              .map(([key, value]) => `${key}: ${value}`)
-              .join(", ")
-          : noChangesItems;
+        const fileName = path.basename(s.filePath);
+        const label = `${fileName} - ${language.name}`;
+        const isExcluded = excludeLanguages.includes(language);
+        const section = isExcluded
+          ? excludedLanguages
+          : s.isExist
+          ? s.isTranslationRequired
+            ? translationRequiredItems
+            : noChangesItems
+          : noneTarget;
+        const picked = isExcluded
+          ? false
+          : s.isExist && s.isTranslationRequired;
+        const detail = s.isExist
+          ? s.isTranslationRequired
+            ? Object.entries({
+                ...s.action,
+                ...s.api,
+                retain: 0,
+              })
+                .filter(([, value]) => value > 0)
+                .map(([key, value]) => `${key}: ${value}`)
+                .join(", ")
+            : noChangesItems
+          : undefined;
         return {
           section,
           item: {
             label,
             detail,
-            picked: s.isTranslationRequired,
+            picked,
           },
           data: language,
         };
@@ -84,26 +112,31 @@ export class ArbStatisticService {
   }
 
   private async getArbStatistic(
-    sourceArb: Arb,
+    sourceArb: ARB,
     targetLanguages: Language[],
     history: History
-  ): Promise<ArbStatistic> {
+  ): Promise<ARBStatistic> {
     const nKeysToBeTranslated: number = sourceArb.keys.filter(
       (key) => !key.includes("@") || key === "@@locale"
     ).length;
-    const arbStatistic: ArbStatistic = {};
+    const arbStatistic: ARBStatistic = {};
     for (const targetLanguage of targetLanguages) {
       if (targetLanguage.languageCode === sourceArb.language.languageCode) {
         continue;
       }
 
-      const targetArbFilePath =
-        this.languageService.getArbFilePathFromLanguageCode(
+      const targetARBFilePath =
+        await this.languageService.getARBPathFromLanguageCode(
           targetLanguage.languageCode
         );
-      const isTargetArbFileNotExist = !fs.existsSync(targetArbFilePath);
-      const { api, action } = isTargetArbFileNotExist
-        ? {
+      const isTargetARBFileExist = fs.existsSync(targetARBFilePath);
+      const { api, action } = isTargetARBFileExist
+        ? this.getStatistic(
+            sourceArb,
+            await this.arbService.getARB(targetARBFilePath),
+            history
+          )
+        : {
             api: this.getAPIStatistic(sourceArb, targetLanguage),
             action: {
               create: nKeysToBeTranslated,
@@ -111,29 +144,25 @@ export class ArbStatisticService {
               delete: 0,
               retain: 0,
             },
-          }
-        : this.getStatistic(
-            sourceArb,
-            await this.arbService.getArb(targetArbFilePath),
-            history
-          );
+          };
       const isTranslationRequired =
         action.create + action.update + action.delete > 0;
 
       arbStatistic[targetLanguage.languageCode] = {
-        filePath: targetArbFilePath,
+        filePath: targetARBFilePath,
         language: targetLanguage,
         action,
         api,
         isTranslationRequired,
+        isExist: isTargetARBFileExist,
       };
     }
     return arbStatistic;
   }
 
   private getStatistic(
-    sourceArb: Arb,
-    targetArb: Arb,
+    sourceArb: ARB,
+    targetArb: ARB,
     history: History
   ): {
     action: ActionStatistic;
@@ -193,7 +222,7 @@ export class ArbStatisticService {
   }
 
   private getAPIStatistic(
-    sourceArb: Arb,
+    sourceArb: ARB,
     targetLanguage: Language
   ): APIStatistic {
     return sourceArb.keys

@@ -1,61 +1,35 @@
 import path from "path";
-import { Arb } from "../../../component/arb/arb";
-import { ArbService } from "../../../component/arb/arb.service";
+import { ARB, ARBService } from "../../../component/arb/arb";
 import {
   InvalidType,
   ValidationResult,
 } from "../../../component/arb/validation/arb_validation";
-import { ArbValidationService } from "../../../component/arb/validation/arb_validation.service";
-import { ConfigService } from "../../../component/config/config.service";
-import { Language } from "../../../component/language/language";
-import { LanguageService } from "../../../component/language/language.service";
+import { ARBValidationService } from "../../../component/arb/validation/arb_validation.service";
 import { Dialog } from "../../../util/dialog";
 import { Toast } from "../../../util/toast";
 
 interface InitParams {
-  arbValidationService: ArbValidationService;
-  languageService: LanguageService;
-  configService: ConfigService;
-  arbService: ArbService;
+  arbValidationService: ARBValidationService;
+  arbService: ARBService;
 }
 
-export class ArbCheckCmd {
-  private arbValidationService: ArbValidationService;
-  private languageService: LanguageService;
-  private configService: ConfigService;
-  private arbService: ArbService;
-  constructor({
-    arbValidationService,
-    languageService,
-    configService,
-    arbService,
-  }: InitParams) {
+export class ARBCheckCmd {
+  private arbValidationService: ARBValidationService;
+  private arbService: ARBService;
+  constructor({ arbValidationService, arbService }: InitParams) {
     this.arbValidationService = arbValidationService;
-    this.languageService = languageService;
-    this.configService = configService;
     this.arbService = arbService;
   }
 
   public async run() {
     // load source arb
-    const {
-      sourceArbFilePath,
-      targetLanguageCodeList,
-      validateLanguageCodeList,
-    } = this.configService.config;
-    const sourceArb: Arb = await this.arbService.getArb(sourceArbFilePath);
-
-    // list of languages for whitch to run validation
-    const validateLanguages: Language[] = (
-      validateLanguageCodeList ?? targetLanguageCodeList
-    ).map((languageCode) => {
-      return this.languageService.getLanguageByLanguageCode(languageCode);
-    });
+    const sourceARB: ARB = await this.arbService.getSourceARB();
+    const targetARBLanguageList = await this.arbService.getTargetLanguageList();
 
     const validationResultList =
       await this.arbValidationService.getValidationResultList(
-        sourceArb,
-        validateLanguages
+        sourceARB,
+        targetARBLanguageList
       );
     if (validationResultList.length === 0) {
       return Toast.i("🟢 The translation has been successfully completed.");

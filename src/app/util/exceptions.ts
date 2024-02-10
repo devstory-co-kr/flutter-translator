@@ -1,8 +1,4 @@
-import { Cmd, cmdName } from "../cmd/cmd";
-
 export class BaseException extends Error {}
-
-export class ConfigurationRequiredException extends BaseException {}
 
 export class APIKeyRequiredException extends BaseException {}
 
@@ -31,18 +27,13 @@ export class InvalidArgumentsException extends BaseException {
 }
 
 export class GoogleSheetConfigRequiredException extends BaseException {
-  constructor() {
-    super(`Please add "googleSheet" settings.`);
+  constructor(message: string) {
+    super(message);
   }
 }
-
-export class ConfigNotFoundException extends BaseException {
-  constructor() {
-    super(
-      `Run the "${
-        cmdName[Cmd.ArbInitialize]
-      }" command to add required settings.`
-    );
+export class GoogleAuthRequiredException extends BaseException {
+  constructor(message: string) {
+    super(message);
   }
 }
 
@@ -51,10 +42,9 @@ export class InitializeRequiredException extends BaseException {
     super(`${className} class must call an init() function before use.`);
   }
 }
-export class SourceArbFilePathRequiredException extends BaseException {
-}
+export class SourceARBPathRequiredException extends BaseException {}
 
-export class ArbFileNotFoundException extends BaseException {
+export class ARBFileNotFoundException extends BaseException {
   constructor() {
     super(
       "The .arb file cannot be found in the workspace. Please create an .arb file."

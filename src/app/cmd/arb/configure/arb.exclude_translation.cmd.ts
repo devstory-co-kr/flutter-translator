@@ -1,38 +1,26 @@
 import * as vscode from "vscode";
-import { Arb } from "../../../component/arb/arb";
-import { ArbService } from "../../../component/arb/arb.service";
-import { ConfigService } from "../../../component/config/config.service";
+import { ARB, ARBService } from "../../../component/arb/arb";
 import { HistoryChange } from "../../../component/history/history";
 import { HistoryService } from "../../../component/history/history.service";
-import { SourceArbFilePathRequiredException } from "../../../util/exceptions";
 import { Toast } from "../../../util/toast";
 
 interface InitParams {
-  arbService: ArbService;
-  configService: ConfigService;
+  arbService: ARBService;
   historyService: HistoryService;
 }
 
-export class ArbExcludeTranslationCmd {
-  private arbService: ArbService;
-  private configService: ConfigService;
+export class ARBExcludeTranslationCmd {
+  private arbService: ARBService;
   private historyService: HistoryService;
 
-  constructor({ arbService, configService, historyService }: InitParams) {
+  constructor({ arbService, historyService }: InitParams) {
     this.arbService = arbService;
-    this.configService = configService;
     this.historyService = historyService;
   }
 
   public async run() {
-    // check source.arb file path
-    const sourceArbFilePath = this.configService.config.sourceArbFilePath;
-    if (!sourceArbFilePath) {
-      throw new SourceArbFilePathRequiredException();
-    }
-
     // get source arb
-    const sourceArb: Arb = await this.arbService.getArb(sourceArbFilePath);
+    const sourceArb: ARB = await this.arbService.getSourceARB();
 
     // get changed items in source arb file
     const changes: HistoryChange[] = this.historyService.compare(sourceArb);
@@ -42,13 +30,14 @@ export class ArbExcludeTranslationCmd {
     }
 
     // select changes to exclude from translation
-    const items: vscode.QuickPickItem[] = changes.map((change) => {
+    const items = changes.map((change) => {
       const isNewValue = change.historyValue === change.sourceValue;
       return {
         label: change.key,
         description: isNewValue
           ? change.sourceValue
           : `${change.historyValue} → ${change.sourceValue}`,
+        sourceValue: change.sourceValue,
         picked: true,
       };
     });
@@ -56,6 +45,7 @@ export class ArbExcludeTranslationCmd {
       (await vscode.window.showQuickPick(items, {
         title: "Select changes to exclude from translation",
         canPickMany: true,
+        ignoreFocusOut: true,
       })) ?? [];
     if (selectedItems.length === 0) {
       return;
@@ -65,7 +55,7 @@ export class ArbExcludeTranslationCmd {
     const historyData = { ...sourceArb.data };
     for (const selectedItem of selectedItems) {
       const key: string = selectedItem.label;
-      const value: string = selectedItem.description!;
+      const value: string = selectedItem.sourceValue!;
       historyData[key] = value;
     }
 

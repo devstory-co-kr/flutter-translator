@@ -15,17 +15,14 @@ export interface GSheetParams {
   sheetId: string;
 }
 
-export interface GSheetUpsertParams extends GSheetParams {
-  requestBody: {
-    majorDimension?: "ROWS" | "COLUMNS" | null;
-    range?: string | null;
-    values?: any[][] | null;
-  };
+export interface GSheetRequestBody {
+  majorDimension?: "ROWS" | "COLUMNS";
+  range?: string;
+  values?: any[][];
 }
 
-export interface GSheetGetParams extends GSheetParams {
-  range: string;
-  includeGridData?: boolean;
+export interface GSheetUpsertParams extends GSheetParams {
+  requestBody: GSheetRequestBody;
 }
 
 export interface GSheetClearParams extends GSheetParams {
@@ -55,16 +52,38 @@ export class GoogleSheetRepository {
     });
   }
 
-  public async get({
+  public async getSpreadSheets({
     auth,
     sheetId,
-    range,
-    includeGridData,
-  }: GSheetGetParams): GaxiosPromise<sheets_v4.Schema$Spreadsheet> {
+  }: {
+    auth: JWT;
+    sheetId: string;
+  }): GaxiosPromise<sheets_v4.Schema$Spreadsheet> {
     return await this.getSheet(auth).spreadsheets.get({
       spreadsheetId: sheetId,
-      ranges: [range],
-      includeGridData,
+    });
+  }
+
+  public async createSheet({
+    auth,
+    sheetId,
+    sheetName,
+  }: {
+    auth: JWT;
+    sheetId: string;
+    sheetName: string;
+  }): GaxiosPromise<sheets_v4.Schema$Spreadsheet> {
+    return this.getSheet(auth).spreadsheets.batchUpdate({
+      spreadsheetId: sheetId,
+      requestBody: {
+        requests: [
+          {
+            addSheet: {
+              properties: { title: sheetName },
+            },
+          },
+        ],
+      },
     });
   }
 
@@ -73,7 +92,7 @@ export class GoogleSheetRepository {
     sheetId,
     range,
   }: GSheetClearParams): GaxiosPromise<sheets_v4.Schema$ClearValuesResponse> {
-    return await this.getSheet(auth).spreadsheets.values.clear({
+    return this.getSheet(auth).spreadsheets.values.clear({
       spreadsheetId: sheetId,
       range: range,
     });

@@ -1,9 +1,6 @@
-import * as fs from "fs";
 import * as vscode from "vscode";
-import { Arb } from "../../../component/arb/arb";
-import { ArbService } from "../../../component/arb/arb.service";
-import { ArbStatisticService } from "../../../component/arb/statistic/arb_statistic.service";
-import { ConfigService } from "../../../component/config/config.service";
+import { ARB, ARBService } from "../../../component/arb/arb";
+import { ARBStatisticService } from "../../../component/arb/statistic/arb_statistic.service";
 import { History } from "../../../component/history/history";
 import { HistoryService } from "../../../component/history/history.service";
 import { Language } from "../../../component/language/language";
@@ -12,57 +9,52 @@ import { TranslationType } from "../../../component/translation/translation";
 import { TranslationService } from "../../../component/translation/translation.service";
 import { TranslationStatistic } from "../../../component/translation/translation.statistic";
 import { Dialog } from "../../../util/dialog";
-import {
-  ConfigNotFoundException,
-  ConfigurationRequiredException,
-  FileNotFoundException,
-  SourceArbFilePathRequiredException,
-  TranslateLanguagesRequiredException,
-} from "../../../util/exceptions";
 import { Toast } from "../../../util/toast";
 import { Cmd } from "../../cmd";
 
 interface InitParams {
-  arbService: ArbService;
-  configService: ConfigService;
+  arbService: ARBService;
   historyService: HistoryService;
   languageService: LanguageService;
   translationService: TranslationService;
-  arbStatisticService: ArbStatisticService;
+  arbStatisticService: ARBStatisticService;
 }
 
-export class ArbTranslateCmd {
-  private arbService: ArbService;
-  private configService: ConfigService;
+export type ARBTranslateCmdArgs = {
+  sourceArb?: ARB;
+  history?: History;
+  targetLanguages?: Language[];
+  excludeLanguages?: Language[];
+  selectedTargetLanguages?: Language[];
+  translationType?: TranslationType;
+  isPreceedValidation?: boolean;
+};
+
+export class ARBTranslateCmd {
+  private arbService: ARBService;
   private historyService: HistoryService;
   private languageService: LanguageService;
   private translationService: TranslationService;
-  private arbStatisticService: ArbStatisticService;
+  private arbStatisticService: ARBStatisticService;
 
   constructor({
     arbService,
-    configService,
     historyService,
     languageService,
     translationService,
     arbStatisticService,
   }: InitParams) {
     this.arbService = arbService;
-    this.configService = configService;
     this.historyService = historyService;
     this.languageService = languageService;
     this.translationService = translationService;
     this.arbStatisticService = arbStatisticService;
   }
 
-  async run() {
-    // validation
-    this.checkValidation();
-
+  async run(args?: ARBTranslateCmdArgs) {
     // load source arb
-    const sourceArb: Arb = await this.arbService.getArb(
-      this.configService.config.sourceArbFilePath
-    );
+    const sourceArb: ARB =
+      args?.sourceArb ?? (await this.arbService.getSourceARB());
 
     // no data in source arb file
     if (sourceArb.keys.length === 0) {
@@ -71,29 +63,33 @@ export class ArbTranslateCmd {
     }
 
     // get history
-    const history: History = this.historyService.get();
+    const history: History = args?.history ?? this.historyService.get();
 
-    // list of languages to be translated
+    // support languages
     const targetLanguages: Language[] =
-      this.configService.config.targetLanguageCodeList.map((languageCode) => {
-        return this.languageService.getLanguageByLanguageCode(languageCode);
-      });
+      args?.targetLanguages ?? this.languageService.supportLanguages;
+    const excludeLanguages: Language[] =
+      args?.excludeLanguages ?? this.arbService.getExcludeLanguageList();
 
     // show translation preview and select languages to translate
-    const selectedTargetLanguages =
-      await this.arbStatisticService.showTranslationPreview(
-        "Please select the file you want to translate.",
+    const selectedTargetLanguages: Language[] =
+      args?.selectedTargetLanguages ??
+      (await this.arbStatisticService.showTranslationPreview({
+        title: "Select Languages",
+        placeHolder: "Please select the file you want to translate.",
         sourceArb,
         targetLanguages,
-        history
-      );
+        excludeLanguages,
+        history,
+      }));
     if (selectedTargetLanguages.length === 0) {
       return;
     }
 
     // select translation type
-    const translationType =
-      await this.translationService.selectTranslationType();
+    const translationType: TranslationType | undefined =
+      args?.translationType ??
+      (await this.translationService.selectTranslationType());
     if (!translationType) {
       return;
     }
@@ -107,41 +103,13 @@ export class ArbTranslateCmd {
     });
 
     // check translation
-    const isPreceedValidation = await Dialog.showConfirmDialog({
-      title: "Would you like to check the translation results?",
-    });
+    const isPreceedValidation: boolean =
+      args?.isPreceedValidation ??
+      (await Dialog.showConfirmDialog({
+        title: "Would you like to check the translation results?",
+      }));
     if (isPreceedValidation) {
-      await vscode.commands.executeCommand(Cmd.ArbCheck);
-    }
-  }
-
-  private checkValidation(): void {
-    // check config
-    const config = this.configService.config;
-    if (!config.sourceArbFilePath || !config.targetLanguageCodeList) {
-      throw new ConfigNotFoundException();
-    }
-
-    // check source.arb file path
-    const sourceArbFilePath = this.configService.config.sourceArbFilePath;
-    if (!sourceArbFilePath) {
-      throw new SourceArbFilePathRequiredException();
-    }
-
-    // check the existence of a source arb file
-    if (!fs.existsSync(sourceArbFilePath)) {
-      throw new FileNotFoundException(sourceArbFilePath);
-    }
-
-    // check selected languages
-    const selectedLanguages = this.configService.config.targetLanguageCodeList;
-    if (selectedLanguages.length === 0) {
-      throw new ConfigurationRequiredException();
-    }
-
-    // check config translate languages
-    if (!this.configService.config.targetLanguageCodeList) {
-      throw new TranslateLanguagesRequiredException();
+      await vscode.commands.executeCommand(Cmd.ARBCheck);
     }
   }
 
@@ -152,7 +120,7 @@ export class ArbTranslateCmd {
     targetLanguages,
   }: {
     translationType: TranslationType;
-    sourceArb: Arb;
+    sourceArb: ARB;
     history: History;
     targetLanguages: Language[];
   }) {
@@ -218,7 +186,7 @@ export class ArbTranslateCmd {
     targetLanguage,
   }: {
     translationType: TranslationType;
-    sourceArb: Arb;
+    sourceArb: ARB;
     history: History;
     targetLanguage: Language;
   }): Promise<TranslationStatistic | undefined> {
@@ -228,14 +196,14 @@ export class ArbTranslateCmd {
     }
 
     const targetArbFilePath =
-      this.languageService.getArbFilePathFromLanguageCode(
+      await this.languageService.getARBPathFromLanguageCode(
         targetLanguage.languageCode
       );
     // create target arb file if does not exist
     this.arbService.createIfNotExist(targetArbFilePath, targetLanguage);
 
     // get targetArb file
-    const targetArb: Arb = await this.arbService.getArb(targetArbFilePath);
+    const targetArb: ARB = await this.arbService.getARB(targetArbFilePath);
 
     // translation target classification
     const nextTargetArbData: Record<string, string> = {};

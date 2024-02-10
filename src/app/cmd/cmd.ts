@@ -1,15 +1,13 @@
 export enum Cmd {
   // ARB Command
-  ArbInitialize = "flutter-translator.arb.initialize",
-  ArbTranslate = "flutter-translator.arb.translate",
-  ArbExcludeTranslation = "flutter-translator.arb.excludeTranslation",
-  ArbConfigureTargetLanguageCode = "flutter-translator.arb.configureTargetLanguageCode",
-  ArbCheck = "flutter-translator.arb.check",
-  ArbDecodeAllHtmlEntities = "flutter-translator.arb.decodeAllHtmlEntities",
-  ArbUploadToGoogleSheet = "flutter-translator.arb.uploadToGoogleSheet",
-  ArbOpenGoogleSheet = "flutter-translator.arb.openGoogleSheet",
-  ArbChangeKeys = "flutter-translator.arb.changeKeys",
-  ArbDeleteKeys = "flutter-translator.arb.deleteKeys",
+  ARBTranslate = "flutter-translator.arb.translate",
+  ARBExcludeTranslation = "flutter-translator.arb.excludeTranslation",
+  ARBCheck = "flutter-translator.arb.check",
+  ARBChangeKeys = "flutter-translator.arb.changeKeys",
+  ARBDeleteKeys = "flutter-translator.arb.deleteKeys",
+  ARBDecodeAllHtmlEntities = "flutter-translator.arb.decodeAllHtmlEntities",
+  ARBUploadToGoogleSheet = "flutter-translator.arb.uploadToGoogleSheet",
+  ARBOpenGoogleSheet = "flutter-translator.arb.openGoogleSheet",
   // Metadata Command
   MetadataCreate = "flutter-translator.metadata.create",
   MetadataTranslate = "flutter-translator.metadata.translate",
@@ -23,19 +21,16 @@ export enum Cmd {
 }
 
 export const cmdName: Record<Cmd, string> = {
-  [Cmd.ArbInitialize]: "Flutter Translator: ARB - Initialize",
-  [Cmd.ArbTranslate]: "Flutter Translator: ARB - Translate",
-  [Cmd.ArbCheck]: "Flutter Translator: ARB - Check",
-  [Cmd.ArbExcludeTranslation]: "Flutter Translator: ARB - Exclude Translation",
-  [Cmd.ArbConfigureTargetLanguageCode]:
-    "Flutter Translator: ARB - Configure Target Language Code",
-  [Cmd.ArbDecodeAllHtmlEntities]:
+  [Cmd.ARBTranslate]: "Flutter Translator: ARB - Translate",
+  [Cmd.ARBCheck]: "Flutter Translator: ARB - Check",
+  [Cmd.ARBExcludeTranslation]: "Flutter Translator: ARB - Exclude Translation",
+  [Cmd.ARBDecodeAllHtmlEntities]:
     "Flutter Translator: ARB - Decode All HTML Entities",
-  [Cmd.ArbUploadToGoogleSheet]:
+  [Cmd.ARBUploadToGoogleSheet]:
     "Flutter Translator: ARB - Upload To Google Sheet",
-  [Cmd.ArbOpenGoogleSheet]: "Flutter Translator: ARB - Open Google Sheet",
-  [Cmd.ArbChangeKeys]: "Flutter Translator: ARB - Change Keys",
-  [Cmd.ArbDeleteKeys]: "Flutter Translator: ARB - Delete Keys",
+  [Cmd.ARBOpenGoogleSheet]: "Flutter Translator: ARB - Open Google Sheet",
+  [Cmd.ARBChangeKeys]: "Flutter Translator: ARB - Change Keys",
+  [Cmd.ARBDeleteKeys]: "Flutter Translator: ARB - Delete Keys",
   [Cmd.MetadataCreate]: "Flutter Translator: Metadata - Add Languages",
   [Cmd.MetadataTranslate]: "Flutter Translator: Metadata - Translate",
   [Cmd.MetadataCheck]: "Flutter Translator: Metadata - Check",

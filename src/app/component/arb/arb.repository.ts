@@ -6,21 +6,14 @@ import { Logger } from "../../util/logger";
 import { Language } from "../language/language";
 
 export class ArbRepository {
-  /**
-   * Return file path list in the same folder as source arb file
-   * @param sourceArbFilePath
-   * @returns
-   * @throws FileNotFoundException
-   */
-  public getArbFilePathList(sourceArbFilePath: string): string[] {
-    if (!fs.existsSync(sourceArbFilePath)) {
-      throw new FileNotFoundException(sourceArbFilePath);
-    }
-
+  public getTargetARBPathList(sourceArbFilePath: string): string[] {
     const directoryPath = path.dirname(sourceArbFilePath);
     const files = fs.readdirSync(directoryPath);
     const absoluteFilePaths = files
-      .filter((file) => file.endsWith(".arb"))
+      .filter(
+        (filePath) =>
+          filePath.endsWith(".arb") && filePath !== sourceArbFilePath
+      )
       .map((file) => path.join(directoryPath, file));
     return absoluteFilePaths;
   }

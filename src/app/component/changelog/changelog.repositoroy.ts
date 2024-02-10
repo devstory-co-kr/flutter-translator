@@ -5,7 +5,6 @@ import { AndroidChangelog } from "../../platform/android/android.changelog";
 import { IOSChangelog } from "../../platform/ios/ios.changelog";
 import { InvalidBuildNumberException } from "../../util/exceptions";
 import { Workspace } from "../../util/workspace";
-import {} from "../config/config.service";
 import {
   MetadataLanguage,
   MetadataSupportPlatform,

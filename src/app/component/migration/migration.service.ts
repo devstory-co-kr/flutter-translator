@@ -22,6 +22,9 @@ export class MigrationService {
 
   public async checkMigrate(context: vscode.ExtensionContext): Promise<void> {
     const { currentVersion, latestVersion } = this.getVersions(context);
+    Logger.i(
+      `currentVersion : ${currentVersion} / latestVersion : ${latestVersion.toString()}`
+    );
     const isUpdated = currentVersion.isGreaterThan(latestVersion);
     if (isUpdated) {
       await this.migrate({ context, currentVersion, latestVersion });

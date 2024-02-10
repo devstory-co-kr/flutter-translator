@@ -4,7 +4,6 @@ import { Dialog } from "../../util/dialog";
 import { Link } from "../../util/link";
 import { Toast } from "../../util/toast";
 import { Workspace } from "../../util/workspace";
-import {} from "../config/config.service";
 import {
   Metadata,
   MetadataLanguage,

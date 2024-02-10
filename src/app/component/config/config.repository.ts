@@ -1,55 +1,65 @@
-import * as vscode from "vscode";
-import { BaseInitRequired } from "../../util/base/base_init_required";
-import { Config, ConfigParams } from "./config";
+import {
+  ARBConfig,
+  Config,
+  ConfigRepositoryI,
+  GoogleAuthConfig,
+  GoogleSheetConfig,
+} from "./config";
+import { ConfigDataSource } from "./config.datasource";
 
-export class ConfigRepository extends BaseInitRequired {
-  public className: string = "ConfigRepository";
+interface InitParams {
+  configDataSource: ConfigDataSource;
+}
 
-  // Create new every time because of cache
-  private get _workspace() {
-    return vscode.workspace.getConfiguration("flutterTranslator");
+export class ConfigRepository implements ConfigRepositoryI {
+  private configDataSource: ConfigDataSource;
+
+  private get config(): Config {
+    return this.configDataSource.getConfig();
   }
 
-  private _key: string = "config";
-
-  private defaultConfig: Config = {
-    sourceArbFilePath: "",
-    googleAPIKey: "",
-    targetLanguageCodeList: [],
-  };
-  private config: Config = this.defaultConfig;
-
-  public async init(): Promise<void> {
-    this.config = {
-      ...this.defaultConfig,
-      ...this._workspace.get<Config>(this._key),
-    };
-    super.initialized();
+  constructor({ configDataSource }: InitParams) {
+    this.configDataSource = configDataSource;
   }
 
-  public get(): Config {
-    super.checkInit();
-    return this.config;
+  public getARBConfig(): ARBConfig {
+    return this.config.arbConfig;
   }
-
-  public set({
-    arbFilePrefix,
-    customArbFileName,
-    sourceArbFilePath,
-    googleAPIKey,
-    googleSheet,
-    targetLanguageCodeList,
-  }: ConfigParams): Thenable<void> {
-    super.checkInit();
-    this.config = <Config>{
-      arbFilePrefix: arbFilePrefix ?? this.config.arbFilePrefix,
-      customArbFileName: customArbFileName ?? this.config.customArbFileName,
-      sourceArbFilePath: sourceArbFilePath ?? this.config.sourceArbFilePath,
-      googleAPIKey: googleAPIKey ?? this.config.googleAPIKey,
-      googleSheet: googleSheet ?? this.config.googleSheet,
-      targetLanguageCodeList:
-        targetLanguageCodeList ?? this.config.targetLanguageCodeList,
-    };
-    return this._workspace.update(this._key, this.config);
+  public getGoogleAuthConfig(): GoogleAuthConfig {
+    return this.config.googleAuthConfig;
+  }
+  public getGoogleSheetConfig(): GoogleSheetConfig {
+    return this.config.googleSheetConfig;
+  }
+  public setARBConfig(arbConfig: Partial<ARBConfig>): void {
+    this.configDataSource.setConfig({
+      ...this.config,
+      arbConfig: {
+        ...this.config.arbConfig,
+        ...arbConfig,
+      },
+    });
+  }
+  public setGoogleAuthConfig(
+    googleAuthConfig: Partial<GoogleAuthConfig>
+  ): void {
+    this.configDataSource.setConfig({
+      ...this.config,
+      googleAuthConfig: {
+        ...this.config.googleAuthConfig,
+        ...googleAuthConfig,
+      },
+    });
+  }
+  public setGoogleSheetConfig(
+    googleSheetConfig: Partial<GoogleSheetConfig>
+  ): void {
+    this.configDataSource.setConfig({
+      ...this.config,
+      googleSheetConfig: {
+        ...this.config.googleSheetConfig,
+        ...googleSheetConfig,
+      },
+    });
   }
 }

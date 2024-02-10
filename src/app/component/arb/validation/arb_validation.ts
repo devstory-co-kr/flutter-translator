@@ -1,4 +1,4 @@
-import { Arb } from "../arb";
+import { ARB } from "../arb";
 
 export interface ArbValidationData {
   value: string;
@@ -21,7 +21,7 @@ export enum InvalidType {
 export interface ValidationResult {
   sourceValidationData: ArbValidationData;
   invalidType: InvalidType;
-  sourceArb: Arb;
-  targetArb: Arb;
+  sourceArb: ARB;
+  targetArb: ARB;
   key: string;
 }

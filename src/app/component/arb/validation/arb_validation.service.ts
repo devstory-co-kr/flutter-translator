@@ -6,38 +6,32 @@ import { Link } from "../../../util/link";
 import { Toast } from "../../../util/toast";
 import { Language } from "../../language/language";
 import { LanguageService } from "../../language/language.service";
-import { TranslationService } from "../../translation/translation.service";
-import { Arb } from "../arb";
-import { ArbService } from "../arb.service";
+import { ARB, ARBService } from "../arb";
 import { InvalidType, ValidationResult } from "./arb_validation";
-import { ArbValidationRepository } from "./arb_validation.repository";
+import { ARBValidationRepository } from "./arb_validation.repository";
 
 interface InitParams {
-  arbValidationRepository: ArbValidationRepository;
-  translationService: TranslationService;
+  arbValidationRepository: ARBValidationRepository;
   languageService: LanguageService;
-  arbService: ArbService;
+  arbService: ARBService;
 }
 
-export class ArbValidationService {
-  private arbService: ArbService;
+export class ARBValidationService {
+  private arbService: ARBService;
   private languageService: LanguageService;
-  private translationService: TranslationService;
-  private arbValidationRepository: ArbValidationRepository;
+  private arbValidationRepository: ARBValidationRepository;
   constructor({
     arbService,
     languageService,
-    translationService,
     arbValidationRepository,
   }: InitParams) {
     this.arbService = arbService;
     this.languageService = languageService;
-    this.translationService = translationService;
     this.arbValidationRepository = arbValidationRepository;
   }
 
   public async getValidationResultList(
-    sourceArb: Arb,
+    sourceArb: ARB,
     validateLanguages: Language[]
   ): Promise<ValidationResult[]> {
     const generator = await this.generateValidationResult(
@@ -94,7 +88,7 @@ export class ArbValidationService {
     return false;
   }
 
-  public async decodeHtmlEntities(targetArb: Arb, keyList: string[]) {
+  public async decodeHtmlEntities(targetArb: ARB, keyList: string[]) {
     const decodedData: Record<string, string> = { ...targetArb.data };
     for (const key of keyList) {
       const text: string | undefined = targetArb.data[key];
@@ -107,7 +101,7 @@ export class ArbValidationService {
   }
 
   private async *generateValidationResult(
-    sourceArb: Arb,
+    sourceArb: ARB,
     targetLanguages: Language[]
   ): AsyncGenerator<ValidationResult, undefined, ValidationResult> {
     // get source ParamsValidation
@@ -123,7 +117,7 @@ export class ArbValidationService {
       }
 
       const targetArbFilePath =
-        this.languageService.getArbFilePathFromLanguageCode(
+        await this.languageService.getARBPathFromLanguageCode(
           targetLanguage.languageCode
         );
       if (!fs.existsSync(targetArbFilePath)) {
@@ -131,7 +125,7 @@ export class ArbValidationService {
       }
 
       // get targetArb
-      const targetArb: Arb = await this.arbService.getArb(targetArbFilePath);
+      const targetArb: ARB = await this.arbService.getARB(targetArbFilePath);
       const targetValidation =
         this.arbValidationRepository.getParamsValidation(targetArb);
 

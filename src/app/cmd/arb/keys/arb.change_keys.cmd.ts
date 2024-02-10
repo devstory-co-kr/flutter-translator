@@ -1,31 +1,25 @@
 import * as vscode from "vscode";
-import { Arb } from "../../../component/arb/arb";
-import { ArbService } from "../../../component/arb/arb.service";
-import { ConfigService } from "../../../component/config/config.service";
+import { ARB, ARBService } from "../../../component/arb/arb";
 import { HistoryService } from "../../../component/history/history.service";
 import { InvalidArgumentsException } from "../../../util/exceptions";
 import { Toast } from "../../../util/toast";
 
 interface InitParams {
-  configService: ConfigService;
-  arbService: ArbService;
+  arbService: ARBService;
   historyService: HistoryService;
 }
 
-export class ArbChangeKeysCmd {
+export class ARBChangeKeysCmd {
   private historyService: HistoryService;
-  private configService: ConfigService;
-  private arbService: ArbService;
-  constructor({ configService, arbService, historyService }: InitParams) {
+  private arbService: ARBService;
+  constructor({ arbService, historyService }: InitParams) {
     this.historyService = historyService;
-    this.configService = configService;
     this.arbService = arbService;
   }
 
   async run() {
     // load source arb
-    const { sourceArbFilePath } = this.configService.config;
-    const sourceArb: Arb = await this.arbService.getArb(sourceArbFilePath);
+    const sourceArb: ARB = await this.arbService.getSourceARB();
 
     // enter the keys to change
     const oldKeysInput = await vscode.window.showInputBox({
@@ -83,9 +77,8 @@ export class ArbChangeKeysCmd {
     const newKeys = this.split(newKeysInput);
 
     // update keys
-    const arbFilePathList =
-      this.arbService.getArbFilePathList(sourceArbFilePath);
-    for (const arbFilePath of arbFilePathList) {
+    const targetARBPathList = await this.arbService.getTargetARBPathList();
+    for (const arbFilePath of targetARBPathList) {
       await this.arbService.updateKeys(arbFilePath, oldKeys, newKeys);
     }
 

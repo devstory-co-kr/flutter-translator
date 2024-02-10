@@ -9,7 +9,9 @@ export class VersionRepository {
       this.latestVersion
     );
     if (latestVersion) {
-      return latestVersion;
+      return new Version(
+        `${latestVersion.major}.${latestVersion.minor}.${latestVersion.patch}`
+      );
     } else {
       return new Version("0.0.0");
     }

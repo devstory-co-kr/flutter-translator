@@ -1,31 +1,73 @@
 import * as vscode from "vscode";
 import {
   InvalidArgumentsException,
-  SourceArbFilePathRequiredException,
   WorkspaceNotFoundException,
 } from "../../util/exceptions";
+import { ConfigService, LanguageCode } from "../config/config";
 import { Language } from "../language/language";
 import { LanguageService } from "../language/language.service";
-import { Arb } from "./arb";
+import { ARB, ARBService } from "./arb";
 import { ArbRepository } from "./arb.repository";
 
 interface InitParams {
   languageService: LanguageService;
+  configService: ConfigService;
 }
 
-export class ArbService {
+export class ARBServiceImpl implements ARBService {
   private arbRepository: ArbRepository = new ArbRepository();
+  private configService: ConfigService;
   private languageService: LanguageService;
 
-  constructor({ languageService }: InitParams) {
+  constructor({ languageService, configService }: InitParams) {
     this.languageService = languageService;
+    this.configService = configService;
+  }
+  public async selectTargetLanguageList({
+    title,
+    placeHolder,
+  }: {
+    title: string;
+    placeHolder: string;
+  }): Promise<Language[]> {
+    const targetLanguageList = await this.getTargetLanguageList();
+
+    // pick items
+    const pickItems = [];
+    for (const language of targetLanguageList) {
+      const fileName = await this.languageService.getFileNameFromLanguageCode(
+        language.languageCode
+      );
+      pickItems.push({
+        label: `${fileName} - ${language.name}`,
+        picked: true,
+        language,
+      });
+    }
+
+    // select pick items
+    const selectedItems = await vscode.window.showQuickPick(pickItems, {
+      title,
+      placeHolder,
+      canPickMany: true,
+    });
+
+    return selectedItems?.map((item) => item.language) ?? [];
   }
 
-  /**
-   * Get arb file path list in workspace
-   * @returns
-   */
-  public async getArbFilePathListInWorkspace(): Promise<string[]> {
+  public getExcludeLanguageList(): Language[] {
+    const excludeLanguageCodeList =
+      this.configService.getARBExcludeLanguageCodeList();
+    return excludeLanguageCodeList.map((languageCode) =>
+      this.languageService.getLanguageByLanguageCode(languageCode)
+    );
+  }
+
+  public async getSourceARB(): Promise<ARB> {
+    return this.getARB(await this.configService.getSourceARBPath());
+  }
+
+  public async getARBFilePathListInWorkspace(): Promise<string[]> {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders) {
       throw new WorkspaceNotFoundException();
@@ -45,40 +87,40 @@ export class ArbService {
     return arbFiles.map((file) => file.path);
   }
 
-  /**
-   * Return all files in the same folder as source arb file
-   * @param sourceArbFilePath
-   * @returns
-   * @throws FileNotFoundException
-   */
-  public getArbFilePathList(sourceArbFilePath: string): string[] {
-    return this.arbRepository.getArbFilePathList(sourceArbFilePath);
+  public async getTargetARBPathList(): Promise<string[]> {
+    const sourceARBPath = await this.configService.getSourceARBPath();
+    return this.arbRepository.getTargetARBPathList(sourceARBPath);
   }
 
-  /**
-   * Get language list in source arb file directory
-   * @param sourceArbFilePath
-   * @returns
-   */
-  public getLanguages(sourceArbFilePath: string): Language[] {
-    const arbFilePathList = this.getArbFilePathList(sourceArbFilePath);
-    return arbFilePathList.map((arbFilePath) => {
-      return this.languageService.getLanguageFromArbFilePath(arbFilePath);
+  public async getTargetLanguageList(): Promise<Language[]> {
+    const sourceARBPath = await this.configService.getSourceARBPath();
+    const targetARBPathList = await this.arbRepository.getTargetARBPathList(
+      sourceARBPath
+    );
+    const targetLanguageList: Language[] = [];
+    for (const arbFilePath of targetARBPathList) {
+      if (arbFilePath === sourceARBPath) {
+        continue;
+      }
+      const language = await this.languageService.getLanguageFromARBFilePath(
+        arbFilePath
+      );
+      targetLanguageList.push(language);
+    }
+    return targetLanguageList;
+  }
+
+  public async getTargetLanguageCodeList(): Promise<LanguageCode[]> {
+    const targetLanguageList = await this.getTargetLanguageList();
+    return targetLanguageList.map((language) => {
+      return language.languageCode;
     });
   }
 
-  /**
-   * Get arb from arbFilePath.
-   * @param arbFilePath
-   * @returns Promise<Arb>
-   * @throws FileNotFoundException
-   */
-  public async getArb(arbFilePath: string): Promise<Arb> {
-    if (!arbFilePath) {
-      throw new SourceArbFilePathRequiredException();
-    }
-    const language =
-      this.languageService.getLanguageFromArbFilePath(arbFilePath);
+  public async getARB(arbFilePath: string): Promise<ARB> {
+    const language = await this.languageService.getLanguageFromARBFilePath(
+      arbFilePath
+    );
     const data = await this.arbRepository.read(arbFilePath);
     return {
       filePath: arbFilePath,
@@ -89,16 +131,12 @@ export class ArbService {
     };
   }
 
-  /**
-   * If the arb file does not exist, create it and then update it.
-   * @param arb
-   */
-  public upsert(filePath: string, data: Record<string, string>) {
-    this.arbRepository.upsert(filePath, data);
+  public upsert(filePath: string, data: Record<string, string>): void {
+    return this.arbRepository.upsert(filePath, data);
   }
 
-  public createIfNotExist(arbFilePath: string, language: Language) {
-    this.arbRepository.createIfNotExist(arbFilePath, language);
+  public createIfNotExist(arbFilePath: string, language: Language): void {
+    return this.arbRepository.createIfNotExist(arbFilePath, language);
   }
 
   public async updateKeys(
@@ -112,7 +150,7 @@ export class ArbService {
       );
     }
 
-    const arbFile = await this.getArb(arbFilePath);
+    const arbFile = await this.getARB(arbFilePath);
 
     // replace keys
     for (let i = 0; i < oldKeys.length; i++) {
@@ -138,7 +176,7 @@ export class ArbService {
   }
 
   public async deleteKeys(arbFilePath: string, deleteKeys: string[]) {
-    const arbFile = await this.getArb(arbFilePath);
+    const arbFile = await this.getARB(arbFilePath);
     for (const deleteKey of deleteKeys) {
       const keyIndex = arbFile.keys.indexOf(deleteKey);
       if (keyIndex === -1) {

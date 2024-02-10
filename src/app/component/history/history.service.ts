@@ -1,5 +1,5 @@
 import { InvalidArgumentsException } from "../../util/exceptions";
-import { Arb } from "../arb/arb";
+import { ARB } from "../arb/arb";
 import { History, HistoryChange } from "./history";
 import { HistoryRepository } from "./history.repository";
 
@@ -19,7 +19,7 @@ export class HistoryService {
    * @param sourceArb
    * @returns
    */
-  public compare(sourceArb: Arb): HistoryChange[] {
+  public compare(sourceArb: ARB): HistoryChange[] {
     const history: History = this.historyRepository.get();
     const historyDiffList: HistoryChange[] = [];
     for (const key of sourceArb.keys) {

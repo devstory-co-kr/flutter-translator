@@ -1,6 +1,4 @@
 import * as vscode from "vscode";
-import { Cmd } from "../cmd/cmd";
-import { Link } from "./link";
 
 type SectionLabel = string;
 type SectionedPickerItem<D> = {
@@ -14,46 +12,9 @@ interface PickItem<D> extends vscode.QuickPickItem {
 }
 
 export class Dialog {
-  public static showTargetLanguageCodeListRequiredDialog() {
-    vscode.window
-      .showErrorMessage(
-        "Please add arbTranslator.config.targetLanguageCodeList to the .vscode/settings.json file. Please refer to the link for the target LanguageCodeList list.",
-        "Link"
-      )
-      .then(async (answer) => {
-        if (answer === "Link") {
-          Link.showHomePage();
-        }
-      });
-  }
-  public static showAPIKeyRequiredDialog() {
-    vscode.window
-      .showErrorMessage(
-        "Please add arbTranslator.config.googleAPIKey to the .vscode/settings.json file. Please refer to the document and proceed with the API setting and API Key issuance process.",
-        "Open document"
-      )
-      .then(async (answer) => {
-        if (answer === "Open document") {
-          Link.show("https://cloud.google.com/translate/docs/setup");
-        }
-      });
-  }
-
-  public static showSourceArbPathRequiredDialog() {
-    vscode.window
-      .showErrorMessage(
-        "Please add arbTranslator.config.sourceArbFilePath to the .vscode/settings.json file.",
-        "Run ARB Initialize"
-      )
-      .then(async (answer) => {
-        if (answer === "Run ARB Initialize") {
-          vscode.commands.executeCommand(Cmd.ArbInitialize);
-        }
-      });
-  }
-
   public static async showConfirmDialog({
     title,
+    placeHolder,
     confirmText,
     cancelText,
     confirmDesc,
@@ -62,6 +23,7 @@ export class Dialog {
     cancelDetail,
   }: {
     title: string;
+    placeHolder?: string;
     confirmText?: string;
     cancelText?: string;
     confirmDesc?: string;
@@ -84,7 +46,7 @@ export class Dialog {
       ],
       {
         title,
-        placeHolder: title,
+        placeHolder,
         ignoreFocusOut: true,
       }
     );

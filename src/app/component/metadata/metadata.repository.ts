@@ -5,7 +5,6 @@ import { AndroidMetadata } from "../../platform/android/android.metadata";
 import { IOSLanguage } from "../../platform/ios/ios.language";
 import { IOSMetadata } from "../../platform/ios/ios.metadata";
 import { Workspace } from "../../util/workspace";
-import {} from "../config/config.service";
 import {
   Metadata,
   MetadataLanguage,
@@ -46,8 +45,7 @@ export class MetadataRepository {
     platform: MetadataSupportPlatform
   ): MetadataLanguage[] {
     const metadataPath = this.getMetadataPath(platform);
-    const supportLanguages =
-      this.getSupportLanguages(platform);
+    const supportLanguages = this.getSupportLanguages(platform);
     return supportLanguages.filter((language) => {
       const languagePath = path.join(metadataPath, language.locale);
       return fs.existsSync(languagePath);

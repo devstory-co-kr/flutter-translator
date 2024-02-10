@@ -12,12 +12,13 @@ export interface ActionStatistic {
   retain: number;
 }
 
-export interface ArbStatistic {
+export interface ARBStatistic {
   [targetLanguageCode: string]: {
     filePath: string;
     language: Language;
     action: ActionStatistic;
     api: APIStatistic;
     isTranslationRequired: boolean;
+    isExist: boolean;
   };
 }

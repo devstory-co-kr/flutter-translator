@@ -21,6 +21,7 @@ export enum Cmd {
 }
 
 export const cmdName: Record<Cmd, string> = {
+  // ARB Command
   [Cmd.ARBTranslate]: "Flutter Translator: ARB - Translate",
   [Cmd.ARBCheck]: "Flutter Translator: ARB - Check",
   [Cmd.ARBExcludeTranslation]: "Flutter Translator: ARB - Exclude Translation",
@@ -31,10 +32,12 @@ export const cmdName: Record<Cmd, string> = {
   [Cmd.ARBOpenGoogleSheet]: "Flutter Translator: ARB - Open Google Sheet",
   [Cmd.ARBChangeKeys]: "Flutter Translator: ARB - Change Keys",
   [Cmd.ARBDeleteKeys]: "Flutter Translator: ARB - Delete Keys",
-  [Cmd.MetadataCreate]: "Flutter Translator: Metadata - Add Languages",
+  // Metadata Command
+  [Cmd.MetadataCreate]: "Flutter Translator: Metadata - Create",
   [Cmd.MetadataTranslate]: "Flutter Translator: Metadata - Translate",
   [Cmd.MetadataCheck]: "Flutter Translator: Metadata - Check",
   [Cmd.MetadataOpen]: "Flutter Translator: Metadata - Open",
+  // Changelog Command
   [Cmd.ChangelogCreate]: "Flutter Translator: Changelog - Create",
   [Cmd.ChangelogTranslate]: "Flutter Translator: Changelog - Translate",
   [Cmd.ChangelogCheck]: "Flutter Translator: Changelog - Check",

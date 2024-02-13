@@ -2,6 +2,29 @@
 
 All notable changes to the "arb-translator" extension will be documented in this file.
 
+## [2.0.0] - 24.02.13
+### Changed
+- Change extension name from `arb-translator` to `flutter-translator`
+- Change configuration.
+  - When updating, settings from version 1.3.11 will be automatically migrated.
+  - Instead of `targetLanguageCodeList`, the target language for translation is detected by the list of files that accompany the `sourceARB` file.
+
+### Added
+- Add `Metadata - Create` command.
+- Add `Metadata - Translate` command.
+- Add `Metadata - Check` command.
+- Add `Metadata - Open` command.
+- Add `Changelog - Create` command.
+- Add `Changelog - Translate` command.
+- Add `Changelog - Check` command.
+- Add `Changelog - Open` command.
+
+## Removed
+- Remove `Initialize` command.
+- Remove `Configure Target Language Code` command.
+- Remove `targetLanguageCodeList` from configuration.
+- Remove `validateLanguageCodeList` from configuration.
+
 ## [1.3.11] - 24.01.30
 ### Update
 - Update to create @@locale during translation if it does not exist.

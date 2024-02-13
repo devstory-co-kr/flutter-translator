@@ -1,10 +1,10 @@
 {
-  "name": "arb-translator",
+  "name": "flutter-translator",
   "publisher": "DevStory",
   "license": "SEE LICENSE IN LICENSE",
-  "displayName": "ARB Translator",
-  "description": "Translates ARB files to Google Translator.",
-  "version": "1.3.11",
+  "displayName": "Flutter Translator",
+  "description": "It supports the internationalization of flutter applications using Google Translator.",
+  "version": "2.0.0",
   "engines": {
     "vscode": "^1.84.0"
   },
@@ -15,7 +15,7 @@
   "categories": [
     "Language Packs"
   ],
-  "repository": "https://github.com/nero-angela/arb-translator",
+  "repository": "https://github.com/nero-angela/flutter-translator",
   "homepage": "https://devstory.co.kr",
   "keyword": [
     "arb",
@@ -29,9 +29,9 @@
   "contributes": {
     "configuration": {
       "type": "object",
-      "title": "ArbTranslator",
+      "title": "FlutterTranslator",
       "properties": {
-        "arbTranslator.config": {
+        "flutterTranslator.config": {
           "type": "object",
           "properties": {
             "arbPrefix": {
@@ -78,44 +78,77 @@
     },
     "commands": [
       {
-        "command": "arb-translator.initialize",
-        "title": "Arb Translator : Initialize"
+        "command": "flutter-translator.arb.translate",
+        "title": "Flutter Translator: ARB - Translate"
       },
       {
-        "command": "arb-translator.translate",
-        "title": "Arb Translator : Translate"
+        "command": "flutter-translator.arb.excludeTranslation",
+        "title": "Flutter Translator: ARB - Exclude Translation"
       },
       {
-        "command": "arb-translator.excludeTranslation",
-        "title": "Arb Translator : Exclude Translation"
+        "command": "flutter-translator.arb.check",
+        "title": "Flutter Translator: ARB - Check"
       },
       {
-        "command": "arb-translator.configureTargetLanguageCode",
-        "title": "Arb Translator : Configure Target Language Code"
+        "command": "flutter-translator.arb.decodeAllHtmlEntities",
+        "title": "Flutter Translator: ARB - Decode All HTML Entities"
       },
       {
-        "command": "arb-translator.validateTranslation",
-        "title": "Arb Translator : Validate Translation"
+        "command": "flutter-translator.arb.uploadToGoogleSheet",
+        "title": "Flutter Translator: ARB - Upload To Google Sheet"
       },
       {
-        "command": "arb-translator.decodeAllHtmlEntities",
-        "title": "Arb Translator : Decode All HTML Entities"
+        "command": "flutter-translator.arb.openGoogleSheet",
+        "title": "Flutter Translator: ARB - Open Google Sheet"
       },
       {
-        "command": "arb-translator.uploadToGoogleSheet",
-        "title": "Arb Translator : Upload To Google Sheet"
+        "command": "flutter-translator.arb.changeKeys",
+        "title": "Flutter Translator: ARB - Change Keys"
       },
       {
-        "command": "arb-translator.openGoogleSheet",
-        "title": "Arb Translator : Open Google Sheet"
+        "command": "flutter-translator.arb.deleteKeys",
+        "title": "Flutter Translator: ARB - Delete Keys"
       },
       {
-        "command": "arb-translator.changeArbKeys",
-        "title": "Arb Translator : Change Arb Keys"
+        "command": "flutter-translator.metadata.create",
+        "title": "Flutter Translator: Metadata - Create",
+        "args": [
+          "args"
+        ]
       },
       {
-        "command": "arb-translator.deleteArbKeys",
-        "title": "Arb Translator : Delete Arb Keys"
+        "command": "flutter-translator.metadata.translate",
+        "title": "Flutter Translator: Metadata - Translate"
+      },
+      {
+        "command": "flutter-translator.metadata.check",
+        "title": "Flutter Translator: Metadata - Check"
+      },
+      {
+        "command": "flutter-translator.metadata.open",
+        "title": "Flutter Translator: Metadata - Open"
+      },
+      {
+        "command": "flutter-translator.changelog.create",
+        "title": "Flutter Translator: Changelog - Create",
+        "args": [
+          "args"
+        ]
+      },
+      {
+        "command": "flutter-translator.changelog.translate",
+        "title": "Flutter Translator: Changelog - Translate",
+        "args": [
+          "args"
+        ]
+      },
+      {
+        "command": "flutter-translator.changelog.check",
+        "title": "Flutter Translator: Changelog - Check"
+      },
+      {
+        "command": "flutter-translator.changelog.open",
+        "title": "Flutter Translator: Changelog - Open"
       }
     ]
   },
@@ -127,12 +160,13 @@
     "lint": "eslint src --ext ts",
     "lint:watch": "esw --color -w src --ext ts",
     "test": "vscode-test",
-    "package": "npm run lint && (rm -r out || true) && vsce package",
+    "package": "npm run lint && (rm -r out || true) && npm run compile && vsce package",
     "publish": "npm run package && vsce publish"
   },
   "devDependencies": {
     "@types/gapi": "^0.0.47",
     "@types/he": "^1.2.3",
+    "@types/js-yaml": "^4.0.9",
     "@types/mocha": "^10.0.6",
     "@types/node": "18.x",
     "@types/vscode": "^1.84.0",
@@ -148,6 +182,7 @@
     "axios": "^1.6.2",
     "cheerio": "^1.0.0-rc.12",
     "googleapis": "^130.0.0",
-    "he": "^1.2.0"
+    "he": "^1.2.0",
+    "js-yaml": "^4.1.0"
   }
 }

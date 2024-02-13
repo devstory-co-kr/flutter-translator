@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 
 export class Logger {
-  static name: string = "arb-translator";
+  static name: string = "flutter-translator";
   static output = vscode.window.createOutputChannel(this.name);
 
   static l(message: string) {

@@ -7,7 +7,7 @@ export class Workspace {
   /**
    * open .vscode/settings.json
    */
-  public static open() {
+  public static openSettings() {
     const workspacePath = vscode.workspace.workspaceFolders![0].uri.path;
     const workspaceSettingsPath = path.join(
       workspacePath,
@@ -19,14 +19,28 @@ export class Workspace {
       .then((document) => vscode.window.showTextDocument(document));
   }
 
-  public static getPath(...paths: string[]) {
-    const workspacePath = vscode.workspace.workspaceFolders![0].uri.path;
-    return path.join(workspacePath, ".vscode", ...paths);
+  public static async open(
+    filePath: string
+  ): Promise<Thenable<vscode.TextEditor>> {
+    const document = await vscode.workspace.openTextDocument(filePath);
+    return vscode.window.showTextDocument(document);
   }
 
-  public static getArbPath(...paths: string[]) {
-    const workspacePath = vscode.workspace.workspaceFolders![0].uri.path;
-    return path.join(workspacePath, ".vscode", Constant.appName, ...paths);
+  public static getRoot() {
+    return vscode.workspace.workspaceFolders![0].uri.path;
+  }
+
+  public static getPath(...paths: string[]) {
+    return path.join(Workspace.getRoot(), ".vscode", ...paths);
+  }
+
+  public static getWorkspaceAppPath(...paths: string[]) {
+    return path.join(
+      Workspace.getRoot(),
+      ".vscode",
+      Constant.appName,
+      ...paths
+    );
   }
 
   public static createPath(filePath: string): boolean {

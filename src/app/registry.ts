@@ -1,36 +1,51 @@
-import { ArbService } from "./arb/arb.service";
-import { ArbStatisticService } from "./arb_statistic/arb_statistic.service";
-import { ArbValidationRepository } from "./arb_validation/arb_validation.repository";
-import { ArbValidationService } from "./arb_validation/arb_validation.service";
-import { TranslationCacheDataSource } from "./cache/translation_cache.datasource";
-import { TranslationCacheRepository } from "./cache/translation_cache.repository";
-import { ChangeKeysCmd as ChangeArbKeysCmd } from "./command/arb_key/change_arb_keys.cmd";
-import { DeleteKeyCmd as DeleteArbKeysCmd } from "./command/arb_key/delete_arb_keys.cmd";
-import { ConfigureTargetLanguageCodeCmd } from "./command/configure/configure_target_language_code.cmd";
-import { ExcludeTranslationCmd } from "./command/configure/exclude_translation.cmd";
-import { InitializeCmd } from "./command/configure/initialize.cmd";
-import { OpenGoogleSheetCmd } from "./command/google_sheet/open_google_sheet.cmd";
-import { UploadToGoogleSheetCmd } from "./command/google_sheet/upload_to_google_sheet.cmd";
-import { CreateTranslationCacheCmd } from "./command/translate/create_translation_cache.cmd";
-import { TranslateCmd } from "./command/translate/translate.cmd";
-import { DecodeAllHtmlEntitiesCmd } from "./command/validate/decode_all_html_entities.cmd";
-import { ValidateTranslationCmd } from "./command/validate/validate_translation.cmd";
-import { ConfigRepository } from "./config/config.repository";
-import { ConfigService } from "./config/config.service";
-import { GoogleAuthService } from "./google_sheet/google_auth.service";
-import { GoogleSheetRepository } from "./google_sheet/google_sheet.repository";
-import { GoogleSheetService } from "./google_sheet/google_sheet.service";
-import { HistoryRepository } from "./history/history.repository";
-import { HistoryService } from "./history/history.service";
-import { LanguageService } from "./language/language.service";
-import { GoogleTranslationDataSource } from "./translation/google/google_translation.datasource";
-import { GoogleTranslationRepository } from "./translation/google/google_translation.repository";
-import { GoogleTranslationService } from "./translation/google/google_translation.service";
+import { ARBCheckCmd } from "./cmd/arb/check/arb.check.cmd";
+import { ARBDecodeAllHtmlEntitiesCmd } from "./cmd/arb/check/arb.decode_all_html_entities.cmd";
+import { ARBExcludeTranslationCmd } from "./cmd/arb/configure/arb.exclude_translation.cmd";
+import { ARBOpenGoogleSheetCmd } from "./cmd/arb/google_sheet/arb.open_google_sheet.cmd";
+import { ARBUploadToGoogleSheetCmd } from "./cmd/arb/google_sheet/arb.upload_to_google_sheet.cmd";
+import { ARBChangeKeysCmd } from "./cmd/arb/keys/arb.change_keys.cmd";
+import { ARBDeleteKeysCmd } from "./cmd/arb/keys/arb.delete_keys.cmd";
+import { ARBTranslateCmd } from "./cmd/arb/translate/arb.translate.cmd";
+import { ChangelogCheckCmd } from "./cmd/changelog/changelog.check.cmd";
+import { ChangelogCreateCmd } from "./cmd/changelog/changelog.create.cmd";
+import { ChangelogOpenCmd } from "./cmd/changelog/changelog.open.cmd";
+import { ChangelogTranslateCmd } from "./cmd/changelog/changelog.translate.cmd";
+import { MetadataCheckCmd } from "./cmd/metadata/metadata.check.cmd";
+import { MetadataCreateCmd } from "./cmd/metadata/metadata.create.cmd";
+import { MetadataOpenCmd } from "./cmd/metadata/metadata.open.cmd";
+import { MetadataTranslateCmd } from "./cmd/metadata/metadata.translate.cmd";
+import { ARBService } from "./component/arb/arb";
+import { ARBServiceImpl } from "./component/arb/arb.service";
+import { ARBStatisticService } from "./component/arb/statistic/arb_statistic.service";
+import { ARBValidationRepository } from "./component/arb/validation/arb_validation.repository";
+import { ARBValidationService } from "./component/arb/validation/arb_validation.service";
+import { ChangelogRepository } from "./component/changelog/changelog.repositoroy";
+import { ChangelogService } from "./component/changelog/changelog.service";
+import { ConfigService } from "./component/config/config";
+import { ConfigDataSource } from "./component/config/config.datasource";
+import { ConfigRepository } from "./component/config/config.repository";
+import { ConfigServiceImpl } from "./component/config/config.service";
+import { GoogleAuthService } from "./component/google_sheet/google_auth.service";
+import { GoogleSheetRepository } from "./component/google_sheet/google_sheet.repository";
+import { GoogleSheetService } from "./component/google_sheet/google_sheet.service";
+import { HistoryRepository } from "./component/history/history.repository";
+import { HistoryService } from "./component/history/history.service";
+import { LanguageService } from "./component/language/language.service";
+import { MetadataRepository } from "./component/metadata/metadata.repository";
+import { MetadataService } from "./component/metadata/metadata.service";
+import { MigrationService } from "./component/migration/migration.service";
+import { VersionRepository } from "./component/migration/version.repository";
+import { TranslationCacheDataSource } from "./component/translation/cache/translation_cache.datasource";
+import { TranslationCacheRepository } from "./component/translation/cache/translation_cache.repository";
+import { GoogleTranslationDataSource } from "./component/translation/google/google_translation.datasource";
+import { GoogleTranslationRepository } from "./component/translation/google/google_translation.repository";
+import { GoogleTranslationService } from "./component/translation/google/google_translation.service";
 
 export class Registry {
   /**
    * DataSource
    */
+  private configDataSource: ConfigDataSource;
   private cacheDataSource: TranslationCacheDataSource;
   private translationDataSource: GoogleTranslationDataSource;
 
@@ -39,41 +54,54 @@ export class Registry {
    */
   private translationCacheRepository: TranslationCacheRepository;
   private translationRepository: GoogleTranslationRepository;
-  private arbValidationRepository: ArbValidationRepository;
+  private arbValidationRepository: ARBValidationRepository;
   private historyRepository: HistoryRepository;
   private configRepository: ConfigRepository;
   private googleSheetRepository: GoogleSheetRepository;
+  private versionRepository: VersionRepository;
+  private metadataRepository: MetadataRepository;
+  private changelogRepository: ChangelogRepository;
 
   /**
    * Service
    */
-  private historyService: HistoryService;
   private configService: ConfigService;
+  private historyService: HistoryService;
   private languageService: LanguageService;
-  private arbService: ArbService;
+  private arbService: ARBService;
   private translationService: GoogleTranslationService;
-  private arbStatisticService: ArbStatisticService;
-  private arbValidationService: ArbValidationService;
+  private arbStatisticService: ARBStatisticService;
+  private arbValidationService: ARBValidationService;
   private googleAuthService: GoogleAuthService;
   private googleSheetService: GoogleSheetService;
+  private metadataService: MetadataService;
+  private changelogService: ChangelogService;
+
+  public migrationService: MigrationService;
 
   /**
    * Command
    */
-  public initializeCmd: InitializeCmd;
-  public translateCmd: TranslateCmd;
-  public createTranslationCacheCmd: CreateTranslationCacheCmd;
-  public excludeTranslationCmd: ExcludeTranslationCmd;
-  public selectTargetLanguageCodeCmd: ConfigureTargetLanguageCodeCmd;
-  public validateTranslationCmd: ValidateTranslationCmd;
-  public decodeAllHtmlEntitiesCmd: DecodeAllHtmlEntitiesCmd;
-  public uploadToGoogleSheetCmd: UploadToGoogleSheetCmd;
-  public openGoogleSheetCmd: OpenGoogleSheetCmd;
-  public changeArbKeysCmd: ChangeArbKeysCmd;
-  public deleteArbKeysCmd: DeleteArbKeysCmd;
+  public arbTranslateCmd: ARBTranslateCmd;
+  public arbExcludeTranslationCmd: ARBExcludeTranslationCmd;
+  public arbCheckCmd: ARBCheckCmd;
+  public arbDecodeAllHtmlEntitiesCmd: ARBDecodeAllHtmlEntitiesCmd;
+  public arbUploadToGoogleSheetCmd: ARBUploadToGoogleSheetCmd;
+  public arbOpenGoogleSheetCmd: ARBOpenGoogleSheetCmd;
+  public arbChangeKeysCmd: ARBChangeKeysCmd;
+  public arbDeleteKeysCmd: ARBDeleteKeysCmd;
+  public metadataCreateCmd: MetadataCreateCmd;
+  public metadataTranslateCmd: MetadataTranslateCmd;
+  public metadataCheckCmd: MetadataCheckCmd;
+  public metadataOpenCmd: MetadataOpenCmd;
+  public changelogCreateCmd: ChangelogCreateCmd;
+  public changelogTranslateCmd: ChangelogTranslateCmd;
+  public changelogCheckCmd: ChangelogCheckCmd;
+  public changelogOpenCmd: ChangelogOpenCmd;
 
   constructor() {
     // data source
+    this.configDataSource = new ConfigDataSource();
     this.cacheDataSource = new TranslationCacheDataSource();
     this.translationDataSource = new GoogleTranslationDataSource();
 
@@ -85,109 +113,136 @@ export class Registry {
       translationCacheRepository: this.translationCacheRepository,
       translationDataSource: this.translationDataSource,
     });
-    this.arbValidationRepository = new ArbValidationRepository();
+    this.arbValidationRepository = new ARBValidationRepository();
     this.historyRepository = new HistoryRepository();
-    this.configRepository = new ConfigRepository();
+    this.configRepository = new ConfigRepository({
+      configDataSource: this.configDataSource,
+    });
     this.googleSheetRepository = new GoogleSheetRepository();
+    this.versionRepository = new VersionRepository();
+    this.metadataRepository = new MetadataRepository();
+    this.changelogRepository = new ChangelogRepository({
+      metadataRepository: this.metadataRepository,
+    });
 
     // service
+    this.configService = new ConfigServiceImpl({
+      configRepository: this.configRepository,
+    });
     this.historyService = new HistoryService({
       historyRepository: this.historyRepository,
-    });
-    this.configService = new ConfigService({
-      configRepository: this.configRepository,
     });
     this.languageService = new LanguageService({
       configService: this.configService,
     });
-    this.arbService = new ArbService({ languageService: this.languageService });
+    this.arbService = new ARBServiceImpl({
+      languageService: this.languageService,
+      configService: this.configService,
+    });
     this.translationService = new GoogleTranslationService({
       translationCacheRepository: this.translationCacheRepository,
       translationRepository: this.translationRepository,
+      configService: this.configService,
     });
-    this.arbStatisticService = new ArbStatisticService({
+    this.arbStatisticService = new ARBStatisticService({
       translationCacheRepository: this.translationCacheRepository,
       languageService: this.languageService,
       arbService: this.arbService,
     });
-    this.arbValidationService = new ArbValidationService({
+    this.arbValidationService = new ARBValidationService({
       arbService: this.arbService,
       languageService: this.languageService,
-      translationService: this.translationService,
       arbValidationRepository: this.arbValidationRepository,
     });
-    this.googleAuthService = new GoogleAuthService();
+    this.googleAuthService = new GoogleAuthService({
+      configService: this.configService,
+    });
     this.googleSheetService = new GoogleSheetService({
+      configRepository: this.configRepository,
+      googleAuthService: this.googleAuthService,
       googleSheetRepository: this.googleSheetRepository,
+    });
+    this.migrationService = new MigrationService({
+      versionRepository: this.versionRepository,
+    });
+    this.metadataService = new MetadataService({
+      metadataRepository: this.metadataRepository,
+    });
+    this.changelogService = new ChangelogService({
+      changelogRepository: this.changelogRepository,
     });
 
     // cmd
-    this.initializeCmd = new InitializeCmd({
-      configService: this.configService,
+    this.arbTranslateCmd = new ARBTranslateCmd({
       arbService: this.arbService,
-    });
-    this.translateCmd = new TranslateCmd({
-      arbService: this.arbService,
-      configService: this.configService,
       historyService: this.historyService,
       languageService: this.languageService,
       translationService: this.translationService,
       arbStatisticService: this.arbStatisticService,
     });
-    this.createTranslationCacheCmd = new CreateTranslationCacheCmd({
+    this.arbExcludeTranslationCmd = new ARBExcludeTranslationCmd({
       arbService: this.arbService,
-      configService: this.configService,
-      translationCacheRepository: this.translationCacheRepository,
-    });
-    this.excludeTranslationCmd = new ExcludeTranslationCmd({
-      arbService: this.arbService,
-      configService: this.configService,
       historyService: this.historyService,
     });
-    this.selectTargetLanguageCodeCmd = new ConfigureTargetLanguageCodeCmd({
-      arbService: this.arbService,
-      configService: this.configService,
-      languageService: this.languageService,
-    });
-    this.validateTranslationCmd = new ValidateTranslationCmd({
+    this.arbCheckCmd = new ARBCheckCmd({
       arbValidationService: this.arbValidationService,
-      languageService: this.languageService,
-      configService: this.configService,
       arbService: this.arbService,
     });
-    this.decodeAllHtmlEntitiesCmd = new DecodeAllHtmlEntitiesCmd({
+    this.arbDecodeAllHtmlEntitiesCmd = new ARBDecodeAllHtmlEntitiesCmd({
       arbValidationService: this.arbValidationService,
-      languageService: this.languageService,
-      configService: this.configService,
       arbService: this.arbService,
     });
-    this.uploadToGoogleSheetCmd = new UploadToGoogleSheetCmd({
+    this.arbUploadToGoogleSheetCmd = new ARBUploadToGoogleSheetCmd({
       googleSheetService: this.googleSheetService,
       googleAuthService: this.googleAuthService,
       arbValidationService: this.arbValidationService,
       languageService: this.languageService,
-      configService: this.configService,
       arbService: this.arbService,
     });
-    this.openGoogleSheetCmd = new OpenGoogleSheetCmd({
+    this.arbOpenGoogleSheetCmd = new ARBOpenGoogleSheetCmd({
       googleSheetService: this.googleSheetService,
-      configService: this.configService,
     });
-    this.changeArbKeysCmd = new ChangeArbKeysCmd({
+    this.arbChangeKeysCmd = new ARBChangeKeysCmd({
       historyService: this.historyService,
-      configService: this.configService,
       arbService: this.arbService,
     });
-    this.deleteArbKeysCmd = new DeleteArbKeysCmd({
+    this.arbDeleteKeysCmd = new ARBDeleteKeysCmd({
       historyService: this.historyService,
-      configService: this.configService,
       arbService: this.arbService,
+    });
+    this.metadataCreateCmd = new MetadataCreateCmd({
+      metadataService: this.metadataService,
+    });
+    this.metadataTranslateCmd = new MetadataTranslateCmd({
+      metadataService: this.metadataService,
+      translationService: this.translationService,
+    });
+    this.metadataCheckCmd = new MetadataCheckCmd({
+      metadataService: this.metadataService,
+    });
+    this.metadataOpenCmd = new MetadataOpenCmd({
+      metadataService: this.metadataService,
+    });
+    this.changelogCreateCmd = new ChangelogCreateCmd({
+      metadataService: this.metadataService,
+      changelogService: this.changelogService,
+    });
+    this.changelogTranslateCmd = new ChangelogTranslateCmd({
+      metadataService: this.metadataService,
+      changelogService: this.changelogService,
+      translationService: this.translationService,
+    });
+    this.changelogCheckCmd = new ChangelogCheckCmd({
+      changelogService: this.changelogService,
+    });
+    this.changelogOpenCmd = new ChangelogOpenCmd({
+      changelogService: this.changelogService,
+      metadataService: this.metadataService,
     });
   }
 
   public init(): Promise<void[]> {
     return Promise.all([
-      this.configRepository.init(),
       this.historyRepository.init(),
       this.cacheDataSource.init(),
     ]);

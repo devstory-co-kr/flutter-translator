@@ -1,9 +1,9 @@
 import * as fs from "fs";
 import path from "path";
-import { AndroidLanguage } from "../../platform/android/android.language";
 import { AndroidMetadata } from "../../platform/android/android.metadata";
-import { IOSLanguage } from "../../platform/ios/ios.language";
-import { IOSMetadata } from "../../platform/ios/ios.metadata";
+import { AndroidMetadataLanguage } from "../../platform/android/android.metadata_language";
+import { IosMetadata } from "../../platform/ios/ios.metadata";
+import { IosMetadataLanguage } from "../../platform/ios/ios.metadata_language";
 import { Workspace } from "../../util/workspace";
 import {
   Metadata,
@@ -16,9 +16,22 @@ import {
   MetadataValidationType,
 } from "./metadata.validation";
 
+interface InitParams {
+  androidMetadataLanguage: AndroidMetadataLanguage;
+  iosMetadataLanguage: IosMetadataLanguage;
+}
+
 export class MetadataRepository {
-  private androidMetadataRepository = new AndroidLanguage();
-  private iosMetadataRepository = new IOSLanguage();
+  private androidMetadataLanguage: AndroidMetadataLanguage;
+  private iosMetadataLanguage: IosMetadataLanguage;
+
+  constructor({
+    androidMetadataLanguage,
+    iosMetadataLanguage,
+  }: InitParams) {
+    this.androidMetadataLanguage = androidMetadataLanguage;
+    this.iosMetadataLanguage = iosMetadataLanguage;
+  }
 
   public getMetadataPath(platform: MetadataSupportPlatform): string {
     switch (platform) {
@@ -35,9 +48,9 @@ export class MetadataRepository {
   public getSupportLanguages(platform: MetadataSupportPlatform) {
     switch (platform) {
       case MetadataSupportPlatform.android:
-        return this.androidMetadataRepository.supportLanguages;
+        return this.androidMetadataLanguage.supportMetadataLanguages;
       case MetadataSupportPlatform.ios:
-        return this.iosMetadataRepository.supportLanguages;
+        return this.iosMetadataLanguage.supportMetadataLanguages;
     }
   }
 
@@ -68,7 +81,7 @@ export class MetadataRepository {
         metadata = new AndroidMetadata(language, metadataPath);
         break;
       case MetadataSupportPlatform.ios:
-        metadata = new IOSMetadata(language, metadataPath);
+        metadata = new IosMetadata(language, metadataPath);
         break;
     }
 
@@ -96,7 +109,7 @@ export class MetadataRepository {
         metadata = new AndroidMetadata(language, metadataPath);
         break;
       case MetadataSupportPlatform.ios:
-        metadata = new IOSMetadata(language, metadataPath);
+        metadata = new IosMetadata(language, metadataPath);
         break;
     }
 

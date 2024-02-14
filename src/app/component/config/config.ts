@@ -1,4 +1,5 @@
-import { CustomARBFileName } from "../language/language";
+import { CustomARBFileName, Language } from "../language/language";
+import { XcodeProjectName } from "../xcode/xcode";
 
 export type LanguageCode = string;
 export type GoogleAPIKey = string;
@@ -23,11 +24,35 @@ export type GoogleSheetConfig = {
   exclude: LanguageCode[];
 };
 
+export type XcodeConfig = {
+  custom: Record<XcodeProjectName, LanguageCode>;
+};
+
 export type Config = {
   arbConfig: ARBConfig;
   googleAuthConfig: GoogleAuthConfig;
   googleSheetConfig: GoogleSheetConfig;
+  xcodeConfig: XcodeConfig;
 };
+
+export interface ConfigDataSourceI {
+  getConfig(): Partial<Config>;
+  setConfig(config: Partial<Config>): void;
+}
+
+export interface ConfigRepositoryI {
+  getARBConfig(): ARBConfig;
+  setARBConfig(arbConfig: Partial<ARBConfig>): void;
+
+  getGoogleAuthConfig(): GoogleAuthConfig;
+  setGoogleAuthConfig(googleAuthConfig: Partial<GoogleAuthConfig>): void;
+
+  getGoogleSheetConfig(): GoogleSheetConfig;
+  setGoogleSheetConfig(googleSheetConfig: Partial<GoogleSheetConfig>): void;
+
+  getXcodeConfig(): XcodeConfig;
+  setXcodeConfig(xcodeConfig: Partial<XcodeConfig>): void;
+}
 
 export interface ConfigService {
   getSourceARBPath(): Promise<string>;
@@ -36,19 +61,8 @@ export interface ConfigService {
   getARBExcludeLanguageCodeList(): LanguageCode[];
   getGoogleAuthCredential(): Promise<FilePath>;
   getGoogleAuthAPIKey(): Promise<GoogleAPIKey>;
-}
-
-export interface ConfigRepositoryI {
-  getARBConfig(): ARBConfig;
-  getGoogleAuthConfig(): GoogleAuthConfig;
-  getGoogleSheetConfig(): GoogleSheetConfig;
-
-  setARBConfig(arbConfig: Partial<ARBConfig>): void;
-  setGoogleAuthConfig(googleAuthConfig: Partial<GoogleAuthConfig>): void;
-  setGoogleSheetConfig(googleSheetConfig: Partial<GoogleSheetConfig>): void;
-}
-
-export interface ConfigDataSourceI {
-  getConfig(): Partial<Config>;
-  setConfig(config: Config): void;
+  getCustomXcodeProjectLanguageCode(): Record<XcodeProjectName, LanguageCode>;
+  setCustomXcodeProjectLanguage(
+    projectName: XcodeProjectName
+  ): Promise<Language | undefined>;
 }

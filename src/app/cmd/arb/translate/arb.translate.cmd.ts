@@ -4,6 +4,7 @@ import { ARBStatisticService } from "../../../component/arb/statistic/arb_statis
 import { History } from "../../../component/history/history";
 import { HistoryService } from "../../../component/history/history.service";
 import { Language } from "../../../component/language/language";
+import { LanguageRepository } from "../../../component/language/language.repository";
 import { LanguageService } from "../../../component/language/language.service";
 import { TranslationType } from "../../../component/translation/translation";
 import { TranslationService } from "../../../component/translation/translation.service";
@@ -67,7 +68,7 @@ export class ARBTranslateCmd {
 
     // support languages
     const targetLanguages: Language[] =
-      args?.targetLanguages ?? this.languageService.supportLanguages;
+      args?.targetLanguages ?? LanguageRepository.supportLanguages;
     const excludeLanguages: Language[] =
       args?.excludeLanguages ?? this.arbService.getExcludeLanguageList();
 

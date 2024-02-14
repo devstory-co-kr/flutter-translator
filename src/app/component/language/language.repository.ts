@@ -635,7 +635,7 @@ export class LanguageRepository {
   };
   public static zulu: Language = { gt: "zu", name: "Zulu", languageCode: "zu" };
 
-  public static supportLanguageList: Language[] = [
+  public static supportLanguages: Language[] = [
     LanguageRepository.afrikaans,
     LanguageRepository.albanian,
     LanguageRepository.amharic,

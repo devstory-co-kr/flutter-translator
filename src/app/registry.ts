@@ -14,6 +14,7 @@ import { MetadataCheckCmd } from "./cmd/metadata/metadata.check.cmd";
 import { MetadataCreateCmd } from "./cmd/metadata/metadata.create.cmd";
 import { MetadataOpenCmd } from "./cmd/metadata/metadata.open.cmd";
 import { MetadataTranslateCmd } from "./cmd/metadata/metadata.translate.cmd";
+import { XcodeStringsTranslateCmd } from "./cmd/xcode_strings/xcode_strings.translate.cmd";
 import { ARBService } from "./component/arb/arb";
 import { ARBServiceImpl } from "./component/arb/arb.service";
 import { ARBStatisticService } from "./component/arb/statistic/arb_statistic.service";
@@ -40,8 +41,21 @@ import { TranslationCacheRepository } from "./component/translation/cache/transl
 import { GoogleTranslationDataSource } from "./component/translation/google/google_translation.datasource";
 import { GoogleTranslationRepository } from "./component/translation/google/google_translation.repository";
 import { GoogleTranslationService } from "./component/translation/google/google_translation.service";
+import { XcodeRepository, XcodeService } from "./component/xcode/xcode";
+import { XcodeRepositoryImpl } from "./component/xcode/xcode.repository";
+import { XcodeServiceImpl } from "./component/xcode/xcode.service";
+import { AndroidMetadataLanguage } from "./platform/android/android.metadata_language";
+import { IosMetadataLanguage } from "./platform/ios/ios.metadata_language";
+import { IosXcodeLanguage } from "./platform/ios/ios.strings_language";
 
 export class Registry {
+  /**
+   * Platform
+   */
+  private androidMetadataLanguage: AndroidMetadataLanguage;
+  private iosMetadataLanguage: IosMetadataLanguage;
+  private iosXcodeLanguage: IosXcodeLanguage;
+
   /**
    * DataSource
    */
@@ -61,6 +75,7 @@ export class Registry {
   private versionRepository: VersionRepository;
   private metadataRepository: MetadataRepository;
   private changelogRepository: ChangelogRepository;
+  private xcodeRepository: XcodeRepository;
 
   /**
    * Service
@@ -76,6 +91,7 @@ export class Registry {
   private googleSheetService: GoogleSheetService;
   private metadataService: MetadataService;
   private changelogService: ChangelogService;
+  private xcodeService: XcodeService;
 
   public migrationService: MigrationService;
 
@@ -98,8 +114,14 @@ export class Registry {
   public changelogTranslateCmd: ChangelogTranslateCmd;
   public changelogCheckCmd: ChangelogCheckCmd;
   public changelogOpenCmd: ChangelogOpenCmd;
+  public xcodeStringsTranslateCmd: XcodeStringsTranslateCmd;
 
   constructor() {
+    // platform
+    this.androidMetadataLanguage = new AndroidMetadataLanguage();
+    this.iosMetadataLanguage = new IosMetadataLanguage();
+    this.iosXcodeLanguage = new IosXcodeLanguage();
+
     // data source
     this.configDataSource = new ConfigDataSource();
     this.cacheDataSource = new TranslationCacheDataSource();
@@ -120,9 +142,15 @@ export class Registry {
     });
     this.googleSheetRepository = new GoogleSheetRepository();
     this.versionRepository = new VersionRepository();
-    this.metadataRepository = new MetadataRepository();
+    this.metadataRepository = new MetadataRepository({
+      androidMetadataLanguage: this.androidMetadataLanguage,
+      iosMetadataLanguage: this.iosMetadataLanguage,
+    });
     this.changelogRepository = new ChangelogRepository({
       metadataRepository: this.metadataRepository,
+    });
+    this.xcodeRepository = new XcodeRepositoryImpl({
+      iosXcodeLanguage: this.iosXcodeLanguage,
     });
 
     // service
@@ -162,14 +190,20 @@ export class Registry {
       googleAuthService: this.googleAuthService,
       googleSheetRepository: this.googleSheetRepository,
     });
-    this.migrationService = new MigrationService({
-      versionRepository: this.versionRepository,
-    });
     this.metadataService = new MetadataService({
       metadataRepository: this.metadataRepository,
     });
     this.changelogService = new ChangelogService({
       changelogRepository: this.changelogRepository,
+    });
+    this.xcodeService = new XcodeServiceImpl({
+      xcodeRepository: this.xcodeRepository,
+      languageService: this.languageService,
+      configService: this.configService,
+    });
+
+    this.migrationService = new MigrationService({
+      versionRepository: this.versionRepository,
     });
 
     // cmd
@@ -238,6 +272,10 @@ export class Registry {
     this.changelogOpenCmd = new ChangelogOpenCmd({
       changelogService: this.changelogService,
       metadataService: this.metadataService,
+    });
+    this.xcodeStringsTranslateCmd = new XcodeStringsTranslateCmd({
+      xcodeService: this.xcodeService,
+      translationService: this.translationService,
     });
   }
 

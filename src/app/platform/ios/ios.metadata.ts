@@ -7,7 +7,7 @@ import {
   MetadataType,
 } from "../../component/metadata/metadata";
 
-export class IOSMetadata implements Metadata {
+export class IosMetadata implements Metadata {
   public metadataPath: string;
   public platform: MetadataSupportPlatform = MetadataSupportPlatform.ios;
   public language: MetadataLanguage;

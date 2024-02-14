@@ -5,7 +5,7 @@ import {
   MetadataSupportPlatform,
 } from "../../component/metadata/metadata";
 
-export class IOSChangelog implements Changelog {
+export class IosChangelog implements Changelog {
   public platform: MetadataSupportPlatform = MetadataSupportPlatform.ios;
   public language: MetadataLanguage;
   public filePath: string;

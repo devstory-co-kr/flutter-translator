@@ -149,6 +149,10 @@
       {
         "command": "flutter-translator.changelog.open",
         "title": "Flutter Translator: Changelog - Open"
+      },
+      {
+        "command": "flutter-translator.xcodeStrings.translate",
+        "title": "Flutter Translator: Xcode Strings - Translate"
       }
     ]
   },

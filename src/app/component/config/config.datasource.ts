@@ -11,28 +11,10 @@ export class ConfigDataSource implements ConfigDataSourceI {
 
   constructor() {}
 
-  getConfig(): Config {
-    return (
-      this.workspace.get<Config>(this.key) ?? {
-        arbConfig: {
-          sourcePath: "",
-          exclude: [],
-          prefix: undefined,
-          custom: {},
-        },
-        googleAuthConfig: {
-          apiKey: "",
-          credential: "",
-        },
-        googleSheetConfig: {
-          id: "",
-          name: "",
-          exclude: [],
-        },
-      }
-    );
+  public getConfig(): Partial<Config> {
+    return this.workspace.get<Partial<Config>>(this.key) ?? {};
   }
-  setConfig(config: Config): void {
+  setConfig(config: Partial<Config>): void {
     this.workspace.update(this.key, config);
   }
 }

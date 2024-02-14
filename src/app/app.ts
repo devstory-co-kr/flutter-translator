@@ -4,6 +4,7 @@ import { ChangelogCreateCmdArgs } from "./cmd/changelog/changelog.create.cmd";
 import { ChangelogTranslateCmdArgs } from "./cmd/changelog/changelog.translate.cmd";
 import { Cmd } from "./cmd/cmd";
 import { MetadataCreateCmdArgs } from "./cmd/metadata/metadata.create.cmd";
+import { XcodeStringsTranslateCmdArgs } from "./cmd/xcode_strings/xcode_strings.translate.cmd";
 import { Registry } from "./registry";
 import { Constant } from "./util/constant";
 import {
@@ -89,6 +90,12 @@ export class FlutterTranslator implements App {
     },
     [Cmd.ChangelogOpen]: () => {
       return this.registry.changelogOpenCmd.run();
+    },
+    /**
+     * Xcode Strings Command
+     */
+    [Cmd.XcodeStringsTranslate]: (args?: XcodeStringsTranslateCmdArgs) => {
+      return this.registry.xcodeStringsTranslateCmd.run(args);
     },
   };
 

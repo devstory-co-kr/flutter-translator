@@ -150,7 +150,7 @@ export class ARBTranslateCmd {
           });
           if (translationStatistic) {
             const targetArbFileName =
-              this.languageService.getFileNameFromLanguageCode(
+              await this.languageService.getFileNameFromLanguageCode(
                 targetLanguage.languageCode
               );
 

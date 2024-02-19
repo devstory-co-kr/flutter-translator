@@ -1,7 +1,6 @@
 import * as fs from "fs";
 import * as vscode from "vscode";
 import { ConfigService, FilePath } from "../config/config";
-import { Language } from "../language/language";
 import { LanguageRepository } from "../language/language.repository";
 import { LanguageService } from "../language/language.service";
 import {
@@ -54,20 +53,6 @@ export class XcodeServiceImpl implements XcodeService {
 
   public getTargets(platform: XcodePlatform): XcodeTarget[] {
     return this.xcodeRepository.getTargetPathList(platform);
-  }
-
-  public selectTargets(target: string[]): Promise<string | undefined> {
-    throw new Error("Method not implemented.");
-  }
-
-  public getLanguages({
-    platform,
-    target,
-  }: {
-    platform: XcodePlatform;
-    target: XcodeTarget;
-  }): Language[] {
-    throw new Error("Method not implemented.");
   }
 
   public getProjects({

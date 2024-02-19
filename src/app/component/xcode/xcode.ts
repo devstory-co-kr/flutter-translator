@@ -38,7 +38,6 @@ export interface XcodeService {
   ): Promise<XcodePlatform | undefined>;
 
   getTargets(platform: XcodePlatform): XcodeTarget[];
-  selectTargets(target: XcodeTarget[]): Promise<XcodeTarget | undefined>;
 
   getProjects({
     platform,

@@ -56,7 +56,12 @@ export class XcodeStringsTranslateCmd {
     let target: XcodeTarget = targets[0];
     if (targets.length > 1) {
       // select target
-      const selectedTarget = await this.xcodeService.selectTargets(targets);
+      const selectedTarget = await vscode.window.showQuickPick(targets, {
+        canPickMany: false,
+        ignoreFocusOut: true,
+        title: "Select a target",
+        placeHolder: `Please select a target in ${platform}.`,
+      });
       if (!selectedTarget) {
         return;
       }
@@ -231,7 +236,7 @@ export class XcodeStringsTranslateCmd {
             totalTranslatedProject += 1;
             progress.report({
               increment: 100 / total,
-              message: `${targetProject.stringsFilePathList} translated. (${totalTranslatedProject} / ${total})`,
+              message: `${targetProject.name} translated. (${totalTranslatedProject} / ${total})`,
             });
           }
         }

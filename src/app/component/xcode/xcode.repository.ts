@@ -20,19 +20,6 @@ export class XcodeRepositoryImpl implements XcodeRepository {
   constructor({ iosXcodeLanguage }: InitParams) {
     this.iosXcodeLanguage = iosXcodeLanguage;
   }
-  getXcodeProjects({
-    platform,
-    target,
-  }: {
-    platform: XcodePlatform;
-    target: string;
-  }): { projects: XcodeProject[]; unkownProjects: Partial<XcodeProject>[] } {
-    throw new Error("Method not implemented.");
-  }
-
-  public getLanguage(platform: XcodePlatform, target: string): string[] {
-    throw new Error("Method not implemented.");
-  }
 
   public getTargetPathList(platform: XcodePlatform): string[] {
     const platformPath = this.getPlatformPath(platform);

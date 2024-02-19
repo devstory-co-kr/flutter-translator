@@ -11,8 +11,12 @@
 Supports [internationalization of Flutter applications](https://docs.flutter.dev/ui/accessibility-and-internationalization/internationalization) using [Google Translate](https://cloud.google.com/translate/docs/basic/translating-text).
 This is a extension created based on an environment using **Flutter** and **Fastlane**.
 - Support platform
-  - `Android`
-  - `iOS`
+  - Metadata & Changelog
+    - `Android`
+    - `iOS`
+  - Xcode Strings
+    - `iOS`
+    - `Macos`
 - Support Languages
   - [Show List](https://gist.github.com/nero-angela/37984030bcc5dd0e62dc3143bb8c053d)
   - ARB : 133 Languages ([Google Translate](https://cloud.google.com/translate/docs/basic/discovering-supported-languages))
@@ -23,6 +27,7 @@ This is a extension created based on an environment using **Flutter** and **Fast
 - [ARB](#arb) files translation and management.
 - [Metadata](#metadata) files translation and management.
 - [Changelog](#changelog) files translation and management.
+- [Xcode Strings](#xcode_strings) files translation.
 
 ## Usage
 ### ARB
@@ -96,6 +101,10 @@ This is a extension created based on an environment using **Flutter** and **Fast
                 └── ko-KR
                     └── promotional_text.txt
     ```
+
+### Xcode Strings
+1. Refer to the [link](https://medium.com/@axmadxojaibrohimov/localizing-permissions-in-ios-app-ebe4ef72f3a0) and complete localization settings in xcode and then add the strings file.
+1. Run `Flutter Translator: Xcode Strings - Translate`
 
 ## Configuration
 It is recommended to set the configuration in the project workspace(`.vscode/settings.json`).

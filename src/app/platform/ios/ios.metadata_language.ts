@@ -1,8 +1,8 @@
 import { LanguageRepository } from "../../component/language/language.repository";
-import { PlatformLanguage } from "../../component/metadata/metadata";
+import { PlatformMetadataLanguage } from "../platform";
 
-export class IOSLanguage implements PlatformLanguage {
-  public supportLanguages = [
+export class IosMetadataLanguage implements PlatformMetadataLanguage {
+  public supportMetadataLanguages = [
     {
       name: "Arabic",
       locale: "ar-SA",

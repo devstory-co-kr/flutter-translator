@@ -1,11 +1,9 @@
 import { LanguageRepository } from "../../component/language/language.repository";
-import {
-  MetadataLanguage,
-  PlatformLanguage,
-} from "../../component/metadata/metadata";
+import { MetadataLanguage } from "../../component/metadata/metadata";
+import { PlatformMetadataLanguage } from "../platform";
 
-export class AndroidLanguage implements PlatformLanguage {
-  public supportLanguages: MetadataLanguage[] = [
+export class AndroidMetadataLanguage implements PlatformMetadataLanguage {
+  public supportMetadataLanguages: MetadataLanguage[] = [
     // Google translation not support
     // { name: "Romansh", locale: "rm", },
     {

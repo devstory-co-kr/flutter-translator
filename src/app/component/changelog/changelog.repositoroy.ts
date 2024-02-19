@@ -2,7 +2,7 @@ import * as fs from "fs";
 import * as yaml from "js-yaml";
 import path from "path";
 import { AndroidChangelog } from "../../platform/android/android.changelog";
-import { IOSChangelog } from "../../platform/ios/ios.changelog";
+import { IosChangelog } from "../../platform/ios/ios.changelog";
 import { InvalidBuildNumberException } from "../../util/exceptions";
 import { Workspace } from "../../util/workspace";
 import {
@@ -71,7 +71,7 @@ export class ChangelogRepository {
         );
         break;
       case MetadataSupportPlatform.ios:
-        changelog = new IOSChangelog(language, this.getMetadataPath(platform));
+        changelog = new IosChangelog(language, this.getMetadataPath(platform));
         break;
     }
     if (fs.existsSync(changelog.filePath)) {

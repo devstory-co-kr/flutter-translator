@@ -31,7 +31,7 @@ export class Workspace {
   }
 
   public static getPath(...paths: string[]) {
-    return path.join(Workspace.getRoot(), ".vscode", ...paths);
+    return path.join(Workspace.getRoot(), ...paths);
   }
 
   public static getWorkspaceAppPath(...paths: string[]) {

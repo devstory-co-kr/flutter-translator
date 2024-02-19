@@ -5,8 +5,10 @@ import {
   SourceARBPathRequiredException,
 } from "../../util/exceptions";
 import { Link } from "../../util/link";
-import { CustomARBFileName } from "../language/language";
-import { ConfigService, FilePath, GoogleAPIKey } from "./config";
+import { CustomARBFileName, Language } from "../language/language";
+import { LanguageRepository } from "../language/language.repository";
+import { XcodeProjectName } from "../xcode/xcode";
+import { ConfigService, FilePath, GoogleAPIKey, LanguageCode } from "./config";
 import { ConfigRepository } from "./config.repository";
 
 interface InitParams {
@@ -18,6 +20,7 @@ export class ConfigServiceImpl implements ConfigService {
   constructor({ configRepository }: InitParams) {
     this.configRepository = configRepository;
   }
+
   public getARBExcludeLanguageCodeList(): string[] {
     const { exclude } = this.configRepository.getARBConfig();
     return exclude;
@@ -138,5 +141,44 @@ export class ConfigServiceImpl implements ConfigService {
       });
     }
     return sourceARBPath;
+  }
+
+  public getCustomXcodeProjectLanguageCode(): Record<string, string> {
+    return this.configRepository.getXcodeConfig().custom;
+  }
+
+  public async setCustomXcodeProjectLanguage(
+    projectName: XcodeProjectName
+  ): Promise<Language | undefined> {
+    const { custom } = this.configRepository.getXcodeConfig();
+    const languageCode: LanguageCode | undefined = custom[projectName];
+    let language = LanguageRepository.supportLanguages.find((language) => {
+      return language.languageCode === languageCode;
+    });
+    if (language) {
+      return language;
+    }
+
+    // select language
+    const selection = await vscode.window.showQuickPick(
+      LanguageRepository.supportLanguages.map((l) => ({
+        label: `${l.name} (${l.languageCode})`,
+        language: l,
+      })),
+      {
+        title: `Select ${projectName} language`,
+        placeHolder: `Please select the language of ${projectName}.`,
+        canPickMany: false,
+        ignoreFocusOut: true,
+      }
+    );
+    language = selection?.language;
+    if (language) {
+      // update xcode config
+      this.configRepository.setXcodeConfig({
+        custom: { ...custom, [projectName]: language.languageCode },
+      });
+    }
+    return language;
   }
 }

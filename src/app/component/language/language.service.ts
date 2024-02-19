@@ -17,17 +17,13 @@ export class LanguageService {
     this.configService = configService;
   }
 
-  public get supportLanguages(): Language[] {
-    return LanguageRepository.supportLanguageList;
-  }
-
   /**
    * check whether the language code is supported or not
    * @param languageCode
    * @throws InvalidLanguageCodeException
    */
   private checkIsSupportLanguageCode(languageCode: LanguageCode) {
-    const language = this.supportLanguages.find(
+    const language = LanguageRepository.supportLanguages.find(
       (language) => language.languageCode === languageCode
     );
     if (!language) {
@@ -55,7 +51,7 @@ export class LanguageService {
    * @throws InvalidLanguageCodeException
    */
   getLanguageByLanguageCode(languageCode: string): Language {
-    const language = this.supportLanguages.find(
+    const language = LanguageRepository.supportLanguages.find(
       (sl) => sl.languageCode === languageCode
     );
     if (!language) {

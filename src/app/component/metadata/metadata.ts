@@ -1,5 +1,3 @@
-import { AndroidMetadata } from "../../platform/android/android.metadata";
-import { IOSMetadata } from "../../platform/ios/ios.metadata";
 import { Language } from "../language/language";
 
 /**
@@ -47,16 +45,10 @@ export type MetadataText = {
   type: MetadataType;
 };
 
-export type PlatformMetadata = AndroidMetadata | IOSMetadata;
-
 export interface Metadata {
   metadataPath: string;
   platform: MetadataSupportPlatform;
   language: MetadataLanguage;
   get dataList(): MetadataText[];
   get languagePath(): string;
-}
-
-export interface PlatformLanguage {
-  supportLanguages: MetadataLanguage[];
 }

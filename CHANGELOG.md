@@ -1,6 +1,10 @@
 # [Change Log](http://keepachangelog.com/)
 
-All notable changes to the "arb-translator" extension will be documented in this file.
+All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
+
+## [2.1.0] - 24.02.19
+### Added
+- Add `Xcode Strings - Translate` command.
 
 ## [2.0.0] - 24.02.13
 ### Changed

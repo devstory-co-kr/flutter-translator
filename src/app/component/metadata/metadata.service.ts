@@ -113,11 +113,15 @@ export class MetadataService {
   }
 
   public async selectPlatformLanguages({
+    itemListFilter,
     excludePlatformLanguages,
     title,
     placeHolder,
     picked,
   }: {
+    itemListFilter?: (
+      platformLanguages: MetadataPlatformLanguage[]
+    ) => MetadataPlatformLanguage[];
     excludePlatformLanguages?: {
       [platform in MetadataSupportPlatform]: MetadataLanguage[];
     };
@@ -150,7 +154,9 @@ export class MetadataService {
       MetadataPlatformLanguage
     >({
       sectionLabelList: Object.keys(MetadataSupportPlatform),
-      itemList: platformLanguages,
+      itemList: itemListFilter
+        ? itemListFilter(platformLanguages)
+        : platformLanguages,
       itemBuilder: (pl) => {
         return {
           section: pl.platform,

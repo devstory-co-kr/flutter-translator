@@ -1,6 +1,7 @@
 import * as fs from "fs";
 import * as vscode from "vscode";
 import { ChangelogService } from "../../component/changelog/changelog.service";
+import { ConfigService } from "../../component/config/config";
 import { Language } from "../../component/language/language";
 import {
   MetadataLanguage,
@@ -15,6 +16,7 @@ import { Cmd } from "../cmd";
 import { ChangelogCreateCmdArgs } from "./changelog.create.cmd";
 
 interface InitParams {
+  configService: ConfigService;
   metadataService: MetadataService;
   changelogService: ChangelogService;
   translationService: TranslationService;
@@ -29,15 +31,18 @@ export type ChangelogTranslateCmdArgs = {
 };
 
 export class ChangelogTranslateCmd {
+  private configService: ConfigService;
   private metadataService: MetadataService;
   private changelogService: ChangelogService;
   private translationService: TranslationService;
 
   constructor({
+    configService,
     metadataService,
     changelogService,
     translationService,
   }: InitParams) {
+    this.configService = configService;
     this.metadataService = metadataService;
     this.changelogService = changelogService;
     this.translationService = translationService;
@@ -95,12 +100,19 @@ export class ChangelogTranslateCmd {
     }
 
     // select target platform languages
+    const changelogExcludeLocales =
+      this.configService.getChangelogExcludeLocaleList();
     const targetPlatformLanguages: {
       platform: MetadataSupportPlatform;
       language: MetadataLanguage;
     }[] =
       args?.targetPlatformLanguages ??
       (await this.metadataService.selectPlatformLanguages({
+        itemListFilter: (platformLanguages) => {
+          return platformLanguages.filter((pl) => {
+            return !changelogExcludeLocales.includes(pl.language.locale);
+          });
+        },
         picked: true,
         excludePlatformLanguages: {
           [sourcePlatform]: [sourceMetadataLanguage],

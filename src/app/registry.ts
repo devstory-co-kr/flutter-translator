@@ -263,6 +263,7 @@ export class Registry {
       changelogService: this.changelogService,
     });
     this.changelogTranslateCmd = new ChangelogTranslateCmd({
+      configService: this.configService,
       metadataService: this.metadataService,
       changelogService: this.changelogService,
       translationService: this.translationService,

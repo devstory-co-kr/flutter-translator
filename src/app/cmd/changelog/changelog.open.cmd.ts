@@ -27,7 +27,8 @@ export class ChangelogOpenCmd {
     }
 
     // select language
-    const languageList = this.metadataService.getLanguagesInPlatform(platform);
+    const languageList =
+      this.metadataService.getMetadataLanguagesInPlatform(platform);
     const language = await this.metadataService.selectLanguage({
       languageList,
       title: "Select language to open.",

@@ -55,19 +55,19 @@ export class MetadataService {
     return this.metadataRepository.getMetadataPath(platform);
   }
 
-  public getLanguagesInPlatform(
+  public getMetadataLanguagesInPlatform(
     platform: MetadataSupportPlatform
   ): MetadataLanguage[] {
     return this.metadataRepository.getLanguagesInPlatform(platform);
   }
 
-  public getSupportLanguages(
+  public getSupportMetadataLanguages(
     platform: MetadataSupportPlatform
   ): MetadataLanguage[] {
     return this.metadataRepository.getSupportLanguages(platform);
   }
 
-  public async selectLanguageListInPlatform({
+  public async selectMetadataLanguages({
     platform,
     languages,
     selectedLanguages,
@@ -82,13 +82,14 @@ export class MetadataService {
     title?: string;
     placeHolder?: string;
   }): Promise<MetadataLanguage[]> {
-    const languageList = languages ?? this.getSupportLanguages(platform);
-    const [selected, notSelected] = ["Selected", "Not Selected"];
+    const languageList =
+      languages ?? this.getSupportMetadataLanguages(platform);
+    const [selected, ltr, rtl] = ["Selected", "LTR", "RTL"];
     const selections = await Dialog.showSectionedPicker<
       MetadataLanguage,
       MetadataLanguage
     >({
-      sectionLabelList: [selected, notSelected],
+      sectionLabelList: [selected, rtl, ltr],
       canPickMany: true,
       title: title ?? "Select Language list",
       placeHolder: placeHolder ?? "Select Language list",
@@ -97,12 +98,19 @@ export class MetadataService {
       ),
       itemBuilder: (language) => {
         const picked = selectedLanguages?.includes(language);
+        const section = selectedLanguages?.includes(language)
+          ? selected
+          : language.translateLanguage.isLTR
+          ? ltr
+          : rtl;
         return {
-          section: selectedLanguages?.includes(language)
-            ? selected
-            : notSelected,
+          section,
           item: {
-            label: `${language.name} (${language.locale})`,
+            label: `${
+              section === selected && !language.translateLanguage.isLTR
+                ? "RTL : "
+                : ""
+            }${language.name} (${language.locale})`,
             picked,
           },
           data: language,
@@ -136,7 +144,7 @@ export class MetadataService {
   > {
     const platformLanguages: MetadataPlatformLanguage[] = [];
     for (const platform of Object.values(MetadataSupportPlatform)) {
-      for (const language of this.getLanguagesInPlatform(platform)) {
+      for (const language of this.getMetadataLanguagesInPlatform(platform)) {
         if (excludePlatformLanguages) {
           const excludePlatform = excludePlatformLanguages[platform];
           if (excludePlatform.includes(language)) {
@@ -186,8 +194,8 @@ export class MetadataService {
   }): Promise<MetadataLanguage | undefined> {
     const selectedLocale = await vscode.window.showQuickPick(
       languageList.map((language) => ({
-        label: language.name,
-        description: language.locale,
+        label: `${language.name} (${language.locale})`,
+        description: language.translateLanguage.isLTR ? "" : "RTL",
         language,
       })),
       {
@@ -320,7 +328,7 @@ export class MetadataService {
   public checkAll(): MetadataValidation[] {
     const validationList: MetadataValidation[] = [];
     for (const platform of Object.values(MetadataSupportPlatform)) {
-      const metadataLangauges = this.getLanguagesInPlatform(platform);
+      const metadataLangauges = this.getMetadataLanguagesInPlatform(platform);
       for (const metadataLanguage of metadataLangauges) {
         const metadata = this.getExistMetadataFile(platform, metadataLanguage);
         if (!metadata) {

@@ -25,10 +25,22 @@ export class MetadataRepository {
   private androidMetadataLanguage: AndroidMetadataLanguage;
   private iosMetadataLanguage: IosMetadataLanguage;
 
-  constructor({
-    androidMetadataLanguage,
-    iosMetadataLanguage,
-  }: InitParams) {
+  // Sort by MetadataLanguage RTL first & name descending
+  private sortMetadataLanguage(
+    languages: MetadataLanguage[]
+  ): MetadataLanguage[] {
+    return languages.sort((a, b) => {
+      if (a.translateLanguage.isLTR === b.translateLanguage.isLTR) {
+        // If isLTR is the same, sort in ascending order based on name
+        return a.name.localeCompare(b.name);
+      } else {
+        // If isLTR is different, sort elements with false first
+        return a.translateLanguage.isLTR ? 1 : -1;
+      }
+    });
+  }
+
+  constructor({ androidMetadataLanguage, iosMetadataLanguage }: InitParams) {
     this.androidMetadataLanguage = androidMetadataLanguage;
     this.iosMetadataLanguage = iosMetadataLanguage;
   }
@@ -45,21 +57,27 @@ export class MetadataRepository {
     }
   }
 
-  public getSupportLanguages(platform: MetadataSupportPlatform) {
+  public getSupportLanguages(
+    platform: MetadataSupportPlatform
+  ): MetadataLanguage[] {
+    let supportLanguages: MetadataLanguage[] = [];
     switch (platform) {
       case MetadataSupportPlatform.android:
-        return this.androidMetadataLanguage.supportMetadataLanguages;
+        supportLanguages =
+          this.androidMetadataLanguage.supportMetadataLanguages;
+        break;
       case MetadataSupportPlatform.ios:
-        return this.iosMetadataLanguage.supportMetadataLanguages;
+        supportLanguages = this.iosMetadataLanguage.supportMetadataLanguages;
+        break;
     }
+    return this.sortMetadataLanguage(supportLanguages);
   }
 
   public getLanguagesInPlatform(
     platform: MetadataSupportPlatform
   ): MetadataLanguage[] {
     const metadataPath = this.getMetadataPath(platform);
-    const supportLanguages = this.getSupportLanguages(platform);
-    return supportLanguages.filter((language) => {
+    return this.getSupportLanguages(platform).filter((language) => {
       const languagePath = path.join(metadataPath, language.locale);
       return fs.existsSync(languagePath);
     });

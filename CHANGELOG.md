@@ -2,6 +2,14 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
+## [2.1.2] - 24.02.20
+### Added
+- Add `metadataConfig.exclude` configuration.
+- Add `changelogConfig.exclude` configuration.
+
+## Changed
+- Rename `xcodeConfig.custom` configuration to `xcode.projectLanguageCode`.
+
 ## [2.1.0] - 24.02.19
 ### Added
 - Add `Xcode Strings - Translate` command.

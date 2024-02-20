@@ -2,6 +2,11 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
+## [2.1.3] - 24.02.20
+### Added
+- Add `Metadata - Delete` command.
+- Add `LTR` & `RTL` indication when translating metadata.
+
 ## [2.1.2] - 24.02.20
 ### Added
 - Add `metadataConfig.exclude` configuration.

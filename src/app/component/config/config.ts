@@ -26,7 +26,7 @@ export type GoogleSheetConfig = {
 };
 
 export type XcodeConfig = {
-  custom: Record<XcodeProjectName, LanguageCode>;
+  projectLanguageCode: Record<XcodeProjectName, LanguageCode>;
 };
 
 export type MetadataConfig = {

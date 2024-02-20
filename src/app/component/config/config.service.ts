@@ -154,14 +154,15 @@ export class ConfigServiceImpl implements ConfigService {
   }
 
   public getCustomXcodeProjectLanguageCode(): Record<string, string> {
-    return this.configRepository.getXcodeConfig().custom;
+    return this.configRepository.getXcodeConfig().projectLanguageCode;
   }
 
   public async setCustomXcodeProjectLanguage(
     projectName: XcodeProjectName
   ): Promise<Language | undefined> {
-    const { custom } = this.configRepository.getXcodeConfig();
-    const languageCode: LanguageCode | undefined = custom[projectName];
+    const { projectLanguageCode } = this.configRepository.getXcodeConfig();
+    const languageCode: LanguageCode | undefined =
+      projectLanguageCode[projectName];
     let language = LanguageRepository.supportLanguages.find((language) => {
       return language.languageCode === languageCode;
     });
@@ -186,7 +187,10 @@ export class ConfigServiceImpl implements ConfigService {
     if (language) {
       // update xcode config
       this.configRepository.setXcodeConfig({
-        custom: { ...custom, [projectName]: language.languageCode },
+        projectLanguageCode: {
+          ...projectLanguageCode,
+          [projectName]: language.languageCode,
+        },
       });
     }
     return language;

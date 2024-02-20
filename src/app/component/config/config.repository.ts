@@ -105,7 +105,7 @@ export class ConfigRepository implements ConfigRepositoryI {
   public getXcodeConfig(): XcodeConfig {
     return (
       this.config.xcodeConfig ?? {
-        custom: {},
+        projectLanguageCode: {},
       }
     );
   }

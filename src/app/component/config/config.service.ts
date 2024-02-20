@@ -21,6 +21,16 @@ export class ConfigServiceImpl implements ConfigService {
     this.configRepository = configRepository;
   }
 
+  public getMetadataExcludeLocaleList(): string[] {
+    const { exclude } = this.configRepository.getMetadataConfig();
+    return exclude;
+  }
+
+  public getChangelogExcludeLocaleList(): string[] {
+    const { exclude } = this.configRepository.getChangelogConfig();
+    return exclude;
+  }
+
   public getARBExcludeLanguageCodeList(): string[] {
     const { exclude } = this.configRepository.getARBConfig();
     return exclude;

@@ -1,9 +1,11 @@
 import {
   ARBConfig,
+  ChangelogConfig,
   Config,
   ConfigRepositoryI,
   GoogleAuthConfig,
   GoogleSheetConfig,
+  MetadataConfig,
   XcodeConfig,
 } from "./config";
 import { ConfigDataSource } from "./config.datasource";
@@ -22,6 +24,23 @@ export class ConfigRepository implements ConfigRepositoryI {
   constructor({ configDataSource }: InitParams) {
     this.configDataSource = configDataSource;
   }
+
+  public getMetadataConfig(): MetadataConfig {
+    return (
+      this.config.metadataConfig ?? {
+        exclude: [],
+      }
+    );
+  }
+
+  public getChangelogConfig(): ChangelogConfig {
+    return (
+      this.config.changelogConfig ?? {
+        exclude: [],
+      }
+    );
+  }
+
   public getARBConfig(): ARBConfig {
     return (
       this.config.arbConfig ?? {

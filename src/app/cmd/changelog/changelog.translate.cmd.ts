@@ -52,7 +52,7 @@ export class ChangelogTranslateCmd {
     // select source metadata language in android
     const sourcePlatform = MetadataSupportPlatform.android;
     const metadataLanguageList =
-      this.metadataService.getLanguagesInPlatform(sourcePlatform);
+      this.metadataService.getMetadataLanguagesInPlatform(sourcePlatform);
     const sourceMetadataLanguage =
       args?.sourceMetadataLanguage ??
       (await this.metadataService.selectLanguage({

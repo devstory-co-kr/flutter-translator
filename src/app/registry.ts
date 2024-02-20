@@ -12,6 +12,7 @@ import { ChangelogOpenCmd } from "./cmd/changelog/changelog.open.cmd";
 import { ChangelogTranslateCmd } from "./cmd/changelog/changelog.translate.cmd";
 import { MetadataCheckCmd } from "./cmd/metadata/metadata.check.cmd";
 import { MetadataCreateCmd } from "./cmd/metadata/metadata.create.cmd";
+import { MetadataDeleteCmd } from "./cmd/metadata/metadata.delete.cmd";
 import { MetadataOpenCmd } from "./cmd/metadata/metadata.open.cmd";
 import { MetadataTranslateCmd } from "./cmd/metadata/metadata.translate.cmd";
 import { XcodeStringsTranslateCmd } from "./cmd/xcode_strings/xcode_strings.translate.cmd";
@@ -107,6 +108,7 @@ export class Registry {
   public arbChangeKeysCmd: ARBChangeKeysCmd;
   public arbDeleteKeysCmd: ARBDeleteKeysCmd;
   public metadataCreateCmd: MetadataCreateCmd;
+  public metadataDeleteCmd: MetadataDeleteCmd;
   public metadataTranslateCmd: MetadataTranslateCmd;
   public metadataCheckCmd: MetadataCheckCmd;
   public metadataOpenCmd: MetadataOpenCmd;
@@ -245,6 +247,9 @@ export class Registry {
       arbService: this.arbService,
     });
     this.metadataCreateCmd = new MetadataCreateCmd({
+      metadataService: this.metadataService,
+    });
+    this.metadataDeleteCmd = new MetadataDeleteCmd({
       metadataService: this.metadataService,
     });
     this.metadataTranslateCmd = new MetadataTranslateCmd({

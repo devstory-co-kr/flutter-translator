@@ -21,6 +21,7 @@ export class Dialog {
     cancelDesc,
     confirmDetail,
     cancelDetail,
+    isReverse,
   }: {
     title: string;
     placeHolder?: string;
@@ -30,20 +31,20 @@ export class Dialog {
     cancelDesc?: string;
     confirmDetail?: string;
     cancelDetail?: string;
+    isReverse?: boolean;
   }): Promise<boolean> {
+    const confirm = {
+      label: confirmText ?? "Yes",
+      description: confirmDesc,
+      detail: confirmDetail,
+    };
+    const cancel = {
+      label: cancelText ?? "No",
+      description: cancelDesc,
+      detail: cancelDetail,
+    };
     const select = await vscode.window.showQuickPick(
-      <vscode.QuickPickItem[]>[
-        {
-          label: confirmText ?? "Yes",
-          description: confirmDesc,
-          detail: confirmDetail,
-        },
-        {
-          label: cancelText ?? "No",
-          description: cancelDesc,
-          detail: cancelDetail,
-        },
-      ],
+      isReverse ? [cancel, confirm] : [confirm, cancel],
       {
         title,
         placeHolder,

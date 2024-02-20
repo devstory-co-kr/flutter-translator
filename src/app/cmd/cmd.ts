@@ -10,6 +10,7 @@ export enum Cmd {
   ARBOpenGoogleSheet = "flutter-translator.arb.openGoogleSheet",
   // Metadata Command
   MetadataCreate = "flutter-translator.metadata.create",
+  MetadataDelete = "flutter-translator.metadata.delete",
   MetadataTranslate = "flutter-translator.metadata.translate",
   MetadataCheck = "flutter-translator.metadata.check",
   MetadataOpen = "flutter-translator.metadata.open",
@@ -36,6 +37,7 @@ export const cmdName: Record<Cmd, string> = {
   [Cmd.ARBDeleteKeys]: "Flutter Translator: ARB - Delete Keys",
   // Metadata Command
   [Cmd.MetadataCreate]: "Flutter Translator: Metadata - Create",
+  [Cmd.MetadataDelete]: "Flutter Translator: Metadata - Delete",
   [Cmd.MetadataTranslate]: "Flutter Translator: Metadata - Translate",
   [Cmd.MetadataCheck]: "Flutter Translator: Metadata - Check",
   [Cmd.MetadataOpen]: "Flutter Translator: Metadata - Open",

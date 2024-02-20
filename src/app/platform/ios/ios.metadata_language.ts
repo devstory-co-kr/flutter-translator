@@ -14,12 +14,12 @@ export class IosMetadataLanguage implements PlatformMetadataLanguage {
       translateLanguage: LanguageRepository.catalan,
     },
     {
-      name: "Chinese (Simplified)",
+      name: "Chinese Simplified",
       locale: "zh-Hans",
       translateLanguage: LanguageRepository.chineseSimplified,
     },
     {
-      name: "Chinese (Traditional)",
+      name: "Chinese Traditional",
       locale: "zh-Hant",
       translateLanguage: LanguageRepository.chineseTraditional,
     },
@@ -44,22 +44,22 @@ export class IosMetadataLanguage implements PlatformMetadataLanguage {
       translateLanguage: LanguageRepository.dutch,
     },
     {
-      name: "English (Australia)",
+      name: "English Australia",
       locale: "en-AU",
       translateLanguage: LanguageRepository.english,
     },
     {
-      name: "English (Canada)",
+      name: "English Canada",
       locale: "en-CA",
       translateLanguage: LanguageRepository.english,
     },
     {
-      name: "English (U.K.)",
+      name: "English U.K.",
       locale: "en-GB",
       translateLanguage: LanguageRepository.english,
     },
     {
-      name: "English (U.S.)",
+      name: "English U.S.",
       locale: "en-US",
       translateLanguage: LanguageRepository.english,
     },
@@ -74,7 +74,7 @@ export class IosMetadataLanguage implements PlatformMetadataLanguage {
       translateLanguage: LanguageRepository.french,
     },
     {
-      name: "French (Canada)",
+      name: "French Canada",
       locale: "fr-CA",
       translateLanguage: LanguageRepository.french,
     },
@@ -139,12 +139,12 @@ export class IosMetadataLanguage implements PlatformMetadataLanguage {
       translateLanguage: LanguageRepository.polish,
     },
     {
-      name: "Portuguese (Brazil)",
+      name: "Portuguese Brazil",
       locale: "pt-BR",
       translateLanguage: LanguageRepository.portuguese,
     },
     {
-      name: "Portuguese (Portugal)",
+      name: "Portuguese Portugal",
       locale: "pt-PT",
       translateLanguage: LanguageRepository.portuguese,
     },
@@ -164,12 +164,12 @@ export class IosMetadataLanguage implements PlatformMetadataLanguage {
       translateLanguage: LanguageRepository.slovak,
     },
     {
-      name: "Spanish (Mexico)",
+      name: "Spanish Mexico",
       locale: "es-MX",
       translateLanguage: LanguageRepository.spanish,
     },
     {
-      name: "Spanish (Spain)",
+      name: "Spanish Spain",
       locale: "es-ES",
       translateLanguage: LanguageRepository.spanish,
     },

@@ -1,6 +1,9 @@
 import { ARBFileName, LanguageCode } from "../config/config";
 
 export type Language = {
+  // whether left to right or right to left
+  isLTR: boolean;
+
   // google translation parameter
   gt: string;
 

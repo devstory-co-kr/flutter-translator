@@ -4,6 +4,7 @@ import { ChangelogCreateCmdArgs } from "./cmd/changelog/changelog.create.cmd";
 import { ChangelogTranslateCmdArgs } from "./cmd/changelog/changelog.translate.cmd";
 import { Cmd } from "./cmd/cmd";
 import { MetadataCreateCmdArgs } from "./cmd/metadata/metadata.create.cmd";
+import { MetadataDeleteCmdArgs } from "./cmd/metadata/metadata.delete.cmd";
 import { XcodeStringsTranslateCmdArgs } from "./cmd/xcode_strings/xcode_strings.translate.cmd";
 import { Registry } from "./registry";
 import { Constant } from "./util/constant";
@@ -66,6 +67,9 @@ export class FlutterTranslator implements App {
      */
     [Cmd.MetadataCreate]: (args?: MetadataCreateCmdArgs) => {
       return this.registry.metadataCreateCmd.run(args);
+    },
+    [Cmd.MetadataDelete]: (args?: MetadataDeleteCmdArgs) => {
+      return this.registry.metadataDeleteCmd.run(args);
     },
     [Cmd.MetadataTranslate]: () => {
       return this.registry.metadataTranslateCmd.run();

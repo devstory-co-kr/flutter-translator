@@ -64,4 +64,16 @@ export class Workspace {
       }
     }
   }
+
+  public static deleteDirectory(directoryPath: string): void {
+    fs.readdirSync(directoryPath).forEach((file) => {
+      const filePath = path.join(directoryPath, file);
+      if (fs.lstatSync(filePath).isDirectory()) {
+        Workspace.deleteDirectory(filePath);
+      } else {
+        fs.unlinkSync(filePath);
+      }
+    });
+    fs.rmdirSync(directoryPath);
+  }
 }

@@ -117,6 +117,13 @@
         ]
       },
       {
+        "command": "flutter-translator.metadata.delete",
+        "title": "Flutter Translator: Metadata - Delete",
+        "args": [
+          "args"
+        ]
+      },
+      {
         "command": "flutter-translator.metadata.translate",
         "title": "Flutter Translator: Metadata - Translate"
       },

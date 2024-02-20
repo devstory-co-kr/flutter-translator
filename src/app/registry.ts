@@ -248,6 +248,7 @@ export class Registry {
       metadataService: this.metadataService,
     });
     this.metadataTranslateCmd = new MetadataTranslateCmd({
+      configService: this.configService,
       metadataService: this.metadataService,
       translationService: this.translationService,
     });
@@ -262,6 +263,7 @@ export class Registry {
       changelogService: this.changelogService,
     });
     this.changelogTranslateCmd = new ChangelogTranslateCmd({
+      configService: this.configService,
       metadataService: this.metadataService,
       changelogService: this.changelogService,
       translationService: this.translationService,

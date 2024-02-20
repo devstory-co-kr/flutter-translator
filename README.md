@@ -123,26 +123,43 @@ It is recommended to set the configuration in the project workspace(`.vscode/set
       "apiKey": "YOUR_GOOGLE_API_KEY";
       "credential": "YOUR_CREDENTIAL_JSON_FILE_ABSOLUTE_PATH";
     }
-    "googleSheet": {
-      id: "YOUR_GOOGLE_SHEET_ID",
-      name: "YOUR_GOOGLE_SHEET_NAME",
-      exclude: ["ko", "zh_CN", "fr"]
+    "googleSheetConfig": {
+      "id": "YOUR_GOOGLE_SHEET_ID",
+      "name": "YOUR_GOOGLE_SHEET_NAME",
+      "exclude": ["ko", "zh_CN", "fr"]
     },
+    "metadataConfig": {
+      "exclude": ["ko-KR", "zh-CN"]
+    },
+    "changelogConfig": {
+      "exclude": ["ko-KR", "zh-CN"]
+    },
+    "xcodeConfig": {
+      "projectLanguageCode": {
+        "fil.lproj": "tl"
+      }
+    }
   }
 }
 ```
-- **ARBConfig**
+- **arbConfig**
   - `sourcePath` : Absolute path to the source ARB file you want to translate.
-  - `exclude` : List of language codes that you do not want to translate.
+  - `exclude` : [List of ARB language codes](https://gist.github.com/nero-angela/37984030bcc5dd0e62dc3143bb8c053d) that you do not want to translate.
   - `prefix` : Arb common string to prepend to file name. (e.g. `intl_` : `intl_ko.arb`, `intl_hi.arb`, `intl_fr.arb`)
   - `custom` : You can customize the ARB file name for languageCode in the format `{LanguageCode: CUSTOM_NAME}` and arbFilePrefix is not applied.
-- **GoogleAuthConfig**
+- **googleAuthConfig**
   - `apiKey` : This is a Google API key and is required when using the paid translation function.
   - `credential` : Absolute path to JSON key files created after creating a [service account](https://developers.google.com/workspace/guides/create-credentials?#service-account) on the Google Cloud console.
-- **GoogleSheet**
+- **googleSheetConfig**
   - `id` : You can find the spreadsheet ID in a Google Sheets URL: `https://docs.google.com/spreadsheets/d/<GOOGLE_SHEET_ID>/edit#gid=0`
   - `name` : Sheet name at the bottom of google sheet.
-  - `exclude` : List of language codes that you do not want to upload.
+  - `exclude` : [List of ARB language codes](https://gist.github.com/nero-angela/37984030bcc5dd0e62dc3143bb8c053d) that you do not want to upload.
+- **metadataConfig**
+  - `exclude` : [List of platform language codes](https://gist.github.com/nero-angela/37984030bcc5dd0e62dc3143bb8c053d) that you do not want to translate.
+- **changelogConfig**
+  - `exclude` : [List of platform language codes](https://gist.github.com/nero-angela/37984030bcc5dd0e62dc3143bb8c053d) that you do not want to translate.
+- **xcodeConfig**
+  - `projectLanguageCode`: Set the language to translate `locale.lproj` into. Enter the folder name ending with `.lproj` and the [ARB language code](https://gist.github.com/nero-angela/37984030bcc5dd0e62dc3143bb8c053d) name.
 
 
 

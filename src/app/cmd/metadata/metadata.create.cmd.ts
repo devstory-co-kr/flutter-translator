@@ -40,7 +40,7 @@ export class MetadataCreateCmd {
       args?.selectedMetadataLanguages ??
       (await this.metadataService.selectLanguageListInPlatform({
         platform,
-        excludeLanguages,
+        excludeLanguages: excludeLanguages,
         placeHolder: `Select languages to add.`,
       }));
     if (languageList.length === 0) {

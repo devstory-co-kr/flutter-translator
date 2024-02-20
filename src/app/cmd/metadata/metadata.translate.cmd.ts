@@ -1,5 +1,6 @@
 import path from "path";
 import * as vscode from "vscode";
+import { ConfigService } from "../../component/config/config";
 import {
   Metadata,
   MetadataText,
@@ -19,17 +20,24 @@ import { Cmd } from "../cmd";
 import { MetadataCreateCmdArgs } from "./metadata.create.cmd";
 
 interface InitParams {
+  configService: ConfigService;
   metadataService: MetadataService;
   translationService: TranslationService;
 }
 
 export class MetadataTranslateCmd {
+  private configService: ConfigService;
   private metadataService: MetadataService;
   private translationService: TranslationService;
 
-  constructor({ metadataService, translationService }: InitParams) {
+  constructor({
+    configService,
+    metadataService,
+    translationService,
+  }: InitParams) {
     this.metadataService = metadataService;
     this.translationService = translationService;
+    this.configService = configService;
   }
 
   public async run() {
@@ -109,12 +117,23 @@ export class MetadataTranslateCmd {
       return;
     }
 
-    // select target metadata languages
+    // target language list
+    const metadataExcludeLocaleList =
+      this.configService.getMetadataExcludeLocaleList();
+    const languages = this.metadataService
+      .getSupportLanguages(platform)
+      .filter((ml) => {
+        return !metadataExcludeLocaleList.includes(ml.locale);
+      });
+
+    // selected target metadata languages
     const selectedMetadataLanguages =
       this.metadataService.getLanguagesInPlatform(platform);
+
     const targetMetadataLanguages =
       await this.metadataService.selectLanguageListInPlatform({
         platform,
+        languages,
         selectedLanguages: selectedMetadataLanguages,
         excludeLanguages: [sourceMetadataLanguage],
         title: "Select Target Languages",

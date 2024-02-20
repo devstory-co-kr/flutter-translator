@@ -61,20 +61,28 @@ export class MetadataService {
     return this.metadataRepository.getLanguagesInPlatform(platform);
   }
 
+  public getSupportLanguages(
+    platform: MetadataSupportPlatform
+  ): MetadataLanguage[] {
+    return this.metadataRepository.getSupportLanguages(platform);
+  }
+
   public async selectLanguageListInPlatform({
     platform,
+    languages,
     selectedLanguages,
     excludeLanguages,
     title,
     placeHolder,
   }: {
     platform: MetadataSupportPlatform;
+    languages?: MetadataLanguage[];
     selectedLanguages?: MetadataLanguage[];
     excludeLanguages?: MetadataLanguage[];
     title?: string;
     placeHolder?: string;
   }): Promise<MetadataLanguage[]> {
-    const languages = this.metadataRepository.getSupportLanguages(platform);
+    const languageList = languages ?? this.getSupportLanguages(platform);
     const [selected, notSelected] = ["Selected", "Not Selected"];
     const selections = await Dialog.showSectionedPicker<
       MetadataLanguage,
@@ -84,7 +92,7 @@ export class MetadataService {
       canPickMany: true,
       title: title ?? "Select Language list",
       placeHolder: placeHolder ?? "Select Language list",
-      itemList: languages.filter(
+      itemList: languageList.filter(
         (language) => !(excludeLanguages ?? []).includes(language)
       ),
       itemBuilder: (language) => {
@@ -105,11 +113,15 @@ export class MetadataService {
   }
 
   public async selectPlatformLanguages({
+    itemListFilter,
     excludePlatformLanguages,
     title,
     placeHolder,
     picked,
   }: {
+    itemListFilter?: (
+      platformLanguages: MetadataPlatformLanguage[]
+    ) => MetadataPlatformLanguage[];
     excludePlatformLanguages?: {
       [platform in MetadataSupportPlatform]: MetadataLanguage[];
     };
@@ -142,7 +154,9 @@ export class MetadataService {
       MetadataPlatformLanguage
     >({
       sectionLabelList: Object.keys(MetadataSupportPlatform),
-      itemList: platformLanguages,
+      itemList: itemListFilter
+        ? itemListFilter(platformLanguages)
+        : platformLanguages,
       itemBuilder: (pl) => {
         return {
           section: pl.platform,

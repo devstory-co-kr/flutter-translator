@@ -2,6 +2,10 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
+## [2.1.4] - 24.02.24
+### Fixed
+- Fix text direction for `Amharic(LTR)`, `Arabic(RTL)`, and `Yiddish(RTL)`.
+
 ## [2.1.3] - 24.02.20
 ### Added
 - Add `Metadata - Delete` command.

@@ -14,13 +14,13 @@ export class LanguageRepository {
     languageCode: "sq",
   };
   public static amharic: Language = {
-    isLTR: false,
+    isLTR: true,
     gt: "am",
     name: "Amharic",
     languageCode: "am",
   };
   public static arabic: Language = {
-    isLTR: true,
+    isLTR: false,
     gt: "ar",
     name: "Arabic",
     languageCode: "ar",
@@ -782,7 +782,7 @@ export class LanguageRepository {
     languageCode: "xh",
   };
   public static yiddish: Language = {
-    isLTR: true,
+    isLTR: false,
     gt: "yi",
     name: "Yiddish",
     languageCode: "yi",

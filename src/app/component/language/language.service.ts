@@ -1,4 +1,5 @@
 import path from "path";
+import * as vscode from "vscode";
 import {
   InvalidArbFileNameException,
   InvalidLanguageCodeException,
@@ -50,7 +51,7 @@ export class LanguageService {
    * @returns Language
    * @throws InvalidLanguageCodeException
    */
-  getLanguageByLanguageCode(languageCode: string): Language {
+  public getLanguageByLanguageCode(languageCode: string): Language {
     const language = LanguageRepository.supportLanguages.find(
       (sl) => sl.languageCode === languageCode
     );
@@ -64,8 +65,8 @@ export class LanguageService {
     arbFilePath: string
   ): Promise<LanguageCode> {
     const prefix = await this.configService.getARBPrefix();
-    const fileName = arbFilePath.split("/").pop()!.split(".arb")[0];
-    let languageCode: string;
+    const fileName = path.basename(arbFilePath);
+    let languageCode: LanguageCode;
 
     // customArbFileName -> LanguageCode
     const customArbFileName = await this.configService.getCustomARBFileName();
@@ -77,13 +78,35 @@ export class LanguageService {
 
     // arbFilePath -> LanguageCode
     try {
-      const fileName = arbFilePath.split("/").pop()!.split(".arb")[0];
       languageCode = prefix ? fileName?.split(prefix)[1]! : fileName;
 
       this.checkIsSupportLanguageCode(languageCode);
       return languageCode;
     } catch (e: any) {
-      throw new InvalidArbFileNameException(arbFilePath);
+      // select language
+      const selection = await vscode.window.showQuickPick(
+        LanguageRepository.supportLanguages.map(
+          (l) => ({
+            label: `${l.name} (${l.languageCode})`,
+            language: l,
+          }),
+          {
+            title: "Unidentified File Language Settings",
+            placeHolder: `Please select the language of "${fileName}".`,
+            ignoreFocusOut: true,
+          }
+        )
+      );
+      if (!selection) {
+        throw new InvalidArbFileNameException(fileName);
+      }
+      languageCode = selection.language.languageCode;
+
+      // add to ARB custom
+      await this.configService.setARBCustom({
+        [languageCode]: fileName,
+      });
+      return languageCode;
     }
   }
 

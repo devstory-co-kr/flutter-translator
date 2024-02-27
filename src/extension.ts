@@ -12,9 +12,9 @@ export function activate(context: vscode.ExtensionContext) {
       try {
         await app.migrate(context);
         await app.init();
-        await app.commands[cmd](args);
+        app.commands[cmd](args);
       } catch (e) {
-        await app.onException(e);
+        app.onException(e);
       }
     });
     context.subscriptions.push(disposable);

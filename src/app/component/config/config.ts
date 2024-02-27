@@ -77,6 +77,7 @@ export interface ConfigService {
   getCustomARBFileName(): Promise<CustomARBFileName>;
   getARBPrefix(): Promise<string | undefined>;
   getARBExcludeLanguageCodeList(): LanguageCode[];
+  setARBCustom(custom: Record<LanguageCode, ARBFileName>): Promise<void>;
   getGoogleAuthCredential(): Promise<FilePath>;
   getGoogleAuthAPIKey(): Promise<GoogleAPIKey>;
   getMetadataExcludeLocaleList(): MetadataLocale[];

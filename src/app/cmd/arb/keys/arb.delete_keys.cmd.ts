@@ -32,6 +32,7 @@ export class ARBDeleteKeysCmd {
         title: "Please select the key to delete.",
         placeHolder: "Please select the key to delete.",
         canPickMany: true,
+        ignoreFocusOut: true,
       }
     );
     if (!selections) {

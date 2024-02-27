@@ -60,7 +60,7 @@ export class FileNotFoundException extends BaseException {
 
 export class InvalidArbFileNameException extends BaseException {
   constructor(arbFileName: string) {
-    super(`The language code of ${arbFileName} is not valid.`);
+    super(`The language code of ${arbFileName} is not valid. `);
   }
 }
 

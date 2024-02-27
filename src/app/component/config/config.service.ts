@@ -10,7 +10,13 @@ import { Workspace } from "../../util/workspace";
 import { CustomARBFileName, Language } from "../language/language";
 import { LanguageRepository } from "../language/language.repository";
 import { XcodeProjectName } from "../xcode/xcode";
-import { ConfigService, FilePath, GoogleAPIKey, LanguageCode } from "./config";
+import {
+  ARBFileName,
+  ConfigService,
+  FilePath,
+  GoogleAPIKey,
+  LanguageCode,
+} from "./config";
 import { ConfigRepository } from "./config.repository";
 
 interface InitParams {
@@ -37,6 +43,20 @@ export class ConfigServiceImpl implements ConfigService {
     const { exclude } = this.configRepository.getARBConfig();
     return exclude;
   }
+
+  public async setARBCustom(
+    custom: Record<LanguageCode, ARBFileName>
+  ): Promise<void> {
+    const arbConfig = this.configRepository.getARBConfig();
+    return this.configRepository.setARBConfig({
+      ...arbConfig,
+      custom: {
+        ...arbConfig.custom,
+        ...custom,
+      },
+    });
+  }
+
   public async getGoogleAuthCredential(): Promise<FilePath> {
     const { credential } = this.configRepository.getGoogleAuthConfig();
     let credentialPath: string | undefined = credential;
@@ -119,6 +139,7 @@ export class ConfigServiceImpl implements ConfigService {
     const { prefix } = await this.configRepository.getARBConfig();
     return prefix;
   }
+
   public async getCustomARBFileName(): Promise<CustomARBFileName> {
     const { custom } = await this.configRepository.getARBConfig();
     return {
@@ -134,16 +155,14 @@ export class ConfigServiceImpl implements ConfigService {
     if (!sourceARBPath) {
       const arbPathList = await Workspace.getARBFilePathListInWorkspace();
       const selection = await vscode.window.showQuickPick(
-        arbPathList.map(
-          (arbPath: string) => ({
-            label: arbPath,
-          }),
-          {
-            title: "Select source ARB file path",
-            placeHolder: "Please select the source ARB file.",
-            ignoreFocusOut: true,
-          }
-        )
+        arbPathList.map((arbPath: string) => ({
+          label: arbPath,
+        })),
+        {
+          title: "Select source ARB file path",
+          placeHolder: "Please select the source ARB file.",
+          ignoreFocusOut: true,
+        }
       );
       if (!selection) {
         throw new SourceARBPathRequiredException();

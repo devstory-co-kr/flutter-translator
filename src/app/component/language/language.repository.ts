@@ -1,6 +1,12 @@
 import { Language } from "./language";
 
 export class LanguageRepository {
+  public static auto: Language = {
+    isLTR: true,
+    gt: "auto",
+    name: "Auto Detect",
+    languageCode: "-",
+  };
   public static afrikaans: Language = {
     isLTR: true,
     gt: "af",

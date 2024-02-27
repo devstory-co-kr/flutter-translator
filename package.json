@@ -4,7 +4,7 @@
   "license": "SEE LICENSE IN LICENSE",
   "displayName": "Flutter Translator",
   "description": "It supports the internationalization of flutter applications using Google Translator.",
-  "version": "2.1.5",
+  "version": "2.2.0",
   "engines": {
     "vscode": "^1.84.0"
   },
@@ -32,51 +32,15 @@
       "title": "FlutterTranslator",
       "properties": {
         "flutterTranslator.config": {
-          "type": "object",
-          "properties": {
-            "arbPrefix": {
-              "type": "string",
-              "default": "",
-              "description": "arb file prefix (e.g. if you have intl_en.arb file, prefix is \"intl_\")"
-            },
-            "sourceArbFilePath": {
-              "type": "string",
-              "default": "",
-              "description": "Source arb file you want to translate"
-            },
-            "googleAPIKey": {
-              "type": "string",
-              "default": "",
-              "markdownDescription": "Enter the Google API key. Please please refer to the [link](https://cloud.google.com/translate/docs/setup) and proceed with the API setting and API Key issuance process. (e.g., 1111111-2222-3333-4444-555555555555:aa)"
-            },
-            "historyFilePath": {
-              "type": "string",
-              "default": "",
-              "description": "Path to save the last translated source arb file history (for tracking changes)"
-            },
-            "selectedLanguages": {
-              "type": "array",
-              "items": {
-                "type": "object",
-                "properties": {
-                  "name": {
-                    "type": "string",
-                    "default": "",
-                    "description": "Language name"
-                  },
-                  "arb": {
-                    "type": "string",
-                    "default": "",
-                    "description": "arb file name"
-                  }
-                }
-              }
-            }
-          }
+          "type": "object"
         }
       }
     },
     "commands": [
+      {
+        "command": "flutter-translator.text.translate",
+        "title": "Flutter Translator: Text - Translate"
+      },
       {
         "command": "flutter-translator.arb.translate",
         "title": "Flutter Translator: ARB - Translate"

@@ -2,6 +2,10 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
+## [2.2.0] - 24.02.27
+### Added
+- Add `Text - Translate` command.
+
 ## [2.1.5] - 24.02.27
 ### Changed
 - Change the source ARB file path input method.

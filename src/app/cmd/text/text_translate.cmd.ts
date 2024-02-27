@@ -30,7 +30,6 @@ export class TextTranslateCmd {
       Toast.i("Please select the text you want to translate.");
       return;
     }
-    console.log(editor.selections.length);
 
     // select source language
     const sourceSelection = await vscode.window.showQuickPick(
@@ -38,13 +37,13 @@ export class TextTranslateCmd {
         (l) => ({
           label: `${l.name} (${l.languageCode})`,
           language: l,
-        }),
-        {
-          title: "Select source language",
-          placeHolder: "Please select a translation source language.",
-          ignoreFocusOut: true,
-        }
-      )
+        })
+      ),
+      {
+        title: "Select source language",
+        placeHolder: "Please select a translation source language.",
+        ignoreFocusOut: true,
+      }
     );
     if (!sourceSelection) {
       return;
@@ -53,18 +52,16 @@ export class TextTranslateCmd {
 
     // select target language
     const targetSelection = await vscode.window.showQuickPick(
-      LanguageRepository.supportLanguages.map(
-        (l) => ({
-          label: `${l.name} (${l.languageCode})`,
-          language: l,
-        }),
-        {
-          title: "Select target language",
-          placeHolder:
-            "Please select the target language you want to translate to",
-          ignoreFocusOut: true,
-        }
-      )
+      LanguageRepository.supportLanguages.map((l) => ({
+        label: `${l.name} (${l.languageCode})`,
+        language: l,
+      })),
+      {
+        title: "Select target language",
+        placeHolder:
+          "Please select the target language you want to translate to",
+        ignoreFocusOut: true,
+      }
     );
     if (!targetSelection) {
       return;

@@ -155,16 +155,14 @@ export class ConfigServiceImpl implements ConfigService {
     if (!sourceARBPath) {
       const arbPathList = await Workspace.getARBFilePathListInWorkspace();
       const selection = await vscode.window.showQuickPick(
-        arbPathList.map(
-          (arbPath: string) => ({
-            label: arbPath,
-          }),
-          {
-            title: "Select source ARB file path",
-            placeHolder: "Please select the source ARB file.",
-            ignoreFocusOut: true,
-          }
-        )
+        arbPathList.map((arbPath: string) => ({
+          label: arbPath,
+        })),
+        {
+          title: "Select source ARB file path",
+          placeHolder: "Please select the source ARB file.",
+          ignoreFocusOut: true,
+        }
       );
       if (!selection) {
         throw new SourceARBPathRequiredException();

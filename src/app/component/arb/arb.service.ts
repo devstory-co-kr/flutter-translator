@@ -46,6 +46,7 @@ export class ARBServiceImpl implements ARBService {
     const selectedItems = await vscode.window.showQuickPick(pickItems, {
       title,
       placeHolder,
+      ignoreFocusOut: false,
       canPickMany: true,
     });
 

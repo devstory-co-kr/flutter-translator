@@ -46,6 +46,7 @@ export class MetadataService {
       {
         title: title ?? "Select Platform",
         placeHolder: placeHolder ?? "Select Platform",
+        ignoreFocusOut: false,
       }
     );
     return selectedPlatform?.platform;
@@ -242,6 +243,7 @@ export class MetadataService {
       {
         title: "Url Files Processing Policy",
         placeHolder: "Please select a policy for handling URL files.",
+        ignoreFocusOut: false,
       }
     );
     return selection?.policy;

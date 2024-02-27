@@ -54,6 +54,7 @@ export class GoogleTranslationService implements TranslationService {
     const selectedItem = await vscode.window.showQuickPick(items, {
       title: "Please select a translation method.",
       canPickMany: false,
+      ignoreFocusOut: false,
     });
     if (!selectedItem) {
       return undefined;

@@ -65,7 +65,7 @@ export class LanguageService {
     arbFilePath: string
   ): Promise<LanguageCode> {
     const prefix = await this.configService.getARBPrefix();
-    const fileName = path.basename(arbFilePath);
+    const fileName = path.parse(arbFilePath).name;
     let languageCode: LanguageCode;
 
     // customArbFileName -> LanguageCode
@@ -85,17 +85,15 @@ export class LanguageService {
     } catch (e: any) {
       // select language
       const selection = await vscode.window.showQuickPick(
-        LanguageRepository.supportLanguages.map(
-          (l) => ({
-            label: `${l.name} (${l.languageCode})`,
-            language: l,
-          }),
-          {
-            title: "Unidentified File Language Settings",
-            placeHolder: `Please select the language of "${fileName}".`,
-            ignoreFocusOut: true,
-          }
-        )
+        LanguageRepository.supportLanguages.map((l) => ({
+          label: `${l.name} (${l.languageCode})`,
+          language: l,
+        })),
+        {
+          title: `Select "${fileName}" File Language`,
+          placeHolder: `Please select the language of "${fileName}".`,
+          ignoreFocusOut: true,
+        }
       );
       if (!selection) {
         throw new InvalidArbFileNameException(fileName);

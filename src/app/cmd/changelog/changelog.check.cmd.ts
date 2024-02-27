@@ -89,7 +89,8 @@ export class ChangelogCheckCmd {
             };
           }),
           {
-            title: `Do you want to create and translate all ${translateRequiredItemList.length} changelogs?`,
+            title: `Create and translate changelogs`,
+            placeHolder: `Do you want to create and translate all ${translateRequiredItemList.length} changelogs?`,
             canPickMany: true,
             ignoreFocusOut: true,
           }

@@ -30,6 +30,10 @@ This is a extension created based on an environment using **Flutter** and **Fast
 - [Xcode Strings](#xcode_strings) files translation.
 
 ## Usage
+### Text Translate
+1. Select the text you want to translate.
+1. Run `Flutter Translator: Text - Translate`
+
 ### ARB
 1. Configure the Flutter project localizations environment by referring to the [documentation](https://docs.flutter.dev/ui/accessibility-and-internationalization/internationalization).
 1. Run `Flutter Translator: ARB - Initialize`

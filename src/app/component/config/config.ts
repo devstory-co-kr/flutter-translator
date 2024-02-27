@@ -48,24 +48,28 @@ export type Config = {
 
 export interface ConfigDataSourceI {
   getConfig(): Partial<Config>;
-  setConfig(config: Partial<Config>): void;
+  setConfig(config: Partial<Config>): Thenable<void>;
 }
 
 export interface ConfigRepositoryI {
   getARBConfig(): ARBConfig;
-  setARBConfig(arbConfig: Partial<ARBConfig>): void;
+  setARBConfig(arbConfig: Partial<ARBConfig>): Thenable<void>;
 
   getGoogleAuthConfig(): GoogleAuthConfig;
-  setGoogleAuthConfig(googleAuthConfig: Partial<GoogleAuthConfig>): void;
+  setGoogleAuthConfig(
+    googleAuthConfig: Partial<GoogleAuthConfig>
+  ): Thenable<void>;
 
   getGoogleSheetConfig(): GoogleSheetConfig;
-  setGoogleSheetConfig(googleSheetConfig: Partial<GoogleSheetConfig>): void;
+  setGoogleSheetConfig(
+    googleSheetConfig: Partial<GoogleSheetConfig>
+  ): Thenable<void>;
 
   getMetadataConfig(): MetadataConfig;
   getChangelogConfig(): ChangelogConfig;
 
   getXcodeConfig(): XcodeConfig;
-  setXcodeConfig(xcodeConfig: Partial<XcodeConfig>): void;
+  setXcodeConfig(xcodeConfig: Partial<XcodeConfig>): Thenable<void>;
 }
 
 export interface ConfigService {

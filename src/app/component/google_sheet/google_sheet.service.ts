@@ -45,7 +45,7 @@ export class GoogleSheetService {
         );
       }
 
-      this.configRepository.setGoogleSheetConfig({
+      await this.configRepository.setGoogleSheetConfig({
         id,
       });
     }
@@ -66,7 +66,7 @@ export class GoogleSheetService {
         );
       }
 
-      this.configRepository.setGoogleSheetConfig({
+      await this.configRepository.setGoogleSheetConfig({
         name,
       });
     }

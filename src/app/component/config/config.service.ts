@@ -1,10 +1,12 @@
 import * as fs from "fs";
+import path from "path";
 import * as vscode from "vscode";
 import {
   GoogleAuthRequiredException,
   SourceARBPathRequiredException,
 } from "../../util/exceptions";
 import { Link } from "../../util/link";
+import { Workspace } from "../../util/workspace";
 import { CustomARBFileName, Language } from "../language/language";
 import { LanguageRepository } from "../language/language.repository";
 import { XcodeProjectName } from "../xcode/xcode";
@@ -70,7 +72,7 @@ export class ConfigServiceImpl implements ConfigService {
         );
       }
 
-      this.configRepository.setGoogleAuthConfig({
+      await this.configRepository.setGoogleAuthConfig({
         credential: credentialPath,
       });
     }
@@ -107,7 +109,7 @@ export class ConfigServiceImpl implements ConfigService {
         throw new GoogleAuthRequiredException(`Google API key required.`);
       }
 
-      this.configRepository.setGoogleAuthConfig({
+      await this.configRepository.setGoogleAuthConfig({
         apiKey: googleAPIKey,
       });
     }
@@ -130,24 +132,28 @@ export class ConfigServiceImpl implements ConfigService {
     const { sourcePath } = this.configRepository.getARBConfig();
     let sourceARBPath: string | undefined = sourcePath;
     if (!sourceARBPath) {
-      sourceARBPath = await vscode.window.showInputBox({
-        title: "Source ARB File Path",
-        placeHolder: "Please enter the source ARB file absolute path.",
-        ignoreFocusOut: true,
-        validateInput: (value) => {
-          if (!value) {
-            return "Source ARB path required";
-          } else if (!fs.existsSync(value)) {
-            return `Source ARB file not exist in ${value}`;
+      const arbPathList = await Workspace.getARBFilePathListInWorkspace();
+      const selection = await vscode.window.showQuickPick(
+        arbPathList.map(
+          (arbPath: string) => ({
+            label: arbPath,
+          }),
+          {
+            title: "Select source ARB file path",
+            placeHolder: "Please select the source ARB file.",
+            ignoreFocusOut: true,
           }
-        },
-      });
-      if (!sourceARBPath) {
+        )
+      );
+      if (!selection) {
         throw new SourceARBPathRequiredException();
       }
+      sourceARBPath = selection.label;
 
-      this.configRepository.setARBConfig({
+      const intl = "intl_";
+      await this.configRepository.setARBConfig({
         sourcePath: sourceARBPath,
+        prefix: path.basename(sourceARBPath).startsWith(intl) ? intl : "",
       });
     }
     return sourceARBPath;
@@ -186,7 +192,7 @@ export class ConfigServiceImpl implements ConfigService {
     language = selection?.language;
     if (language) {
       // update xcode config
-      this.configRepository.setXcodeConfig({
+      await this.configRepository.setXcodeConfig({
         projectLanguageCode: {
           ...projectLanguageCode,
           [projectName]: language.languageCode,

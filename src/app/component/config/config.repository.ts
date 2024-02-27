@@ -51,8 +51,8 @@ export class ConfigRepository implements ConfigRepositoryI {
       }
     );
   }
-  public setARBConfig(arbConfig: Partial<ARBConfig>): void {
-    this.configDataSource.setConfig({
+  public setARBConfig(arbConfig: Partial<ARBConfig>): Thenable<void> {
+    return this.configDataSource.setConfig({
       ...this.config,
       arbConfig: {
         ...this.getARBConfig(),
@@ -71,8 +71,8 @@ export class ConfigRepository implements ConfigRepositoryI {
   }
   public setGoogleAuthConfig(
     googleAuthConfig: Partial<GoogleAuthConfig>
-  ): void {
-    this.configDataSource.setConfig({
+  ): Thenable<void> {
+    return this.configDataSource.setConfig({
       ...this.config,
       googleAuthConfig: {
         ...this.getGoogleAuthConfig(),
@@ -92,8 +92,8 @@ export class ConfigRepository implements ConfigRepositoryI {
   }
   public setGoogleSheetConfig(
     googleSheetConfig: Partial<GoogleSheetConfig>
-  ): void {
-    this.configDataSource.setConfig({
+  ): Thenable<void> {
+    return this.configDataSource.setConfig({
       ...this.config,
       googleSheetConfig: {
         ...this.getGoogleSheetConfig(),
@@ -109,8 +109,8 @@ export class ConfigRepository implements ConfigRepositoryI {
       }
     );
   }
-  public setXcodeConfig(xcodeConfig: Partial<XcodeConfig>): void {
-    this.configDataSource.setConfig({
+  public setXcodeConfig(xcodeConfig: Partial<XcodeConfig>): Thenable<void> {
+    return this.configDataSource.setConfig({
       ...this.config,
       xcodeConfig: {
         ...this.getXcodeConfig(),

@@ -14,7 +14,7 @@ export class ConfigDataSource implements ConfigDataSourceI {
   public getConfig(): Partial<Config> {
     return this.workspace.get<Partial<Config>>(this.key) ?? {};
   }
-  setConfig(config: Partial<Config>): void {
-    this.workspace.update(this.key, config);
+  setConfig(config: Partial<Config>): Thenable<void> {
+    return this.workspace.update(this.key, config);
   }
 }

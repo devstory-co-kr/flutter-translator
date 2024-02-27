@@ -2,6 +2,10 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
+## [2.2.1] - 24.02.27
+### Updated
+- Update to select a language when accessing files that languages are not verified.
+
 ## [2.2.0] - 24.02.27
 ### Added
 - Add `Text - Translate` command.
@@ -58,7 +62,7 @@ All notable changes to the [flutter-translator extension](https://marketplace.vi
 - Remove `validateLanguageCodeList` from configuration.
 
 ## [1.3.11] - 24.01.30
-### Update
+### Updated
 - Update to create @@locale during translation if it does not exist.
 - Update to check the existence of @@locale.
 

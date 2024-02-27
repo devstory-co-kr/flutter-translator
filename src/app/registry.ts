@@ -15,6 +15,7 @@ import { MetadataCreateCmd } from "./cmd/metadata/metadata.create.cmd";
 import { MetadataDeleteCmd } from "./cmd/metadata/metadata.delete.cmd";
 import { MetadataOpenCmd } from "./cmd/metadata/metadata.open.cmd";
 import { MetadataTranslateCmd } from "./cmd/metadata/metadata.translate.cmd";
+import { TextTranslateCmd } from "./cmd/text/text_translate.cmd";
 import { XcodeStringsTranslateCmd } from "./cmd/xcode_strings/xcode_strings.translate.cmd";
 import { ARBService } from "./component/arb/arb";
 import { ARBServiceImpl } from "./component/arb/arb.service";
@@ -53,238 +54,192 @@ export class Registry {
   /**
    * Platform
    */
-  private androidMetadataLanguage: AndroidMetadataLanguage;
-  private iosMetadataLanguage: IosMetadataLanguage;
-  private iosXcodeLanguage: IosXcodeLanguage;
+  private androidMetadataLanguage: AndroidMetadataLanguage =
+    new AndroidMetadataLanguage();
+  private iosMetadataLanguage: IosMetadataLanguage = new IosMetadataLanguage();
+  private iosXcodeLanguage: IosXcodeLanguage = new IosXcodeLanguage();
 
   /**
    * DataSource
    */
-  private configDataSource: ConfigDataSource;
-  private cacheDataSource: TranslationCacheDataSource;
-  private translationDataSource: GoogleTranslationDataSource;
+  private configDataSource: ConfigDataSource = new ConfigDataSource();
+  private cacheDataSource: TranslationCacheDataSource =
+    new TranslationCacheDataSource();
+  private translationDataSource: GoogleTranslationDataSource =
+    new GoogleTranslationDataSource();
 
   /**
    * Repository
    */
-  private translationCacheRepository: TranslationCacheRepository;
-  private translationRepository: GoogleTranslationRepository;
-  private arbValidationRepository: ARBValidationRepository;
-  private historyRepository: HistoryRepository;
-  private configRepository: ConfigRepository;
-  private googleSheetRepository: GoogleSheetRepository;
-  private versionRepository: VersionRepository;
-  private metadataRepository: MetadataRepository;
-  private changelogRepository: ChangelogRepository;
-  private xcodeRepository: XcodeRepository;
+  private translationCacheRepository: TranslationCacheRepository =
+    new TranslationCacheRepository({ cacheDataSource: this.cacheDataSource });
+  private translationRepository: GoogleTranslationRepository =
+    new GoogleTranslationRepository({
+      translationCacheRepository: this.translationCacheRepository,
+      translationDataSource: this.translationDataSource,
+    });
+  private arbValidationRepository: ARBValidationRepository =
+    new ARBValidationRepository();
+  private historyRepository: HistoryRepository = new HistoryRepository();
+  private configRepository: ConfigRepository = new ConfigRepository({
+    configDataSource: this.configDataSource,
+  });
+  private googleSheetRepository: GoogleSheetRepository =
+    new GoogleSheetRepository();
+  private versionRepository: VersionRepository = new VersionRepository();
+  private metadataRepository: MetadataRepository = new MetadataRepository({
+    androidMetadataLanguage: this.androidMetadataLanguage,
+    iosMetadataLanguage: this.iosMetadataLanguage,
+  });
+  private changelogRepository: ChangelogRepository = new ChangelogRepository({
+    metadataRepository: this.metadataRepository,
+  });
+  private xcodeRepository: XcodeRepository = new XcodeRepositoryImpl({
+    iosXcodeLanguage: this.iosXcodeLanguage,
+  });
 
   /**
    * Service
    */
-  private configService: ConfigService;
-  private historyService: HistoryService;
-  private languageService: LanguageService;
-  private arbService: ARBService;
-  private translationService: GoogleTranslationService;
-  private arbStatisticService: ARBStatisticService;
-  private arbValidationService: ARBValidationService;
-  private googleAuthService: GoogleAuthService;
-  private googleSheetService: GoogleSheetService;
-  private metadataService: MetadataService;
-  private changelogService: ChangelogService;
-  private xcodeService: XcodeService;
-
-  public migrationService: MigrationService;
-
-  /**
-   * Command
-   */
-  public arbTranslateCmd: ARBTranslateCmd;
-  public arbExcludeTranslationCmd: ARBExcludeTranslationCmd;
-  public arbCheckCmd: ARBCheckCmd;
-  public arbDecodeAllHtmlEntitiesCmd: ARBDecodeAllHtmlEntitiesCmd;
-  public arbUploadToGoogleSheetCmd: ARBUploadToGoogleSheetCmd;
-  public arbOpenGoogleSheetCmd: ARBOpenGoogleSheetCmd;
-  public arbChangeKeysCmd: ARBChangeKeysCmd;
-  public arbDeleteKeysCmd: ARBDeleteKeysCmd;
-  public metadataCreateCmd: MetadataCreateCmd;
-  public metadataDeleteCmd: MetadataDeleteCmd;
-  public metadataTranslateCmd: MetadataTranslateCmd;
-  public metadataCheckCmd: MetadataCheckCmd;
-  public metadataOpenCmd: MetadataOpenCmd;
-  public changelogCreateCmd: ChangelogCreateCmd;
-  public changelogTranslateCmd: ChangelogTranslateCmd;
-  public changelogCheckCmd: ChangelogCheckCmd;
-  public changelogOpenCmd: ChangelogOpenCmd;
-  public xcodeStringsTranslateCmd: XcodeStringsTranslateCmd;
-
-  constructor() {
-    // platform
-    this.androidMetadataLanguage = new AndroidMetadataLanguage();
-    this.iosMetadataLanguage = new IosMetadataLanguage();
-    this.iosXcodeLanguage = new IosXcodeLanguage();
-
-    // data source
-    this.configDataSource = new ConfigDataSource();
-    this.cacheDataSource = new TranslationCacheDataSource();
-    this.translationDataSource = new GoogleTranslationDataSource();
-
-    // repository
-    this.translationCacheRepository = new TranslationCacheRepository({
-      cacheDataSource: this.cacheDataSource,
-    });
-    this.translationRepository = new GoogleTranslationRepository({
-      translationCacheRepository: this.translationCacheRepository,
-      translationDataSource: this.translationDataSource,
-    });
-    this.arbValidationRepository = new ARBValidationRepository();
-    this.historyRepository = new HistoryRepository();
-    this.configRepository = new ConfigRepository({
-      configDataSource: this.configDataSource,
-    });
-    this.googleSheetRepository = new GoogleSheetRepository();
-    this.versionRepository = new VersionRepository();
-    this.metadataRepository = new MetadataRepository({
-      androidMetadataLanguage: this.androidMetadataLanguage,
-      iosMetadataLanguage: this.iosMetadataLanguage,
-    });
-    this.changelogRepository = new ChangelogRepository({
-      metadataRepository: this.metadataRepository,
-    });
-    this.xcodeRepository = new XcodeRepositoryImpl({
-      iosXcodeLanguage: this.iosXcodeLanguage,
-    });
-
-    // service
-    this.configService = new ConfigServiceImpl({
-      configRepository: this.configRepository,
-    });
-    this.historyService = new HistoryService({
-      historyRepository: this.historyRepository,
-    });
-    this.languageService = new LanguageService({
-      configService: this.configService,
-    });
-    this.arbService = new ARBServiceImpl({
-      languageService: this.languageService,
-      configService: this.configService,
-    });
-    this.translationService = new GoogleTranslationService({
+  private configService: ConfigService = new ConfigServiceImpl({
+    configRepository: this.configRepository,
+  });
+  private historyService: HistoryService = new HistoryService({
+    historyRepository: this.historyRepository,
+  });
+  private languageService: LanguageService = new LanguageService({
+    configService: this.configService,
+  });
+  private arbService: ARBService = new ARBServiceImpl({
+    languageService: this.languageService,
+    configService: this.configService,
+  });
+  private translationService: GoogleTranslationService =
+    new GoogleTranslationService({
       translationCacheRepository: this.translationCacheRepository,
       translationRepository: this.translationRepository,
       configService: this.configService,
     });
-    this.arbStatisticService = new ARBStatisticService({
-      translationCacheRepository: this.translationCacheRepository,
-      languageService: this.languageService,
-      arbService: this.arbService,
-    });
-    this.arbValidationService = new ARBValidationService({
+  private arbStatisticService: ARBStatisticService = new ARBStatisticService({
+    translationCacheRepository: this.translationCacheRepository,
+    languageService: this.languageService,
+    arbService: this.arbService,
+  });
+  private arbValidationService: ARBValidationService = new ARBValidationService(
+    {
       arbService: this.arbService,
       languageService: this.languageService,
       arbValidationRepository: this.arbValidationRepository,
-    });
-    this.googleAuthService = new GoogleAuthService({
-      configService: this.configService,
-    });
-    this.googleSheetService = new GoogleSheetService({
-      configRepository: this.configRepository,
-      googleAuthService: this.googleAuthService,
-      googleSheetRepository: this.googleSheetRepository,
-    });
-    this.metadataService = new MetadataService({
-      metadataRepository: this.metadataRepository,
-    });
-    this.changelogService = new ChangelogService({
-      changelogRepository: this.changelogRepository,
-    });
-    this.xcodeService = new XcodeServiceImpl({
-      xcodeRepository: this.xcodeRepository,
-      languageService: this.languageService,
-      configService: this.configService,
-    });
+    }
+  );
+  private googleAuthService: GoogleAuthService = new GoogleAuthService({
+    configService: this.configService,
+  });
+  private googleSheetService: GoogleSheetService = new GoogleSheetService({
+    configRepository: this.configRepository,
+    googleAuthService: this.googleAuthService,
+    googleSheetRepository: this.googleSheetRepository,
+  });
+  private metadataService: MetadataService = new MetadataService({
+    metadataRepository: this.metadataRepository,
+  });
+  private changelogService: ChangelogService = new ChangelogService({
+    changelogRepository: this.changelogRepository,
+  });
+  private xcodeService: XcodeService = new XcodeServiceImpl({
+    xcodeRepository: this.xcodeRepository,
+    languageService: this.languageService,
+    configService: this.configService,
+  });
+  public migrationService: MigrationService = new MigrationService({
+    versionRepository: this.versionRepository,
+  });
 
-    this.migrationService = new MigrationService({
-      versionRepository: this.versionRepository,
-    });
-
-    // cmd
-    this.arbTranslateCmd = new ARBTranslateCmd({
+  /**
+   * Command
+   */
+  public textTranslateCmd: TextTranslateCmd = new TextTranslateCmd({
+    translationService: this.translationService,
+  });
+  public arbTranslateCmd: ARBTranslateCmd = new ARBTranslateCmd({
+    arbService: this.arbService,
+    historyService: this.historyService,
+    languageService: this.languageService,
+    translationService: this.translationService,
+    arbStatisticService: this.arbStatisticService,
+  });
+  public arbExcludeTranslationCmd: ARBExcludeTranslationCmd =
+    new ARBExcludeTranslationCmd({
       arbService: this.arbService,
       historyService: this.historyService,
-      languageService: this.languageService,
-      translationService: this.translationService,
-      arbStatisticService: this.arbStatisticService,
     });
-    this.arbExcludeTranslationCmd = new ARBExcludeTranslationCmd({
-      arbService: this.arbService,
-      historyService: this.historyService,
-    });
-    this.arbCheckCmd = new ARBCheckCmd({
+  public arbCheckCmd: ARBCheckCmd = new ARBCheckCmd({
+    arbValidationService: this.arbValidationService,
+    arbService: this.arbService,
+  });
+  public arbDecodeAllHtmlEntitiesCmd: ARBDecodeAllHtmlEntitiesCmd =
+    new ARBDecodeAllHtmlEntitiesCmd({
       arbValidationService: this.arbValidationService,
       arbService: this.arbService,
     });
-    this.arbDecodeAllHtmlEntitiesCmd = new ARBDecodeAllHtmlEntitiesCmd({
-      arbValidationService: this.arbValidationService,
-      arbService: this.arbService,
-    });
-    this.arbUploadToGoogleSheetCmd = new ARBUploadToGoogleSheetCmd({
+  public arbUploadToGoogleSheetCmd: ARBUploadToGoogleSheetCmd =
+    new ARBUploadToGoogleSheetCmd({
       googleSheetService: this.googleSheetService,
       googleAuthService: this.googleAuthService,
       arbValidationService: this.arbValidationService,
       languageService: this.languageService,
       arbService: this.arbService,
     });
-    this.arbOpenGoogleSheetCmd = new ARBOpenGoogleSheetCmd({
-      googleSheetService: this.googleSheetService,
-    });
-    this.arbChangeKeysCmd = new ARBChangeKeysCmd({
-      historyService: this.historyService,
-      arbService: this.arbService,
-    });
-    this.arbDeleteKeysCmd = new ARBDeleteKeysCmd({
-      historyService: this.historyService,
-      arbService: this.arbService,
-    });
-    this.metadataCreateCmd = new MetadataCreateCmd({
-      metadataService: this.metadataService,
-    });
-    this.metadataDeleteCmd = new MetadataDeleteCmd({
-      metadataService: this.metadataService,
-    });
-    this.metadataTranslateCmd = new MetadataTranslateCmd({
+  public arbOpenGoogleSheetCmd: ARBOpenGoogleSheetCmd =
+    new ARBOpenGoogleSheetCmd({ googleSheetService: this.googleSheetService });
+  public arbChangeKeysCmd: ARBChangeKeysCmd = new ARBChangeKeysCmd({
+    historyService: this.historyService,
+    arbService: this.arbService,
+  });
+  public arbDeleteKeysCmd: ARBDeleteKeysCmd = new ARBDeleteKeysCmd({
+    historyService: this.historyService,
+    arbService: this.arbService,
+  });
+  public metadataCreateCmd: MetadataCreateCmd = new MetadataCreateCmd({
+    metadataService: this.metadataService,
+  });
+  public metadataDeleteCmd: MetadataDeleteCmd = new MetadataDeleteCmd({
+    metadataService: this.metadataService,
+  });
+  public metadataTranslateCmd: MetadataTranslateCmd = new MetadataTranslateCmd({
+    configService: this.configService,
+    metadataService: this.metadataService,
+    translationService: this.translationService,
+  });
+  public metadataCheckCmd: MetadataCheckCmd = new MetadataCheckCmd({
+    metadataService: this.metadataService,
+  });
+  public metadataOpenCmd: MetadataOpenCmd = new MetadataOpenCmd({
+    metadataService: this.metadataService,
+  });
+  public changelogCreateCmd: ChangelogCreateCmd = new ChangelogCreateCmd({
+    metadataService: this.metadataService,
+    changelogService: this.changelogService,
+  });
+  public changelogTranslateCmd: ChangelogTranslateCmd =
+    new ChangelogTranslateCmd({
       configService: this.configService,
       metadataService: this.metadataService,
-      translationService: this.translationService,
-    });
-    this.metadataCheckCmd = new MetadataCheckCmd({
-      metadataService: this.metadataService,
-    });
-    this.metadataOpenCmd = new MetadataOpenCmd({
-      metadataService: this.metadataService,
-    });
-    this.changelogCreateCmd = new ChangelogCreateCmd({
-      metadataService: this.metadataService,
-      changelogService: this.changelogService,
-    });
-    this.changelogTranslateCmd = new ChangelogTranslateCmd({
-      configService: this.configService,
-      metadataService: this.metadataService,
       changelogService: this.changelogService,
       translationService: this.translationService,
     });
-    this.changelogCheckCmd = new ChangelogCheckCmd({
-      changelogService: this.changelogService,
-    });
-    this.changelogOpenCmd = new ChangelogOpenCmd({
-      changelogService: this.changelogService,
-      metadataService: this.metadataService,
-    });
-    this.xcodeStringsTranslateCmd = new XcodeStringsTranslateCmd({
+  public changelogCheckCmd: ChangelogCheckCmd = new ChangelogCheckCmd({
+    changelogService: this.changelogService,
+  });
+  public changelogOpenCmd: ChangelogOpenCmd = new ChangelogOpenCmd({
+    changelogService: this.changelogService,
+    metadataService: this.metadataService,
+  });
+  public xcodeStringsTranslateCmd: XcodeStringsTranslateCmd =
+    new XcodeStringsTranslateCmd({
       xcodeService: this.xcodeService,
       translationService: this.translationService,
     });
-  }
 
   public init(): Promise<void[]> {
     return Promise.all([

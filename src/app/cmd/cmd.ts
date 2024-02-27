@@ -1,4 +1,6 @@
 export enum Cmd {
+  // Text Command
+  TextTranslate = "flutter-translator.text.translate",
   // ARB Command
   ARBTranslate = "flutter-translator.arb.translate",
   ARBExcludeTranslation = "flutter-translator.arb.excludeTranslation",
@@ -24,6 +26,8 @@ export enum Cmd {
 }
 
 export const cmdName: Record<Cmd, string> = {
+  // Text Command
+  [Cmd.TextTranslate]: "Flutter Translator: Text - Translate",
   // ARB Command
   [Cmd.ARBTranslate]: "Flutter Translator: ARB - Translate",
   [Cmd.ARBCheck]: "Flutter Translator: ARB - Check",

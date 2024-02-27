@@ -38,6 +38,10 @@
     },
     "commands": [
       {
+        "command": "flutter-translator.text.translate",
+        "title": "Flutter Translator: Text - Translate"
+      },
+      {
         "command": "flutter-translator.arb.translate",
         "title": "Flutter Translator: ARB - Translate"
       },

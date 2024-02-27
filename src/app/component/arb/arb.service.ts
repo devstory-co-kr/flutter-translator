@@ -1,8 +1,5 @@
 import * as vscode from "vscode";
-import {
-  InvalidArgumentsException,
-  WorkspaceNotFoundException,
-} from "../../util/exceptions";
+import { InvalidArgumentsException } from "../../util/exceptions";
 import { ConfigService, LanguageCode } from "../config/config";
 import { Language } from "../language/language";
 import { LanguageService } from "../language/language.service";
@@ -65,26 +62,6 @@ export class ARBServiceImpl implements ARBService {
 
   public async getSourceARB(): Promise<ARB> {
     return this.getARB(await this.configService.getSourceARBPath());
-  }
-
-  public async getARBFilePathListInWorkspace(): Promise<string[]> {
-    const workspaceFolders = vscode.workspace.workspaceFolders;
-    if (!workspaceFolders) {
-      throw new WorkspaceNotFoundException();
-    }
-
-    // search .arb file
-    const arbFilesInFolders: vscode.Uri[][] = await Promise.all(
-      workspaceFolders.map((folder) =>
-        vscode.workspace.findFiles(
-          new vscode.RelativePattern(folder, "**/*.arb")
-        )
-      )
-    );
-    const arbFiles: vscode.Uri[] = ([] as vscode.Uri[]).concat(
-      ...arbFilesInFolders
-    );
-    return arbFiles.map((file) => file.path);
   }
 
   public async getTargetARBPathList(): Promise<string[]> {

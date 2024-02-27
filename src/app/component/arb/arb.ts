@@ -17,7 +17,6 @@ export interface ARBService {
     title: string;
     placeHolder: string;
   }): Promise<Language[]>;
-  getARBFilePathListInWorkspace(): Promise<string[]>;
   getTargetARBPathList(): Promise<string[]>;
   getExcludeLanguageList(): Language[];
   getTargetLanguageList(): Promise<Language[]>;

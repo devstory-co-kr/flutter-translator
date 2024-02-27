@@ -2,6 +2,13 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
+## [2.1.5] - 24.02.27
+### Changed
+- Change the source ARB file path input method.
+
+### Fixed
+- Fix config updates to be processed synchronously.
+
 ## [2.1.4] - 24.02.24
 ### Fixed
 - Fix text direction for `Amharic(LTR)`, `Arabic(RTL)`, and `Yiddish(RTL)`.

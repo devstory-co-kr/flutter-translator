@@ -2,6 +2,7 @@ import * as fs from "fs";
 import path from "path";
 import * as vscode from "vscode";
 import { Constant } from "./constant";
+import { WorkspaceNotFoundException } from "./exceptions";
 
 export class Workspace {
   /**
@@ -75,5 +76,25 @@ export class Workspace {
       }
     });
     fs.rmdirSync(directoryPath);
+  }
+
+  public static async getARBFilePathListInWorkspace(): Promise<string[]> {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders) {
+      throw new WorkspaceNotFoundException();
+    }
+
+    // search .arb file
+    const arbFilesInFolders: vscode.Uri[][] = await Promise.all(
+      workspaceFolders.map((folder) =>
+        vscode.workspace.findFiles(
+          new vscode.RelativePattern(folder, "**/*.arb")
+        )
+      )
+    );
+    const arbFiles: vscode.Uri[] = ([] as vscode.Uri[]).concat(
+      ...arbFilesInFolders
+    );
+    return arbFiles.map((file) => file.path);
   }
 }

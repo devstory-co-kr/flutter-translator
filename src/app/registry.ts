@@ -16,6 +16,7 @@ import { MetadataDeleteCmd } from "./cmd/metadata/metadata.delete.cmd";
 import { MetadataOpenCmd } from "./cmd/metadata/metadata.open.cmd";
 import { MetadataTranslateCmd } from "./cmd/metadata/metadata.translate.cmd";
 import { TextTranslateCmd } from "./cmd/text/text_translate.cmd";
+import { TranslationExcludeCmd } from "./cmd/translation/translation.exclude.cmd";
 import { XcodeStringsTranslateCmd } from "./cmd/xcode_strings/xcode_strings.translate.cmd";
 import { ARBService } from "./component/arb/arb";
 import { ARBServiceImpl } from "./component/arb/arb.service";
@@ -240,6 +241,8 @@ export class Registry {
       xcodeService: this.xcodeService,
       translationService: this.translationService,
     });
+  public translationExcludeCmd: TranslationExcludeCmd =
+    new TranslationExcludeCmd({});
 
   public init(): Promise<void[]> {
     return Promise.all([

@@ -6,6 +6,7 @@ import { Cmd } from "./cmd/cmd";
 import { MetadataCreateCmdArgs } from "./cmd/metadata/metadata.create.cmd";
 import { MetadataDeleteCmdArgs } from "./cmd/metadata/metadata.delete.cmd";
 import { TextTranslateCmdArgs } from "./cmd/text/text_translate.cmd";
+import { TranslationExcludeCmdArgs } from "./cmd/translation/translation.exclude.cmd";
 import { XcodeStringsTranslateCmdArgs } from "./cmd/xcode_strings/xcode_strings.translate.cmd";
 import { Registry } from "./registry";
 import { Constant } from "./util/constant";
@@ -107,6 +108,12 @@ export class FlutterTranslator implements App {
      */
     [Cmd.XcodeStringsTranslate]: (args?: XcodeStringsTranslateCmdArgs) => {
       return this.registry.xcodeStringsTranslateCmd.run(args);
+    },
+    /**
+     * Translation Command
+     */
+    [Cmd.TranslationExclude]: (args?: TranslationExcludeCmdArgs) => {
+      return this.registry.translationExcludeCmd.run(args);
     },
   };
 

@@ -8,6 +8,7 @@ import { LanguageRepository } from "../../../component/language/language.reposit
 import { LanguageService } from "../../../component/language/language.service";
 import { TranslationService } from "../../../component/translation/translation.service";
 import { TranslationStatistic } from "../../../component/translation/translation.statistic";
+import { Constant } from "../../../util/constant";
 import { Dialog } from "../../../util/dialog";
 import { Toast } from "../../../util/toast";
 import { Cmd } from "../../cmd";
@@ -18,6 +19,11 @@ interface InitParams {
   languageService: LanguageService;
   translationService: TranslationService;
   arbStatisticService: ARBStatisticService;
+}
+
+interface EncodeResult {
+  dictionary: Record<string, string>;
+  encodedText: string;
 }
 
 export type ARBTranslateCmdArgs = {
@@ -103,7 +109,7 @@ export class ARBTranslateCmd {
     }
   }
 
-  async translate({
+  private async translate({
     sourceArb,
     history,
     targetLanguages,
@@ -235,6 +241,8 @@ export class ARBTranslateCmd {
         queries: willTranslateValues,
         sourceLang: sourceArb.language,
         targetLang: targetArb.language,
+        encode: this.encodeParametersText,
+        decode: this.decodeParametersText,
       });
       willTranslateKeys.forEach(
         (key, index) => (nextTargetArbData[key] = translateResult.data[index])
@@ -246,5 +254,52 @@ export class ARBTranslateCmd {
     // upsert target arb file
     this.arbService.upsert(targetArbFilePath, nextTargetArbData);
     return translationStatistic;
+  }
+
+  /**
+   * Encode ARB parameters
+   */
+  private encodeParametersText(text: string): EncodeResult {
+    let count = 0;
+    const parmKeywordDict: Record<string, string> = {};
+    const keywordParmDict: Record<string, string> = {};
+    const encodedText = text.replace(/\{(.+?)\}/g, (match, _) => {
+      let paramReplaceKey: string;
+      if (keywordParmDict[match]) {
+        paramReplaceKey = keywordParmDict[match];
+      } else if (count >= Constant.paramReplaceKeys.length) {
+        const share = Math.floor(count / Constant.paramReplaceKeys.length);
+        const remainder = count % Constant.paramReplaceKeys.length;
+        paramReplaceKey =
+          Constant.paramReplaceKeys[share] +
+          Constant.paramReplaceKeys[remainder];
+        keywordParmDict[match] = paramReplaceKey;
+        count++;
+      } else {
+        paramReplaceKey = Constant.paramReplaceKeys[count];
+        keywordParmDict[match] = paramReplaceKey;
+        count++;
+      }
+      parmKeywordDict[paramReplaceKey] = match;
+      return paramReplaceKey;
+    });
+    return {
+      dictionary: parmKeywordDict,
+      encodedText,
+    };
+  }
+
+  /**
+   * Decode ARB parameters
+   */
+  private decodeParametersText(
+    dictionary: Record<string, string>,
+    text: string
+  ): string {
+    const keys = Object.keys(dictionary).sort((a, b) => b.length - a.length);
+    for (const key of keys) {
+      text = text.replace(new RegExp(key, "g"), dictionary[key]);
+    }
+    return text;
   }
 }

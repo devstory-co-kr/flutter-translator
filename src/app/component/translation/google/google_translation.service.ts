@@ -6,6 +6,7 @@ import { TranslationCacheRepository } from "../cache/translation_cache.repositor
 import { TranslationResult, TranslationType } from "../translation";
 import { TranslationRepository } from "../translation.repository";
 import {
+  EncodeResult,
   FreeTranslateServiceParams,
   PaidTranslateServiceParams,
   TranslationService,
@@ -85,6 +86,7 @@ export class GoogleTranslationService implements TranslationService {
       targetLang: targetLang,
       onTranslate: async (query) => {
         return this.translationRepository.paidTranslate({
+          exclude: this.configService.getTranslationExclude(),
           apiKey,
           query,
           sourceLang,
@@ -101,15 +103,29 @@ export class GoogleTranslationService implements TranslationService {
     queries,
     sourceLang,
     targetLang,
+    encode,
+    decode,
   }: {
     queries: string[];
     sourceLang: Language;
     targetLang: Language;
+    encode?: (query: string) => EncodeResult;
+    decode?: (
+      dictionary: Record<string, string>,
+      encodedQuery: string
+    ) => string;
   }): Promise<TranslationResult> {
     return this.freeTranslate({
       queries: queries,
       sourceLang: sourceLang,
       targetLang: targetLang,
+      encode: encode
+        ? encode
+        : (query) => ({
+            dictionary: {},
+            encodedText: query,
+          }),
+      decode: decode ? decode : (dictionary, encodedText) => encodedText,
     });
 
     // Paid translation deprecased
@@ -142,17 +158,23 @@ export class GoogleTranslationService implements TranslationService {
     queries,
     sourceLang,
     targetLang,
+    encode,
+    decode,
   }: FreeTranslateServiceParams): Promise<TranslationResult> {
     return this.checkCache({
       queries: queries,
       sourceLang: sourceLang,
       targetLang: targetLang,
       onTranslate: async (query) => {
-        return this.translationRepository.freeTranslate({
-          query,
+        const { dictionary, encodedText } = encode(query);
+        const translatedText = await this.translationRepository.freeTranslate({
+          query: encodedText,
+          exclude: this.configService.getTranslationExclude(),
           sourceLang,
           targetLang,
         });
+        const decodedText = decode(dictionary, translatedText);
+        return decodedText;
       },
     });
   }

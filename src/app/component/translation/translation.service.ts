@@ -11,12 +11,14 @@ export interface PaidTranslateServiceParams {
   queries: string[];
   sourceLang: Language;
   targetLang: Language;
+  useCache: boolean;
 }
 
 export interface FreeTranslateServiceParams {
   queries: string[];
   sourceLang: Language;
   targetLang: Language;
+  useCache: boolean;
   encode: (query: string) => EncodeResult;
   decode: (dictionary: Record<string, string>, encodedQuery: string) => string;
 }
@@ -28,12 +30,14 @@ export interface TranslationService {
     queries,
     sourceLang,
     targetLang,
+    useCache,
     encode,
     decode,
   }: {
     queries: string[];
     sourceLang: Language;
     targetLang: Language;
+    useCache?: boolean;
     encode?: (query: string) => EncodeResult;
     decode?: (
       dictionary: Record<string, string>,

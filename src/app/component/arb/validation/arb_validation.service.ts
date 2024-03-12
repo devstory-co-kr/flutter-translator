@@ -98,6 +98,7 @@ export class ARBValidationService {
             selections: [selection],
             sourceLang: sourceARB.language,
             targetLang: targetARB.language,
+            useCache: false,
           });
         }
         break;

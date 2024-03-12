@@ -21,6 +21,7 @@ interface TranslateParams {
   queries: string[];
   sourceLang: Language;
   targetLang: Language;
+  useCache: boolean;
   onTranslate: (query: string) => Promise<string>;
 }
 
@@ -77,6 +78,7 @@ export class GoogleTranslationService implements TranslationService {
   private async paidTranslate({
     apiKey,
     queries,
+    useCache,
     sourceLang,
     targetLang,
   }: PaidTranslateServiceParams): Promise<TranslationResult> {
@@ -84,6 +86,7 @@ export class GoogleTranslationService implements TranslationService {
       queries: queries,
       sourceLang: sourceLang,
       targetLang: targetLang,
+      useCache,
       onTranslate: async (query) => {
         return this.translationRepository.paidTranslate({
           exclude: this.configService.getTranslationExclude(),
@@ -103,12 +106,14 @@ export class GoogleTranslationService implements TranslationService {
     queries,
     sourceLang,
     targetLang,
+    useCache,
     encode,
     decode,
   }: {
     queries: string[];
     sourceLang: Language;
     targetLang: Language;
+    useCache?: boolean;
     encode?: (query: string) => EncodeResult;
     decode?: (
       dictionary: Record<string, string>,
@@ -119,6 +124,7 @@ export class GoogleTranslationService implements TranslationService {
       queries: queries,
       sourceLang: sourceLang,
       targetLang: targetLang,
+      useCache: useCache ?? true,
       encode: encode
         ? encode
         : (query) => ({
@@ -141,6 +147,7 @@ export class GoogleTranslationService implements TranslationService {
     queries,
     sourceLang,
     targetLang,
+    useCache,
     encode,
     decode,
   }: FreeTranslateServiceParams): Promise<TranslationResult> {
@@ -148,6 +155,7 @@ export class GoogleTranslationService implements TranslationService {
       queries: queries,
       sourceLang: sourceLang,
       targetLang: targetLang,
+      useCache,
       onTranslate: async (query) => {
         const { dictionary, encodedText } = encode(query);
         const translatedText = await this.translationRepository.freeTranslate({
@@ -171,6 +179,7 @@ export class GoogleTranslationService implements TranslationService {
     queries,
     sourceLang,
     targetLang,
+    useCache,
     onTranslate,
   }: TranslateParams) {
     let nCache = 0;
@@ -186,21 +195,24 @@ export class GoogleTranslationService implements TranslationService {
           sourceLanguage: sourceLang,
           targetLanguage: targetLang,
         });
-        const cacheValue =
-          this.translationCacheRepository.get<string>(cacheKey);
-        if (cacheValue) {
-          // return cache
-          nCache += 1;
-          return cacheValue;
-        } else {
-          // request API
-          nRequest += 1;
-          const translatedText = await onTranslate(query);
 
-          // update cache
-          this.translationCacheRepository.upsert(cacheKey, translatedText);
-          return translatedText;
+        if (useCache) {
+          const cacheValue =
+            this.translationCacheRepository.get<string>(cacheKey);
+          if (cacheValue) {
+            // return cache
+            nCache += 1;
+            return cacheValue;
+          }
         }
+
+        // request API
+        nRequest += 1;
+        const translatedText = await onTranslate(query);
+
+        // update cache
+        this.translationCacheRepository.upsert(cacheKey, translatedText);
+        return translatedText;
       })
     );
     // Logger.l(`Total translate request : ${nRequest} (cache : ${nCache})`);

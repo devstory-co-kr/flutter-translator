@@ -243,7 +243,9 @@ export class Registry {
       translationService: this.translationService,
     });
   public translationExcludeCmd: TranslationExcludeCmd =
-    new TranslationExcludeCmd({});
+    new TranslationExcludeCmd({
+      configService: this.configService,
+    });
 
   public init(): Promise<void[]> {
     return Promise.all([

@@ -24,7 +24,7 @@ export class Dialog {
     isReverse,
   }: {
     title: string;
-    placeHolder?: string;
+    placeHolder: string;
     confirmText?: string;
     cancelText?: string;
     confirmDesc?: string;

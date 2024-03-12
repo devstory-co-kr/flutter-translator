@@ -102,7 +102,8 @@ export class ARBTranslateCmd {
     const isPreceedValidation: boolean =
       args?.isPreceedValidation ??
       (await Dialog.showConfirmDialog({
-        title: "Would you like to check the translation results?",
+        title: "ARB Check",
+        placeHolder: "Would you like to check the translation results?",
       }));
     if (isPreceedValidation) {
       await vscode.commands.executeCommand(Cmd.ARBCheck);

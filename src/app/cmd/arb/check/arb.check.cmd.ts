@@ -49,6 +49,7 @@ export class ARBCheckCmd {
     validationResultList: ValidationResult[]
   ): Promise<ValidationResult | undefined> {
     const sectionMap = {
+      [InvalidType.notExcluded]: `${InvalidType.notExcluded}`,
       [InvalidType.keyNotFound]: `${InvalidType.keyNotFound}`,
       [InvalidType.invalidParameters]: `${InvalidType.invalidParameters}`,
       [InvalidType.invalidParentheses]: `${InvalidType.invalidParentheses}`,
@@ -63,10 +64,12 @@ export class ARBCheckCmd {
       canPickMany: false,
       itemBuilder: (validationResult) => {
         const targetFileName = path.basename(
-          validationResult.targetArb.filePath
+          validationResult.targetARB.filePath
         );
         const label = targetFileName;
-        const detail = `${validationResult.invalidType}`;
+        const detail = `${
+          validationResult.invalidMessage ?? validationResult.invalidType
+        }`;
         const description = validationResult.key;
         return {
           section: sectionMap[validationResult.invalidType],

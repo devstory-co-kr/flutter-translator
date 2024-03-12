@@ -3,28 +3,53 @@ import { BaseDisposable } from "../../../util/base/base_disposable";
 import { Editor } from "../../../util/editor";
 import { Highlight, HighlightType } from "../../../util/highlight";
 import { ARB } from "../arb";
-import { ArbValidation, InvalidType, ValidationResult } from "./arb_validation";
+import { ARBValidation, InvalidType, ValidationResult } from "./arb_validation";
 
 export class ARBValidationRepository extends BaseDisposable {
   public async *generateValidationResult(
-    sourceArb: ARB,
-    sourceValidation: ArbValidation,
-    targetArb: ARB,
-    targetValidation: ArbValidation
+    excludeKeywords: string[],
+    sourceARB: ARB,
+    sourceValidation: ARBValidation,
+    targetARB: ARB,
+    targetValidation: ARBValidation
   ): AsyncGenerator<ValidationResult, undefined, ValidationResult> {
     const sourceValidationKeys = Object.keys(sourceValidation);
     const targetValidationKeys = Object.keys(targetValidation);
-
     for (const key of sourceValidationKeys) {
       const sourceTotalParams = sourceValidation[key].nParams;
+
+      // not excluded
+      let isNotExcluded = false;
+      let notFoundKeyword: string = "";
+      for (const keyword of excludeKeywords) {
+        const reg = new RegExp(keyword, "gi");
+        const nSource = sourceValidation[key].value.match(reg)?.length ?? 0;
+        const nTarget = targetValidation[key].value.match(reg)?.length ?? 0;
+        if (nSource !== nTarget) {
+          isNotExcluded = true;
+          notFoundKeyword = keyword;
+          break;
+        }
+      }
+      if (isNotExcluded) {
+        yield <ValidationResult>{
+          sourceValidationData: sourceValidation[key],
+          invalidType: InvalidType.notExcluded,
+          invalidMessage: `"${notFoundKeyword}" not found`,
+          sourceARB,
+          targetARB,
+          key,
+        };
+        continue;
+      }
 
       // key not found
       if (!targetValidationKeys.includes(key)) {
         yield <ValidationResult>{
           sourceValidationData: sourceValidation[key],
           invalidType: InvalidType.keyNotFound,
-          sourceArb,
-          targetArb,
+          sourceARB,
+          targetARB,
           key,
         };
         continue;
@@ -35,8 +60,8 @@ export class ARBValidationRepository extends BaseDisposable {
         yield <ValidationResult>{
           sourceValidationData: sourceValidation[key],
           invalidType: InvalidType.undecodedHtmlEntityExists,
-          sourceArb,
-          targetArb,
+          sourceARB,
+          targetARB,
           key,
         };
       }
@@ -46,8 +71,8 @@ export class ARBValidationRepository extends BaseDisposable {
         yield <ValidationResult>{
           sourceValidationData: sourceValidation[key],
           invalidType: InvalidType.invalidParameters,
-          sourceArb,
-          targetArb,
+          sourceARB,
+          targetARB,
           key,
         };
       }
@@ -60,8 +85,8 @@ export class ARBValidationRepository extends BaseDisposable {
         yield <ValidationResult>{
           sourceValidationData: sourceValidation[key],
           invalidType: InvalidType.invalidParentheses,
-          sourceArb,
-          targetArb,
+          sourceARB,
+          targetARB,
           key,
         };
       }
@@ -70,21 +95,17 @@ export class ARBValidationRepository extends BaseDisposable {
 
   /**
    * Highlight problematic areas in the source and target arb files
-   * @param sourceArb
-   * @param targetArb
-   * @param key
-   * @param sourceArbValidationData
    */
-  public async highlight(sourceArb: ARB, targetArb: ARB, key: string) {
+  public async highlight(sourceARB: ARB, targetARB: ARB, key: string) {
     try {
       // clear remain decorations
       Highlight.clear();
 
       // open document
       const { editor: sourceEditor, document: sourceDocument } =
-        await Editor.open(sourceArb.filePath, vscode.ViewColumn.One);
+        await Editor.open(sourceARB.filePath, vscode.ViewColumn.One);
       const { editor: targetEditor, document: targetDocument } =
-        await Editor.open(targetArb.filePath, vscode.ViewColumn.Two);
+        await Editor.open(targetARB.filePath, vscode.ViewColumn.Two);
 
       // search key
       const sourceKeyPosition = Editor.search(sourceEditor, `"${key}"`);
@@ -101,7 +122,7 @@ export class ARBValidationRepository extends BaseDisposable {
         Highlight.add(targetEditor, HighlightType.red, targetKeyPosition.line);
 
         // select target value
-        const targetValue = targetArb.data[key];
+        const targetValue = targetARB.data[key];
         const targetValueStartIdx = targetDocument
           .getText()
           .indexOf(targetValue);
@@ -135,7 +156,7 @@ export class ARBValidationRepository extends BaseDisposable {
             prevTargetJson = targetJson;
             const updatedTargetData: Record<string, string> =
               JSON.parse(targetJson);
-            if (this.isValid(sourceArb.data, updatedTargetData, key)) {
+            if (this.isValid(sourceARB.data, updatedTargetData, key)) {
               return removeHighlight();
             }
           }
@@ -187,8 +208,8 @@ export class ARBValidationRepository extends BaseDisposable {
     }
   }
 
-  public getParamsValidation(arb: ARB): ArbValidation {
-    const parmsValidation: ArbValidation = {};
+  public getParamsValidation(arb: ARB): ARBValidation {
+    const parmsValidation: ARBValidation = {};
     for (const [key, value] of Object.entries(arb.data)) {
       if (key !== "@@locale" && key.includes("@")) {
         continue;

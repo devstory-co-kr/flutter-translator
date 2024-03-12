@@ -127,23 +127,6 @@ export class GoogleTranslationService implements TranslationService {
           }),
       decode: decode ? decode : (dictionary, encodedText) => encodedText,
     });
-
-    // Paid translation deprecased
-    // switch (type) {
-    //   case TranslationType.paid:
-    //     return this.paidTranslate({
-    //       apiKey: await this.configService.getGoogleAuthAPIKey(),
-    //       queries: queries,
-    //       sourceLang: sourceLang,
-    //       targetLang: targetLang,
-    //     });
-    //   case TranslationType.free:
-    //     return this.freeTranslate({
-    //       queries: queries,
-    //       sourceLang: sourceLang,
-    //       targetLang: targetLang,
-    //     });
-    // }
   }
 
   /**

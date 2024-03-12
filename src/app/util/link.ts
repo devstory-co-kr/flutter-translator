@@ -22,7 +22,8 @@ export class Link {
     text: string;
   }) {
     const isShow = await Dialog.showConfirmDialog({
-      title: "Do you want to open the Google Translate website?",
+      title: "Open Google Translate Website",
+      placeHolder: "Do you want to open the Google Translate website?",
     });
     if (!isShow) {
       return;

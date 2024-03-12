@@ -440,7 +440,8 @@ export class MetadataService {
         }
 
         const isConfirm = Dialog.showConfirmDialog({
-          title: `Do you want to create all missing ${notExistItemList.length} files?`,
+          title: "Create Metadata",
+          placeHolder: `Do you want to create all missing ${notExistItemList.length} files?`,
         });
         if (!isConfirm) {
           // canceled

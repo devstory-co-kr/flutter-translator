@@ -40,7 +40,7 @@ export class FlutterTranslator implements App {
     /**
      * Translate Command
      */
-    [Cmd.TranslationTranslate]: (args?: TextTranslateCmdArgs) => {
+    [Cmd.TextTranslate]: (args?: TextTranslateCmdArgs) => {
       return this.registry.textTranslateCmd.run(args);
     },
     /**

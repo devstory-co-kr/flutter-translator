@@ -22,7 +22,7 @@ export enum Cmd {
   // Xcode Strings Command
   XcodeStringsTranslate = "flutter-translator.xcodeStrings.translate",
   // Translation Command
-  TranslationTranslate = "flutter-translator.translation.translate",
+  TextTranslate = "flutter-translator.text.translate",
   TranslationExclude = "flutter-translator.translation.exclude",
 }
 
@@ -52,6 +52,6 @@ export const cmdName: Record<Cmd, string> = {
   // Xcode Strings Command
   [Cmd.XcodeStringsTranslate]: "Flutter Translator: Xcode Strings - Translate",
   // Translation
-  [Cmd.TranslationTranslate]: "Flutter Translator: Text - Translate",
+  [Cmd.TextTranslate]: "Flutter Translator: Text - Translate",
   [Cmd.TranslationExclude]: "Flutter Translator: Translation - Exclude",
 };

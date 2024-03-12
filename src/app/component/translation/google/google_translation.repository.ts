@@ -66,11 +66,10 @@ export class GoogleTranslationRepository implements TranslationRepository {
     const parmKeywordDict: Record<string, string> = {};
     const keywordParmDict: Record<string, string> = {};
     const encodedText = text.replace(/\b(\w+)\b/g, (match, keyword) => {
-      if (
-        exclude
-          .map((e) => e.toLocaleLowerCase())
-          .includes(keyword.toLowerCase())
-      ) {
+      const isInExclude = exclude.some(
+        (e) => e.toLocaleLowerCase() === keyword.toLowerCase()
+      );
+      if (isInExclude) {
         let paramReplaceKey: string;
         if (keywordParmDict[keyword]) {
           paramReplaceKey = keywordParmDict[keyword];

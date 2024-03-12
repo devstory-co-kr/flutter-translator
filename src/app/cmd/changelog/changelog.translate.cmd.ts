@@ -175,7 +175,8 @@ export class ChangelogTranslateCmd {
 
     // check
     const isPreceedValidation = await Dialog.showConfirmDialog({
-      title: "Would you like to check the results?",
+      title: "Changelog Check",
+      placeHolder: "Would you like to check the results?",
     });
     if (isPreceedValidation) {
       await vscode.commands.executeCommand(Cmd.ChangelogCheck);

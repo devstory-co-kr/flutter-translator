@@ -129,6 +129,7 @@ export class Registry {
   private arbValidationService: ARBValidationService = new ARBValidationService(
     {
       arbService: this.arbService,
+      configService: this.configService,
       languageService: this.languageService,
       arbValidationRepository: this.arbValidationRepository,
     }

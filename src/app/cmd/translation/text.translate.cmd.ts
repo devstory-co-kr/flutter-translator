@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { Language } from "../../component/language/language";
 import { LanguageRepository } from "../../component/language/language.repository";
 import { TranslationService } from "../../component/translation/translation.service";
 import { Toast } from "../../util/toast";
@@ -7,7 +8,12 @@ interface InitParams {
   translationService: TranslationService;
 }
 
-export type TextTranslateCmdArgs = {};
+export type TextTranslateCmdArgs = {
+  queries: string[];
+  selections: vscode.Selection[];
+  sourceLang: Language;
+  targetLang: Language;
+};
 
 export class TextTranslateCmd {
   private translationService: TranslationService;
@@ -23,61 +29,71 @@ export class TextTranslateCmd {
     }
 
     // check selections
+    const selections = args?.selections ?? editor.selections;
     if (
-      editor.selections.length === 1 &&
-      editor.document.getText(editor.selections[0]).length === 0
+      selections.length === 1 &&
+      editor.document.getText(selections[0]).length === 0
     ) {
       Toast.i("Please select the text you want to translate.");
       return;
     }
 
+    const queries =
+      args?.queries ?? selections.map((s) => editor.document.getText(s));
+
     // select source language
-    const sourceSelection = await vscode.window.showQuickPick(
-      [LanguageRepository.auto, ...LanguageRepository.supportLanguages].map(
-        (l) => ({
-          label: `${l.name} (${l.languageCode})`,
-          language: l,
-        })
-      ),
-      {
-        title: "Select source language",
-        placeHolder: "Please select a translation source language.",
-        ignoreFocusOut: true,
+    let sourceLang: Language | undefined = args?.sourceLang;
+    if (!sourceLang) {
+      const sourceSelection = await vscode.window.showQuickPick(
+        [LanguageRepository.auto, ...LanguageRepository.supportLanguages].map(
+          (l) => ({
+            label: `${l.name} (${l.languageCode})`,
+            language: l,
+          })
+        ),
+        {
+          title: "Select source language",
+          placeHolder: "Please select a translation source language.",
+          ignoreFocusOut: true,
+        }
+      );
+      if (!sourceSelection) {
+        return;
       }
-    );
-    if (!sourceSelection) {
-      return;
+      sourceLang = sourceSelection.language;
     }
-    const sourceLang = sourceSelection.language;
 
     // select target language
-    const targetSelection = await vscode.window.showQuickPick(
-      LanguageRepository.supportLanguages.map((l) => ({
-        label: `${l.name} (${l.languageCode})`,
-        language: l,
-      })),
-      {
-        title: "Select target language",
-        placeHolder:
-          "Please select the target language you want to translate to",
-        ignoreFocusOut: true,
+    let targetLang: Language | undefined = args?.targetLang;
+    if (!targetLang) {
+      const targetSelection = await vscode.window.showQuickPick(
+        LanguageRepository.supportLanguages.map((l) => ({
+          label: `${l.name} (${l.languageCode})`,
+          language: l,
+        })),
+        {
+          title: "Select target language",
+          placeHolder:
+            "Please select the target language you want to translate to",
+          ignoreFocusOut: true,
+        }
+      );
+      if (!targetSelection) {
+        return;
       }
-    );
-    if (!targetSelection) {
-      return;
+      targetLang = targetSelection.language;
     }
-    const targetLang = targetSelection.language;
 
     // translate
     const translatedTextList = await this.translationService.translate({
-      queries: editor.selections.map((s) => editor.document.getText(s)),
+      queries,
       sourceLang,
       targetLang,
     });
 
     await editor.edit((editBuilder) => {
-      for (let i = 0; i < editor.selections.length; i++) {
-        const selection = editor.selections[i];
+      for (let i = 0; i < selections.length; i++) {
+        const selection = selections[i];
         const translatedText = translatedTextList.data[i];
         editBuilder.replace(selection, translatedText);
       }

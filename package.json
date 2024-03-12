@@ -122,7 +122,7 @@
         "title": "Flutter Translator: Xcode Strings - Translate"
       },
       {
-        "command": "flutter-translator.translation.translate",
+        "command": "flutter-translator.text.translate",
         "title": "Flutter Translator: Text - Translate"
       },
       {

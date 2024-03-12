@@ -38,10 +38,6 @@
     },
     "commands": [
       {
-        "command": "flutter-translator.text.translate",
-        "title": "Flutter Translator: Text - Translate"
-      },
-      {
         "command": "flutter-translator.arb.translate",
         "title": "Flutter Translator: ARB - Translate"
       },
@@ -124,6 +120,14 @@
       {
         "command": "flutter-translator.xcodeStrings.translate",
         "title": "Flutter Translator: Xcode Strings - Translate"
+      },
+      {
+        "command": "flutter-translator.translation.translate",
+        "title": "Flutter Translator: Text - Translate"
+      },
+      {
+        "command": "flutter-translator.translation.exclude",
+        "title": "Flutter Translator: Translation - Exclude"
       }
     ]
   },

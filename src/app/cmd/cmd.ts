@@ -1,6 +1,4 @@
 export enum Cmd {
-  // Text Command
-  TextTranslate = "flutter-translator.text.translate",
   // ARB Command
   ARBTranslate = "flutter-translator.arb.translate",
   ARBExcludeTranslation = "flutter-translator.arb.excludeTranslation",
@@ -24,12 +22,11 @@ export enum Cmd {
   // Xcode Strings Command
   XcodeStringsTranslate = "flutter-translator.xcodeStrings.translate",
   // Translation Command
+  TranslationTranslate = "flutter-translator.translation.translate",
   TranslationExclude = "flutter-translator.translation.exclude",
 }
 
 export const cmdName: Record<Cmd, string> = {
-  // Text Command
-  [Cmd.TextTranslate]: "Flutter Translator: Text - Translate",
   // ARB Command
   [Cmd.ARBTranslate]: "Flutter Translator: ARB - Translate",
   [Cmd.ARBCheck]: "Flutter Translator: ARB - Check",
@@ -55,5 +52,6 @@ export const cmdName: Record<Cmd, string> = {
   // Xcode Strings Command
   [Cmd.XcodeStringsTranslate]: "Flutter Translator: Xcode Strings - Translate",
   // Translation
+  [Cmd.TranslationTranslate]: "Flutter Translator: Text - Translate",
   [Cmd.TranslationExclude]: "Flutter Translator: Translation - Exclude",
 };

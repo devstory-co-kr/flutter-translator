@@ -7,15 +7,15 @@ interface InitParams {
   translationService: TranslationService;
 }
 
-export type TextTranslateCmdArgs = {};
+export type TranslationTranslateCmdArgs = {};
 
-export class TextTranslateCmd {
+export class TranslationTranslateCmd {
   private translationService: TranslationService;
   constructor({ translationService }: InitParams) {
     this.translationService = translationService;
   }
 
-  public async run(args?: TextTranslateCmdArgs) {
+  public async run(args?: TranslationTranslateCmdArgs) {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
       Toast.i("No active editor found.");

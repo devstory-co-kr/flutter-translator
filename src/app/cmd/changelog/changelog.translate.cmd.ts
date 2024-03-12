@@ -123,13 +123,6 @@ export class ChangelogTranslateCmd {
       return;
     }
 
-    // select translation type
-    const translationType =
-      await this.translationService.selectTranslationType();
-    if (!translationType) {
-      return;
-    }
-
     // translate
     const total = targetPlatformLanguages.length;
     let totalTranslated: number = 0;
@@ -160,7 +153,6 @@ export class ChangelogTranslateCmd {
           } else {
             // different language -> translate
             const result = await this.translationService.translate({
-              type: translationType,
               queries: sourceChangelog.file.text.split("\n"),
               sourceLang,
               targetLang,

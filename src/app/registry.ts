@@ -15,8 +15,8 @@ import { MetadataCreateCmd } from "./cmd/metadata/metadata.create.cmd";
 import { MetadataDeleteCmd } from "./cmd/metadata/metadata.delete.cmd";
 import { MetadataOpenCmd } from "./cmd/metadata/metadata.open.cmd";
 import { MetadataTranslateCmd } from "./cmd/metadata/metadata.translate.cmd";
+import { TextTranslateCmd } from "./cmd/translation/text.translate.cmd";
 import { TranslationExcludeCmd } from "./cmd/translation/translation.exclude.cmd";
-import { TranslationTranslateCmd } from "./cmd/translation/translation.translate.cmd";
 import { XcodeStringsTranslateCmd } from "./cmd/xcode_strings/xcode_strings.translate.cmd";
 import { ARBService } from "./component/arb/arb";
 import { ARBServiceImpl } from "./component/arb/arb.service";
@@ -159,10 +159,9 @@ export class Registry {
   /**
    * Command
    */
-  public textTranslateCmd: TranslationTranslateCmd =
-    new TranslationTranslateCmd({
-      translationService: this.translationService,
-    });
+  public textTranslateCmd: TextTranslateCmd = new TextTranslateCmd({
+    translationService: this.translationService,
+  });
   public arbTranslateCmd: ARBTranslateCmd = new ARBTranslateCmd({
     arbService: this.arbService,
     historyService: this.historyService,

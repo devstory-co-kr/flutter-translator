@@ -98,31 +98,36 @@ export class GoogleTranslationService implements TranslationService {
    * Translate
    */
   public async translate({
-    type,
     queries,
     sourceLang,
     targetLang,
   }: {
-    type: TranslationType;
     queries: string[];
     sourceLang: Language;
     targetLang: Language;
   }): Promise<TranslationResult> {
-    switch (type) {
-      case TranslationType.paid:
-        return this.paidTranslate({
-          apiKey: await this.configService.getGoogleAuthAPIKey(),
-          queries: queries,
-          sourceLang: sourceLang,
-          targetLang: targetLang,
-        });
-      case TranslationType.free:
-        return this.freeTranslate({
-          queries: queries,
-          sourceLang: sourceLang,
-          targetLang: targetLang,
-        });
-    }
+    return this.freeTranslate({
+      queries: queries,
+      sourceLang: sourceLang,
+      targetLang: targetLang,
+    });
+
+    // Paid translation deprecased
+    // switch (type) {
+    //   case TranslationType.paid:
+    //     return this.paidTranslate({
+    //       apiKey: await this.configService.getGoogleAuthAPIKey(),
+    //       queries: queries,
+    //       sourceLang: sourceLang,
+    //       targetLang: targetLang,
+    //     });
+    //   case TranslationType.free:
+    //     return this.freeTranslate({
+    //       queries: queries,
+    //       sourceLang: sourceLang,
+    //       targetLang: targetLang,
+    //     });
+    // }
   }
 
   /**

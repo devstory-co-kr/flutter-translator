@@ -6,7 +6,6 @@ import { HistoryService } from "../../../component/history/history.service";
 import { Language } from "../../../component/language/language";
 import { LanguageRepository } from "../../../component/language/language.repository";
 import { LanguageService } from "../../../component/language/language.service";
-import { TranslationType } from "../../../component/translation/translation";
 import { TranslationService } from "../../../component/translation/translation.service";
 import { TranslationStatistic } from "../../../component/translation/translation.statistic";
 import { Dialog } from "../../../util/dialog";
@@ -27,7 +26,6 @@ export type ARBTranslateCmdArgs = {
   targetLanguages?: Language[];
   excludeLanguages?: Language[];
   selectedTargetLanguages?: Language[];
-  translationType?: TranslationType;
   isPreceedValidation?: boolean;
 };
 
@@ -87,17 +85,8 @@ export class ARBTranslateCmd {
       return;
     }
 
-    // select translation type
-    const translationType: TranslationType | undefined =
-      args?.translationType ??
-      (await this.translationService.selectTranslationType());
-    if (!translationType) {
-      return;
-    }
-
     // translate
     await this.translate({
-      translationType,
       sourceArb,
       history,
       targetLanguages: selectedTargetLanguages,
@@ -115,12 +104,10 @@ export class ARBTranslateCmd {
   }
 
   async translate({
-    translationType,
     sourceArb,
     history,
     targetLanguages,
   }: {
-    translationType: TranslationType;
     sourceArb: ARB;
     history: History;
     targetLanguages: Language[];
@@ -144,7 +131,6 @@ export class ARBTranslateCmd {
           }
           totalTranslated += 1;
           const translationStatistic = await this.translateTargetLanguage({
-            translationType,
             sourceArb,
             history,
             targetLanguage,
@@ -174,19 +160,15 @@ export class ARBTranslateCmd {
       new TranslationStatistic()
     );
     Toast.i(
-      `Total ${totalTranslated} languages translated. (${translationType.toString()} ${
-        totalTranslateStatistic.log
-      })`
+      `Total ${totalTranslated} languages translated. (${totalTranslateStatistic.log})`
     );
   }
 
   private async translateTargetLanguage({
-    translationType,
     sourceArb,
     history,
     targetLanguage,
   }: {
-    translationType: TranslationType;
     sourceArb: ARB;
     history: History;
     targetLanguage: Language;
@@ -250,7 +232,6 @@ export class ARBTranslateCmd {
     if (nWillTranslate > 0) {
       // translate
       const translateResult = await this.translationService.translate({
-        type: translationType,
         queries: willTranslateValues,
         sourceLang: sourceArb.language,
         targetLang: targetArb.language,

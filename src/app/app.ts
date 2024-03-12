@@ -5,8 +5,8 @@ import { ChangelogTranslateCmdArgs } from "./cmd/changelog/changelog.translate.c
 import { Cmd } from "./cmd/cmd";
 import { MetadataCreateCmdArgs } from "./cmd/metadata/metadata.create.cmd";
 import { MetadataDeleteCmdArgs } from "./cmd/metadata/metadata.delete.cmd";
+import { TextTranslateCmdArgs } from "./cmd/translation/text.translate.cmd";
 import { TranslationExcludeCmdArgs } from "./cmd/translation/translation.exclude.cmd";
-import { TranslationTranslateCmdArgs } from "./cmd/translation/translation.translate.cmd";
 import { XcodeStringsTranslateCmdArgs } from "./cmd/xcode_strings/xcode_strings.translate.cmd";
 import { Registry } from "./registry";
 import { Constant } from "./util/constant";
@@ -40,7 +40,7 @@ export class FlutterTranslator implements App {
     /**
      * Translate Command
      */
-    [Cmd.TranslationTranslate]: (args?: TranslationTranslateCmdArgs) => {
+    [Cmd.TranslationTranslate]: (args?: TextTranslateCmdArgs) => {
       return this.registry.textTranslateCmd.run(args);
     },
     /**

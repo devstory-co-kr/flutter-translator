@@ -12,7 +12,6 @@ import {
   MetadataValidationItem,
   MetadataValidationType,
 } from "../../component/metadata/metadata.validation";
-import { TranslationType } from "../../component/translation/translation";
 import { TranslationService } from "../../component/translation/translation.service";
 import { Dialog } from "../../util/dialog";
 import { Toast } from "../../util/toast";
@@ -163,13 +162,6 @@ export class MetadataTranslateCmd {
       return;
     }
 
-    // select translation type
-    const translationType =
-      await this.translationService.selectTranslationType();
-    if (!translationType) {
-      return;
-    }
-
     const total = targetMetadataLanguages.length;
     let totalTranslated = 0;
 
@@ -196,7 +188,6 @@ export class MetadataTranslateCmd {
             targetMetadata,
             textListToTranslate,
             urlFilesProcessingPolicy,
-            translationType,
           });
           totalTranslated += 1;
 
@@ -224,13 +215,11 @@ export class MetadataTranslateCmd {
     targetMetadata,
     textListToTranslate,
     urlFilesProcessingPolicy,
-    translationType,
   }: {
     sourceMetadata: Metadata;
     targetMetadata: Metadata;
     textListToTranslate: MetadataText[];
     urlFilesProcessingPolicy: MetadataUrlFilesProcessingPolicy;
-    translationType: TranslationType;
   }): Promise<void> {
     for (const sourceData of sourceMetadata.dataList) {
       const targetFilePath = path.join(
@@ -244,7 +233,6 @@ export class MetadataTranslateCmd {
           }
           // translate
           const result = await this.translationService.translate({
-            type: translationType,
             queries: sourceData.text.split("\n"),
             sourceLang: sourceMetadata.language.translateLanguage,
             targetLang: targetMetadata.language.translateLanguage,

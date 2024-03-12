@@ -18,12 +18,10 @@ export interface TranslationService {
   selectTranslationType(): Promise<TranslationType | undefined>;
 
   translate({
-    type,
     queries,
     sourceLang,
     targetLang,
   }: {
-    type: TranslationType;
     queries: string[];
     sourceLang: Language;
     targetLang: Language;

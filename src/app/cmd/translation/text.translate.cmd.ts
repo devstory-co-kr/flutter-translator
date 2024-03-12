@@ -7,15 +7,15 @@ interface InitParams {
   translationService: TranslationService;
 }
 
-export type TranslationTranslateCmdArgs = {};
+export type TextTranslateCmdArgs = {};
 
-export class TranslationTranslateCmd {
+export class TextTranslateCmd {
   private translationService: TranslationService;
   constructor({ translationService }: InitParams) {
     this.translationService = translationService;
   }
 
-  public async run(args?: TranslationTranslateCmdArgs) {
+  public async run(args?: TextTranslateCmdArgs) {
     const editor = vscode.window.activeTextEditor;
     if (!editor) {
       Toast.i("No active editor found.");
@@ -68,28 +68,21 @@ export class TranslationTranslateCmd {
     }
     const targetLang = targetSelection.language;
 
-    // select translationType
-    const translationType =
-      await this.translationService.selectTranslationType();
-    if (!translationType) {
-      return;
-    }
-
     // translate
     const translatedTextList = await this.translationService.translate({
       queries: editor.selections.map((s) => editor.document.getText(s)),
-      type: translationType,
       sourceLang,
       targetLang,
     });
 
-    editor.edit((editBuilder) => {
+    await editor.edit((editBuilder) => {
       for (let i = 0; i < editor.selections.length; i++) {
         const selection = editor.selections[i];
         const translatedText = translatedTextList.data[i];
-        console.log(i, editor.document.getText(selection), translatedText);
         editBuilder.replace(selection, translatedText);
       }
     });
+
+    Toast.i("🟢 Translated.");
   }
 }

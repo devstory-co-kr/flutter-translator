@@ -1,7 +1,6 @@
 import path from "path";
 import * as vscode from "vscode";
 import { FilePath } from "../../component/config/config";
-import { TranslationType } from "../../component/translation/translation";
 import { TranslationService } from "../../component/translation/translation.service";
 import {
   XcodePlatform,
@@ -166,18 +165,11 @@ export class XcodeStringsTranslateCmd {
       return;
     }
 
-    // select translation type
-    const type = await this.translationService.selectTranslationType();
-    if (!type) {
-      return;
-    }
-
     // translate strings
     const totalTranslatedLanguages = await this.translateStrings(
       sourceProject,
       targetProjects,
-      sourceStringsFilePathList,
-      type
+      sourceStringsFilePathList
     );
     Toast.i(`Total ${totalTranslatedLanguages} languages translated.`);
   }
@@ -185,8 +177,7 @@ export class XcodeStringsTranslateCmd {
   private async translateStrings(
     sourceProject: XcodeProject,
     targetProjects: XcodeProject[],
-    sourceStringsFilePathList: FilePath[],
-    type: TranslationType
+    sourceStringsFilePathList: FilePath[]
   ): Promise<number> {
     const total = targetProjects.length;
     let totalTranslatedProject: number = 0;
@@ -217,7 +208,6 @@ export class XcodeStringsTranslateCmd {
               );
 
               const translateResult = await this.translationService.translate({
-                type,
                 queries: Object.values(sourceData),
                 sourceLang: sourceProject.language.translateLanguage,
                 targetLang: targetProject.language.translateLanguage,

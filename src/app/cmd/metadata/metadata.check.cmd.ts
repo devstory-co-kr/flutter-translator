@@ -19,8 +19,33 @@ export class MetadataCheckCmd {
   }
 
   public async run(args?: MetadataCheckCmdArgs) {
+    // select a platform
+    const platform = await this.metadataService.selectPlatform({
+      placeHolder: `Select the platform to check.`,
+    });
+    if (!platform) {
+      return;
+    }
+
+    // select source metadata language
+    const sourceMetadataLanguage = await this.metadataService.selectLanguage({
+      languageList:
+        this.metadataService.getMetadataLanguagesInPlatform(platform),
+      title: "Select Source Language",
+      placeHolder: `Select the source language required for checking.`,
+    });
+    if (!sourceMetadataLanguage) {
+      return;
+    }
+
+    // get source metadata
+    const sourceMetadata = this.metadataService.createMetadataFile(
+      platform,
+      sourceMetadataLanguage
+    );
+
     // get validation results
-    const results = this.metadataService.checkAll();
+    const results = this.metadataService.checkAll(sourceMetadata);
     const sectionLabelList: string[] = [];
     const itemList: MetadataValidationItem[] = [];
     for (const result of results) {
@@ -30,7 +55,8 @@ export class MetadataCheckCmd {
           continue;
         }
         invalidList.push({
-          metadata: result.metadata,
+          sourceMetadata: result.sourceMetadata,
+          targetMetadata: result.targetMetadata,
           sectionName: result.sectionName,
           ...validation,
         });

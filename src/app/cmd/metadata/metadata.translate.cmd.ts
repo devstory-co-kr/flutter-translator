@@ -40,7 +40,7 @@ export class MetadataTranslateCmd {
   }
 
   public async run() {
-    // select a platform.
+    // select a platform
     const platform = await this.metadataService.selectPlatform({
       placeHolder: `Select the platform to edit.`,
     });
@@ -84,14 +84,17 @@ export class MetadataTranslateCmd {
     );
 
     // check source metadata validation
-    const sourceValidation = this.metadataService.check(sourceMetadata);
+    const sourceValidation = this.metadataService.check(
+      sourceMetadata,
+      sourceMetadata
+    );
     const sourceValidationItems = sourceValidation.validationList
       .filter((validation) => validation.type !== MetadataValidationType.normal)
       .map((validation) => {
         return <MetadataValidationItem>{
           sectionName: sourceMetadata.platform,
-          metadata: sourceMetadata,
-          data: validation.data,
+          targetMetadata: sourceMetadata,
+          targetData: validation.targetData,
           type: validation.type,
         };
       });

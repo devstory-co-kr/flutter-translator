@@ -143,6 +143,7 @@ export class Registry {
     googleSheetRepository: this.googleSheetRepository,
   });
   private metadataService: MetadataService = new MetadataService({
+    configService: this.configService,
     metadataRepository: this.metadataRepository,
   });
   private changelogService: ChangelogService = new ChangelogService({

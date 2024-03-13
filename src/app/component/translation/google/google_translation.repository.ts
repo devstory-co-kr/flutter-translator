@@ -68,41 +68,34 @@ export class GoogleTranslationRepository implements TranslationRepository {
     targetLanguage: Language
   ): EncodeResult {
     let count = 0;
-    const parmKeywordDict: Record<string, string> = {};
-    const keywordParmDict: Record<string, string> = {};
+    const dictionary: Record<string, string> = {};
     const replaceKeys = LanguageRepository.getReplaceKeys(targetLanguage);
-    const encodedText = text
-      .split(" ")
-      .map((keyword) => {
-        const isInExclude = exclude.some(
-          (e) => e.toLocaleLowerCase() === keyword.toLowerCase()
-        );
-        if (isInExclude) {
-          let paramReplaceKey: string;
-          if (keywordParmDict[keyword]) {
-            paramReplaceKey = keywordParmDict[keyword];
-          } else if (count >= replaceKeys.length) {
-            const share = Math.floor(count / replaceKeys.length);
-            const remainder = count % replaceKeys.length;
-            paramReplaceKey = replaceKeys[share] + replaceKeys[remainder];
-            keywordParmDict[keyword] = paramReplaceKey;
-            count++;
-          } else {
-            paramReplaceKey = replaceKeys[count];
-            keywordParmDict[keyword] = paramReplaceKey;
-            count++;
-          }
-          parmKeywordDict[paramReplaceKey] = keyword;
-          return paramReplaceKey;
+
+    // Convert \n to replaceKey because Serbian does not support \n translation
+    const replaceKey = replaceKeys[count];
+    text = text.replaceAll("\\n", replaceKey);
+    dictionary[replaceKey] = "\\n";
+    count++;
+
+    for (const e of exclude) {
+      text = text.replace(new RegExp(e, "gi"), (match) => {
+        const i = Object.values(dictionary).indexOf(match);
+        const isDictionary = i !== -1;
+        if (isDictionary) {
+          // in the dictionary
+          const replaceKey = Object.keys(dictionary)[i];
+          return replaceKey;
         } else {
-          return keyword;
+          // not in dictionary
+          const replaceKey = replaceKeys[count];
+          dictionary[replaceKey] = match;
+          count++;
+          return replaceKey;
         }
-      })
-      .join(" ");
-    return {
-      dictionary: parmKeywordDict,
-      encodedText,
-    };
+      });
+    }
+
+    return { encodedText: text, dictionary };
   }
 
   /**
@@ -111,7 +104,7 @@ export class GoogleTranslationRepository implements TranslationRepository {
   private decode(dictionary: Record<string, string>, text: string): string {
     const keys = Object.keys(dictionary).sort((a, b) => b.length - a.length);
     for (const key of keys) {
-      text = text.replace(new RegExp(key, "g"), dictionary[key]);
+      text = text.replaceAll(key, dictionary[key]);
     }
 
     // decode html entity (e.g. &#39; -> ' / &gt; -> >)

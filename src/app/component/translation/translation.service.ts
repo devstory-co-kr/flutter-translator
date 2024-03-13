@@ -6,21 +6,30 @@ export interface EncodeResult {
   encodedText: string;
 }
 
-export interface PaidTranslateServiceParams {
+export interface TranslationServicePaidParams {
   apiKey: string;
   queries: string[];
   sourceLang: Language;
   targetLang: Language;
-  useCache: boolean;
+  useCache?: boolean;
 }
 
-export interface FreeTranslateServiceParams {
+export interface TranslationServiceFreeParams {
   queries: string[];
   sourceLang: Language;
   targetLang: Language;
-  useCache: boolean;
+  useCache?: boolean;
   encode: (query: string, targetLanguage: Language) => EncodeResult;
   decode: (dictionary: Record<string, string>, encodedQuery: string) => string;
+}
+
+export interface TranslationServiceTranslateParams {
+  queries: string[];
+  sourceLang: Language;
+  targetLang: Language;
+  useCache?: boolean;
+  encode?: (query: string, targetLanguage: Language) => EncodeResult;
+  decode?: (dictionary: Record<string, string>, encodedQuery: string) => string;
 }
 
 export interface TranslationService {
@@ -33,15 +42,5 @@ export interface TranslationService {
     useCache,
     encode,
     decode,
-  }: {
-    queries: string[];
-    sourceLang: Language;
-    targetLang: Language;
-    useCache?: boolean;
-    encode?: (query: string, targetLanguage: Language) => EncodeResult;
-    decode?: (
-      dictionary: Record<string, string>,
-      encodedQuery: string
-    ) => string;
-  }): Promise<TranslationResult>;
+  }: TranslationServiceTranslateParams): Promise<TranslationResult>;
 }

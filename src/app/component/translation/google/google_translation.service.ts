@@ -6,10 +6,10 @@ import { TranslationCacheRepository } from "../cache/translation_cache.repositor
 import { TranslationResult, TranslationType } from "../translation";
 import { TranslationRepository } from "../translation.repository";
 import {
-  EncodeResult,
-  FreeTranslateServiceParams,
-  PaidTranslateServiceParams,
   TranslationService,
+  TranslationServiceFreeParams,
+  TranslationServicePaidParams,
+  TranslationServiceTranslateParams,
 } from "../translation.service";
 
 interface InitParams {
@@ -21,7 +21,7 @@ interface TranslateParams {
   queries: string[];
   sourceLang: Language;
   targetLang: Language;
-  useCache: boolean;
+  useCache?: boolean;
   onTranslate: (query: string) => Promise<string>;
 }
 
@@ -81,7 +81,7 @@ export class GoogleTranslationService implements TranslationService {
     useCache,
     sourceLang,
     targetLang,
-  }: PaidTranslateServiceParams): Promise<TranslationResult> {
+  }: TranslationServicePaidParams): Promise<TranslationResult> {
     return this.checkCache({
       queries: queries,
       sourceLang: sourceLang,
@@ -109,22 +109,12 @@ export class GoogleTranslationService implements TranslationService {
     useCache,
     encode,
     decode,
-  }: {
-    queries: string[];
-    sourceLang: Language;
-    targetLang: Language;
-    useCache?: boolean;
-    encode?: (query: string) => EncodeResult;
-    decode?: (
-      dictionary: Record<string, string>,
-      encodedQuery: string
-    ) => string;
-  }): Promise<TranslationResult> {
+  }: TranslationServiceTranslateParams): Promise<TranslationResult> {
     return this.freeTranslate({
       queries: queries,
       sourceLang: sourceLang,
       targetLang: targetLang,
-      useCache: useCache ?? true,
+      useCache,
       encode: encode
         ? encode
         : (query) => ({
@@ -150,7 +140,7 @@ export class GoogleTranslationService implements TranslationService {
     useCache,
     encode,
     decode,
-  }: FreeTranslateServiceParams): Promise<TranslationResult> {
+  }: TranslationServiceFreeParams): Promise<TranslationResult> {
     return this.checkCache({
       queries: queries,
       sourceLang: sourceLang,
@@ -196,7 +186,7 @@ export class GoogleTranslationService implements TranslationService {
           targetLanguage: targetLang,
         });
 
-        if (useCache) {
+        if (useCache ?? this.configService.getTranslationUseCache()) {
           const cacheValue =
             this.translationCacheRepository.get<string>(cacheKey);
           if (cacheValue) {

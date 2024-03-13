@@ -132,6 +132,10 @@
       {
         "command": "flutter-translator.googleTranslation.openWeb",
         "title": "Flutter Translator: Google Translation - Open Web"
+      },
+      {
+        "command": "flutter-translator.translation.useCache",
+        "title": "Flutter Translator: Translation - Use Cache"
       }
     ]
   },

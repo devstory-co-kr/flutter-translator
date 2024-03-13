@@ -18,6 +18,7 @@ import { MetadataTranslateCmd } from "./cmd/metadata/metadata.translate.cmd";
 import { GoogleTranslationOpenWebCmd } from "./cmd/translation/google_translation.open_web.cmd";
 import { TextTranslateCmd } from "./cmd/translation/text.translate.cmd";
 import { TranslationExcludeCmd } from "./cmd/translation/translation.exclude.cmd";
+import { TranslationUseCacheCmd } from "./cmd/translation/translation.use_cache.cmd";
 import { XcodeStringsTranslateCmd } from "./cmd/xcode_strings/xcode_strings.translate.cmd";
 import { ARBService } from "./component/arb/arb";
 import { ARBServiceImpl } from "./component/arb/arb.service";
@@ -250,6 +251,10 @@ export class Registry {
     });
   public googleTranslationOpenWebCmd: GoogleTranslationOpenWebCmd =
     new GoogleTranslationOpenWebCmd({});
+  public translationUseCacheCmd: TranslationUseCacheCmd =
+    new TranslationUseCacheCmd({
+      configService: this.configService,
+    });
 
   public init(): Promise<void[]> {
     return Promise.all([

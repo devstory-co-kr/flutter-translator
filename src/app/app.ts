@@ -19,7 +19,7 @@ import { Toast } from "./util/toast";
 
 export interface App {
   name: string;
-  commands: Record<Cmd, (args: any) => void>;
+  commands: Record<Cmd, (args: any) => Promise<void>>;
   init: () => any;
   migrate: (context: vscode.ExtensionContext) => Promise<void>;
   disposed: () => void;

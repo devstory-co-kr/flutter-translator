@@ -3,7 +3,6 @@ import { Language } from "../../component/language/language";
 import { LanguageRepository } from "../../component/language/language.repository";
 import { TranslationService } from "../../component/translation/translation.service";
 import { Toast } from "../../util/toast";
-import { Dialog } from "../../util/dialog";
 
 interface InitParams {
   translationService: TranslationService;
@@ -85,8 +84,6 @@ export class TextTranslateCmd {
       }
       targetLang = targetSelection.language;
     }
-
-    // select use cache
 
     // translate
     const translatedTextList = await this.translationService.translate({

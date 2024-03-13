@@ -61,10 +61,11 @@ export class Editor {
     value: string
   ): vscode.Selection {
     const documentText = editor.document.getText();
+    const valueLength = value.replace(/\n/g, "\n\n").length; // "\n".length = 1
     const keyText = `"${key}": "`;
     const startIndex = documentText.indexOf(keyText) + keyText.length;
     const startPosition = editor.document.positionAt(startIndex);
-    const endPosition = editor.document.positionAt(startIndex + value.length);
+    const endPosition = editor.document.positionAt(startIndex + valueLength);
     const selection = new vscode.Selection(startPosition, endPosition);
     editor.selections = [selection];
     return selection;

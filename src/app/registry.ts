@@ -15,6 +15,7 @@ import { MetadataCreateCmd } from "./cmd/metadata/metadata.create.cmd";
 import { MetadataDeleteCmd } from "./cmd/metadata/metadata.delete.cmd";
 import { MetadataOpenCmd } from "./cmd/metadata/metadata.open.cmd";
 import { MetadataTranslateCmd } from "./cmd/metadata/metadata.translate.cmd";
+import { GoogleTranslationOpenWebCmd } from "./cmd/translation/google_translation.open_web.cmd";
 import { TextTranslateCmd } from "./cmd/translation/text.translate.cmd";
 import { TranslationExcludeCmd } from "./cmd/translation/translation.exclude.cmd";
 import { XcodeStringsTranslateCmd } from "./cmd/xcode_strings/xcode_strings.translate.cmd";
@@ -247,6 +248,8 @@ export class Registry {
     new TranslationExcludeCmd({
       configService: this.configService,
     });
+  public googleTranslationOpenWebCmd: GoogleTranslationOpenWebCmd =
+    new GoogleTranslationOpenWebCmd({});
 
   public init(): Promise<void[]> {
     return Promise.all([

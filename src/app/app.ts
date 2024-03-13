@@ -5,6 +5,7 @@ import { ChangelogTranslateCmdArgs } from "./cmd/changelog/changelog.translate.c
 import { Cmd } from "./cmd/cmd";
 import { MetadataCreateCmdArgs } from "./cmd/metadata/metadata.create.cmd";
 import { MetadataDeleteCmdArgs } from "./cmd/metadata/metadata.delete.cmd";
+import { GoogleTranslationOpenWebCmdArgs } from "./cmd/translation/google_translation.open_web.cmd";
 import { TextTranslateCmdArgs } from "./cmd/translation/text.translate.cmd";
 import { TranslationExcludeCmdArgs } from "./cmd/translation/translation.exclude.cmd";
 import { XcodeStringsTranslateCmdArgs } from "./cmd/xcode_strings/xcode_strings.translate.cmd";
@@ -37,12 +38,6 @@ export class FlutterTranslator implements App {
   public name: string = Constant.appName;
 
   public commands = {
-    /**
-     * Translate Command
-     */
-    [Cmd.TextTranslate]: (args?: TextTranslateCmdArgs) => {
-      return this.registry.textTranslateCmd.run(args);
-    },
     /**
      * ARB Command
      */
@@ -112,8 +107,16 @@ export class FlutterTranslator implements App {
     /**
      * Translation Command
      */
+    [Cmd.TextTranslate]: (args?: TextTranslateCmdArgs) => {
+      return this.registry.textTranslateCmd.run(args);
+    },
     [Cmd.TranslationExclude]: (args?: TranslationExcludeCmdArgs) => {
       return this.registry.translationExcludeCmd.run(args);
+    },
+    [Cmd.GoogleTranslationOpenWeb]: (
+      args?: GoogleTranslationOpenWebCmdArgs
+    ) => {
+      return this.registry.googleTranslationOpenWebCmd.run(args);
     },
   };
 

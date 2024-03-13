@@ -65,33 +65,36 @@ export class GoogleTranslationRepository implements TranslationRepository {
     let count = 0;
     const parmKeywordDict: Record<string, string> = {};
     const keywordParmDict: Record<string, string> = {};
-    const encodedText = text.replace(/\b(\w+)\b/g, (match, keyword) => {
-      const isInExclude = exclude.some(
-        (e) => e.toLocaleLowerCase() === keyword.toLowerCase()
-      );
-      if (isInExclude) {
-        let paramReplaceKey: string;
-        if (keywordParmDict[keyword]) {
-          paramReplaceKey = keywordParmDict[keyword];
-        } else if (count >= Constant.paramReplaceKeys.length) {
-          const share = Math.floor(count / Constant.paramReplaceKeys.length);
-          const remainder = count % Constant.paramReplaceKeys.length;
-          paramReplaceKey =
-            Constant.paramReplaceKeys[share] +
-            Constant.paramReplaceKeys[remainder];
-          keywordParmDict[keyword] = paramReplaceKey;
-          count++;
+    const encodedText = text
+      .split(" ")
+      .map((keyword) => {
+        const isInExclude = exclude.some(
+          (e) => e.toLocaleLowerCase() === keyword.toLowerCase()
+        );
+        if (isInExclude) {
+          let paramReplaceKey: string;
+          if (keywordParmDict[keyword]) {
+            paramReplaceKey = keywordParmDict[keyword];
+          } else if (count >= Constant.paramReplaceKeys.length) {
+            const share = Math.floor(count / Constant.paramReplaceKeys.length);
+            const remainder = count % Constant.paramReplaceKeys.length;
+            paramReplaceKey =
+              Constant.paramReplaceKeys[share] +
+              Constant.paramReplaceKeys[remainder];
+            keywordParmDict[keyword] = paramReplaceKey;
+            count++;
+          } else {
+            paramReplaceKey = Constant.paramReplaceKeys[count];
+            keywordParmDict[keyword] = paramReplaceKey;
+            count++;
+          }
+          parmKeywordDict[paramReplaceKey] = keyword;
+          return paramReplaceKey;
         } else {
-          paramReplaceKey = Constant.paramReplaceKeys[count];
-          keywordParmDict[keyword] = paramReplaceKey;
-          count++;
+          return keyword;
         }
-        parmKeywordDict[paramReplaceKey] = keyword;
-        return paramReplaceKey;
-      } else {
-        return match;
-      }
-    });
+      })
+      .join(" ");
     return {
       dictionary: parmKeywordDict,
       encodedText,

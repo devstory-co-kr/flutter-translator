@@ -2,6 +2,17 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
+## [2.3.0] - 24.03.13
+### Added
+- Add `Translation - Exclude` command.
+- Add `translationConfig.exclude` configuration.
+
+### Updated
+- Update to check whether translation exceptions apply when checking ARB and Metadata.
+
+### Deleted
+- Delete paid translation feature.
+
 ## [2.2.1] - 24.02.27
 ### Updated
 - Update to select a language when accessing files that languages are not verified.

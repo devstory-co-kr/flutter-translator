@@ -116,16 +116,16 @@ It is recommended to set the configuration in the project workspace(`.vscode/set
 {
   "flutterTranslator.config": {
     "arbConfig": {
-      "sourcePath": "ABSOLUTE_PATH/intl_en.arb";
-      "exclude": ["ko", "zh_CN", "fr"];
-      "prefix": "intl_";
+      "sourcePath": "ABSOLUTE_PATH/intl_en.arb",
+      "exclude": ["ko", "zh_CN", "fr"],
+      "prefix": "intl_",
       "custom": {
         "zh_CN": "intl_zh_Hant"
       }
     }
     "googleAuthConfig": {
-      "apiKey": "YOUR_GOOGLE_API_KEY";
-      "credential": "YOUR_CREDENTIAL_JSON_FILE_ABSOLUTE_PATH";
+      "apiKey": "YOUR_GOOGLE_API_KEY",
+      "credential": "YOUR_CREDENTIAL_JSON_FILE_ABSOLUTE_PATH",
     }
     "googleSheetConfig": {
       "id": "YOUR_GOOGLE_SHEET_ID",
@@ -142,6 +142,9 @@ It is recommended to set the configuration in the project workspace(`.vscode/set
       "projectLanguageCode": {
         "fil.lproj": "tl"
       }
+    },
+    "translationConfig": {
+      "exclude": ["BRAND_NAME", "APPLICATION_NAME"]
     }
   }
 }
@@ -164,6 +167,8 @@ It is recommended to set the configuration in the project workspace(`.vscode/set
   - `exclude` : [List of platform language codes](https://gist.github.com/nero-angela/37984030bcc5dd0e62dc3143bb8c053d) that you do not want to translate.
 - **xcodeConfig**
   - `projectLanguageCode`: Set the language to translate `locale.lproj` into. Enter the folder name ending with `.lproj` and the [ARB language code](https://gist.github.com/nero-angela/37984030bcc5dd0e62dc3143bb8c053d) name.
+- **translationConfig**
+  - `exclude` : List of keywords you do not want translated (ignoring case).
 
 
 

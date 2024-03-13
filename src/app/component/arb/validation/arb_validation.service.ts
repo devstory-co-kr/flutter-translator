@@ -76,12 +76,40 @@ export class ARBValidationService {
 
     switch (validationResult.invalidType) {
       case InvalidType.notExcluded:
-        // text translate
-        const yes = await Dialog.showConfirmDialog({
-          title: "Excluded Text Not Found",
-          placeHolder: "Do you want to translate again without cache?",
-        });
-        if (yes) {
+      case InvalidType.keyNotFound:
+      case InvalidType.invalidLineBreaks:
+      case InvalidType.invalidParameters:
+      case InvalidType.invalidParentheses:
+        const selection = await vscode.window.showQuickPick(
+          [
+            {
+              label: "Translate again without cache.",
+              data: Cmd.TextTranslate,
+            },
+            {
+              label: "Open Google Translate website",
+              data: Cmd.GoogleTranslationOpenWeb,
+            },
+          ],
+          {
+            ignoreFocusOut: true,
+            title: validationResult.invalidType,
+            placeHolder: "Please select the next action.",
+          }
+        );
+        if (!selection) {
+          return false;
+        }
+        if (selection.data === Cmd.GoogleTranslationOpenWeb) {
+          // open translation website
+          await Link.openGoogleTranslateWebsite({
+            sourceLanguage: sourceARB.language,
+            targetLanguage: validationResult.targetARB.language,
+            text: sourceARB.data[validationResult.key],
+            isConfirm: false,
+          });
+        } else {
+          // text translation
           const { editor: targetEditor } = await Editor.open(
             targetARB.filePath,
             vscode.ViewColumn.Two
@@ -103,16 +131,6 @@ export class ARBValidationService {
             useCache: false,
           });
         }
-        break;
-      case InvalidType.keyNotFound:
-      case InvalidType.invalidParameters:
-      case InvalidType.invalidParentheses:
-        // open translation website
-        await Link.openGoogleTranslateWebsite({
-          sourceLanguage: sourceARB.language,
-          targetLanguage: validationResult.targetARB.language,
-          text: sourceARB.data[validationResult.key],
-        });
         break;
       case InvalidType.undecodedHtmlEntityExists:
         // decode html entities

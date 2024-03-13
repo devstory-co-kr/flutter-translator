@@ -51,6 +51,7 @@ export class ARBCheckCmd {
     const sectionMap = {
       [InvalidType.notExcluded]: `${InvalidType.notExcluded}`,
       [InvalidType.keyNotFound]: `${InvalidType.keyNotFound}`,
+      [InvalidType.invalidLineBreaks]: `${InvalidType.invalidLineBreaks}`,
       [InvalidType.invalidParameters]: `${InvalidType.invalidParameters}`,
       [InvalidType.invalidParentheses]: `${InvalidType.invalidParentheses}`,
       [InvalidType.undecodedHtmlEntityExists]: `${InvalidType.undecodedHtmlEntityExists}`,

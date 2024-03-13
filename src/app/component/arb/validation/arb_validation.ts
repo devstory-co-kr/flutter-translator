@@ -3,6 +3,7 @@ import { ARB } from "../arb";
 export interface ARBValidationData {
   value: string;
   nParams: number;
+  nLineBreaks: number;
   nParentheses: number;
   nHtmlEntities: number;
 }
@@ -14,6 +15,7 @@ export interface ARBValidation {
 export enum InvalidType {
   notExcluded = "Not excluded",
   keyNotFound = "Key does not exist",
+  invalidLineBreaks = "Incorrect number of line breaks",
   invalidParameters = "Incorrect number of parameters",
   invalidParentheses = "Incorrect number of parentheses",
   undecodedHtmlEntityExists = "Undecoded html entity exists",

@@ -16,8 +16,6 @@ export class ARBValidationRepository extends BaseDisposable {
     const sourceValidationKeys = Object.keys(sourceValidation);
     const targetValidationKeys = Object.keys(targetValidation);
     for (const key of sourceValidationKeys) {
-      const sourceTotalParams = sourceValidation[key].nParams;
-
       // not excluded
       let isNotExcluded = false;
       let notFoundKeyword: string = "";
@@ -66,8 +64,21 @@ export class ARBValidationRepository extends BaseDisposable {
         };
       }
 
+      // incorrect number of line breaks
+      if (
+        sourceValidation[key].nLineBreaks !== targetValidation[key].nLineBreaks
+      ) {
+        yield <ValidationResult>{
+          sourceValidationData: sourceValidation[key],
+          invalidType: InvalidType.invalidLineBreaks,
+          sourceARB,
+          targetARB,
+          key,
+        };
+      }
+
       // incorrect number of parameters
-      if (sourceTotalParams !== targetValidation[key].nParams) {
+      if (sourceValidation[key].nParams !== targetValidation[key].nParams) {
         yield <ValidationResult>{
           sourceValidationData: sourceValidation[key],
           invalidType: InvalidType.invalidParameters,
@@ -171,6 +182,10 @@ export class ARBValidationRepository extends BaseDisposable {
     return (value.match(/\{.*?\}/g) || []).length;
   }
 
+  private getTotalLineBreaks(value: string): number {
+    return (value.match(/\n/g) || []).length;
+  }
+
   private getTotalParentheses(value: string): number {
     return (value.match(/[(){}\[\]⌜⌟『』<>《》〔〕〘〙【】〖〗⦅⦆]/g) || [])
       .length;
@@ -218,6 +233,7 @@ export class ARBValidationRepository extends BaseDisposable {
       parmsValidation[key] = {
         value,
         nParams: this.getTotalParams(value),
+        nLineBreaks: this.getTotalLineBreaks(value),
         nParentheses: this.getTotalParentheses(value),
         nHtmlEntities: this.getTotalHtmlEntites(value),
       };

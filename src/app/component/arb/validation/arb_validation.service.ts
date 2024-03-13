@@ -3,9 +3,7 @@ import * as he from "he";
 import path from "path";
 import * as vscode from "vscode";
 import { Cmd } from "../../../cmd/cmd";
-import { TextTranslateCmdArgs } from "../../../cmd/translation/text.translate.cmd";
 import { Dialog } from "../../../util/dialog";
-import { Editor } from "../../../util/editor";
 import { Link } from "../../../util/link";
 import { Toast } from "../../../util/toast";
 import { ConfigService } from "../../config/config";
@@ -60,7 +58,10 @@ export class ARBValidationService {
     return validationResults;
   }
 
-  public async validate(validationResult: ValidationResult): Promise<boolean> {
+  public async validate(
+    validationResult: ValidationResult,
+    validationResultList: ValidationResult[]
+  ): Promise<boolean> {
     const { sourceARB, targetARB, invalidType, invalidMessage, key } =
       validationResult;
     const targetFileName = path.basename(targetARB.filePath);
@@ -83,7 +84,7 @@ export class ARBValidationService {
         const selection = await vscode.window.showQuickPick(
           [
             {
-              label: "Translate again without cache.",
+              label: "Retranslate without cache.",
               data: Cmd.TextTranslate,
             },
             {
@@ -110,26 +111,69 @@ export class ARBValidationService {
           });
         } else {
           // text translation
-          const { editor: targetEditor } = await Editor.open(
-            targetARB.filePath,
-            vscode.ViewColumn.Two
+          const vList = validationResultList.filter(
+            (v) => v.invalidType === validationResult.invalidType
           );
-          const selection = Editor.selectFromARB(
-            targetEditor,
-            key,
-            `${targetARB.data[key]}`
+          const vTotal = vList.length;
+          const translationScopeAnswer = await vscode.window.showQuickPick(
+            [
+              {
+                label: "Only selected item",
+                data: false,
+              },
+              {
+                label: `All items (${vTotal})`,
+                data: true,
+              },
+            ],
+            {
+              ignoreFocusOut: true,
+              title: "Retranslation Scope",
+              placeHolder: `Do you want to retranslate all ${validationResult.invalidType} issues?`,
+            }
           );
-          // Set newline character (\n) to be displayed as \n when translated
-          const query = sourceARB.data[key].replace(/\n/g, "\\n");
-          await vscode.commands.executeCommand(Cmd.TextTranslate, <
-            TextTranslateCmdArgs
-          >{
-            queries: [query],
-            selections: [selection],
-            sourceLang: sourceARB.language,
-            targetLang: targetARB.language,
-            useCache: false,
-          });
+          if (!translationScopeAnswer) {
+            return false;
+          }
+
+          if (translationScopeAnswer) {
+            // translate all [validationResult.invalidType]
+            let totalTranslated: number = 0;
+            await vscode.window.withProgress(
+              {
+                location: vscode.ProgressLocation.Notification,
+                cancellable: true,
+              },
+              async (progress, token) => {
+                for (const v of vList) {
+                  if (token.isCancellationRequested) {
+                    // cancel
+                    Toast.i(`🟠 Canceled`);
+                    break;
+                  }
+
+                  totalTranslated += 1;
+                  await this.arbValidationRepository.retranslate(
+                    v.sourceARB,
+                    v.targetARB,
+                    v.key
+                  );
+                  progress.report({
+                    increment: 100 / vTotal,
+                    message: `${totalTranslated} / ${vTotal} retranslated.`,
+                  });
+                }
+              }
+            );
+            Toast.i(`🟢 ${vTotal} retranslated.`);
+          } else {
+            // retranslate only selected item
+            await this.arbValidationRepository.retranslate(
+              sourceARB,
+              targetARB,
+              key
+            );
+          }
         }
         break;
       case InvalidType.undecodedHtmlEntityExists:

@@ -42,7 +42,7 @@ export class ARBCheckCmd {
       return;
     }
 
-    await this.arbValidationService.validate(validationResult);
+    await this.arbValidationService.validate(validationResult, validationResultList);
   }
 
   private async selectValidationResult(

@@ -1,4 +1,6 @@
 import * as vscode from "vscode";
+import { Cmd } from "../../../cmd/cmd";
+import { TextTranslateCmdArgs } from "../../../cmd/translation/text.translate.cmd";
 import { BaseDisposable } from "../../../util/base/base_disposable";
 import { Editor } from "../../../util/editor";
 import { Highlight, HighlightType } from "../../../util/highlight";
@@ -239,5 +241,29 @@ export class ARBValidationRepository extends BaseDisposable {
       };
     }
     return parmsValidation;
+  }
+
+  public async retranslate(sourceARB: ARB, targetARB: ARB, key: string) {
+    const { editor: targetEditor } = await Editor.open(
+      targetARB.filePath,
+      vscode.ViewColumn.Two
+    );
+    const selection = Editor.selectFromARB(
+      targetEditor,
+      key,
+      `${targetARB.data[key]}`
+    );
+    // Set newline character (\n) to be displayed as \n when translated
+    const query = sourceARB.data[key].replace(/\n/g, "\\n");
+    await vscode.commands.executeCommand(Cmd.TextTranslate, <
+      TextTranslateCmdArgs
+    >{
+      queries: [query],
+      selections: [selection],
+      sourceLang: sourceARB.language,
+      targetLang: targetARB.language,
+      useCache: false,
+      showCompleteNoti: false,
+    });
   }
 }

@@ -14,6 +14,7 @@ export type TextTranslateCmdArgs = {
   sourceLang: Language;
   targetLang: Language;
   useCache: boolean;
+  showCompleteNoti: boolean;
 };
 
 export class TextTranslateCmd {
@@ -101,6 +102,8 @@ export class TextTranslateCmd {
       }
     });
 
-    Toast.i("🟢 Translated.");
+    if (args?.showCompleteNoti ?? true) {
+      Toast.i("🟢 Translated.");
+    }
   }
 }

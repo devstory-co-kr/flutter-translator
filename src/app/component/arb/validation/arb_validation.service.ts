@@ -6,9 +6,10 @@ import { Cmd } from "../../../cmd/cmd";
 import { Dialog } from "../../../util/dialog";
 import { Link } from "../../../util/link";
 import { Toast } from "../../../util/toast";
-import { ConfigService } from "../../config/config";
+import { ConfigService, LanguageCode } from "../../config/config";
 import { Language } from "../../language/language";
 import { LanguageService } from "../../language/language.service";
+import { TranslationService } from "../../translation/translation.service";
 import { ARB, ARBService } from "../arb";
 import { InvalidType, ValidationResult } from "./arb_validation";
 import { ARBValidationRepository } from "./arb_validation.repository";
@@ -17,6 +18,7 @@ interface InitParams {
   arbService: ARBService;
   configService: ConfigService;
   languageService: LanguageService;
+  translationService: TranslationService;
   arbValidationRepository: ARBValidationRepository;
 }
 
@@ -24,16 +26,19 @@ export class ARBValidationService {
   private arbService: ARBService;
   private configService: ConfigService;
   private languageService: LanguageService;
+  private translationService: TranslationService;
   private arbValidationRepository: ARBValidationRepository;
   constructor({
     arbService,
     configService,
     languageService,
+    translationService,
     arbValidationRepository,
   }: InitParams) {
     this.arbService = arbService;
     this.configService = configService;
     this.languageService = languageService;
+    this.translationService = translationService;
     this.arbValidationRepository = arbValidationRepository;
   }
 
@@ -75,33 +80,17 @@ export class ARBValidationService {
       validationResult.key
     );
 
-    switch (validationResult.invalidType) {
-      case InvalidType.notExcluded:
+    switch (invalidType) {
       case InvalidType.keyNotFound:
+      case InvalidType.notExcluded:
       case InvalidType.invalidLineBreaks:
       case InvalidType.invalidParameters:
       case InvalidType.invalidParentheses:
-        const selection = await vscode.window.showQuickPick(
-          [
-            {
-              label: "Retranslate without cache.",
-              data: Cmd.TextTranslate,
-            },
-            {
-              label: "Open Google Translate website",
-              data: Cmd.GoogleTranslationOpenWeb,
-            },
-          ],
-          {
-            ignoreFocusOut: true,
-            title: validationResult.invalidType,
-            placeHolder: "Please select the next action.",
-          }
-        );
-        if (!selection) {
+        const action = await this.selectNextAction(invalidType);
+        if (!action) {
           return false;
         }
-        if (selection.data === Cmd.GoogleTranslationOpenWeb) {
+        if (action === Cmd.GoogleTranslationOpenWeb) {
           // open translation website
           await Link.openGoogleTranslateWebsite({
             sourceLanguage: sourceARB.language,
@@ -111,68 +100,31 @@ export class ARBValidationService {
           });
         } else {
           // text translation
-          const vList = validationResultList.filter(
+          const sameTypeValidationResults = validationResultList.filter(
             (v) => v.invalidType === validationResult.invalidType
           );
-          const vTotal = vList.length;
-          const translationScopeAnswer = await vscode.window.showQuickPick(
-            [
-              {
-                label: "Only selected item",
-                data: false,
-              },
-              {
-                label: `All items (${vTotal})`,
-                data: true,
-              },
-            ],
-            {
-              ignoreFocusOut: true,
-              title: "Retranslation Scope",
-              placeHolder: `Do you want to retranslate all ${validationResult.invalidType} issues?`,
-            }
+          const isReTranslateAll = await this.confirmReTranslateAll(
+            sameTypeValidationResults.length,
+            invalidType
           );
-          if (!translationScopeAnswer) {
+          if (!isReTranslateAll) {
             return false;
           }
 
-          if (translationScopeAnswer) {
+          if (isReTranslateAll) {
             // translate all [validationResult.invalidType]
-            let totalTranslated: number = 0;
-            await vscode.window.withProgress(
-              {
-                location: vscode.ProgressLocation.Notification,
-                cancellable: true,
-              },
-              async (progress, token) => {
-                for (const v of vList) {
-                  if (token.isCancellationRequested) {
-                    // cancel
-                    Toast.i(`🟠 Canceled`);
-                    break;
-                  }
-
-                  totalTranslated += 1;
-                  await this.arbValidationRepository.retranslate(
-                    v.sourceARB,
-                    v.targetARB,
-                    v.key
-                  );
-                  progress.report({
-                    increment: 100 / vTotal,
-                    message: `${totalTranslated} / ${vTotal} retranslated.`,
-                  });
-                }
-              }
-            );
-            Toast.i(`🟢 ${vTotal} retranslated.`);
+            await this.retranslateAll(sameTypeValidationResults);
+            Toast.i(`🟢 Re-translation Complete.`);
           } else {
             // retranslate only selected item
-            await this.arbValidationRepository.retranslate(
-              sourceARB,
-              targetARB,
-              key
-            );
+            const translateResult = await this.translationService.translate({
+              queries: [sourceARB.data[key]],
+              sourceLang: sourceARB.language,
+              targetLang: targetARB.language,
+              useCache: false,
+            });
+            targetARB.data[key] = translateResult.data[0];
+            this.arbService.upsert(targetARB.filePath, targetARB.data);
           }
         }
         break;
@@ -188,6 +140,117 @@ export class ARBValidationService {
         break;
     }
     return false;
+  }
+
+  private async selectNextAction(
+    invalidType: InvalidType
+  ): Promise<Cmd | undefined> {
+    return (
+      await vscode.window.showQuickPick(
+        [
+          {
+            label: "Re-translate without cache.",
+            data: Cmd.TextTranslate,
+          },
+          {
+            label: "Open Google Translate website",
+            data: Cmd.GoogleTranslationOpenWeb,
+          },
+        ],
+        {
+          ignoreFocusOut: true,
+          title: invalidType,
+          placeHolder: "Please select the next action.",
+        }
+      )
+    )?.data;
+  }
+
+  private async confirmReTranslateAll(
+    total: number,
+    invalidType: InvalidType
+  ): Promise<boolean | undefined> {
+    return (
+      await vscode.window.showQuickPick(
+        [
+          {
+            label: "Only selected item",
+            data: false,
+          },
+          {
+            label: `All items (${total})`,
+            data: true,
+          },
+        ],
+        {
+          ignoreFocusOut: true,
+          title: "Re-translation Scope",
+          placeHolder: `Do you want to retranslate all ${invalidType} issues?`,
+        }
+      )
+    )?.data;
+  }
+
+  private async retranslateAll(
+    validationResultList: ValidationResult[]
+  ): Promise<void> {
+    let nComplete: number = 0;
+    await vscode.window.withProgress(
+      {
+        location: vscode.ProgressLocation.Notification,
+        cancellable: true,
+      },
+      async (progress, token) => {
+        // Group by same target language
+        const targetGroup: {
+          [targetLangCode: LanguageCode]: ValidationResult[];
+        } = {};
+        let nGroup = 0;
+        for (const v of validationResultList) {
+          const targetLangCode = v.targetARB.language.languageCode;
+          if (!targetGroup[targetLangCode]) {
+            targetGroup[targetLangCode] = [];
+            nGroup += 1;
+          }
+          targetGroup[targetLangCode].push(v);
+        }
+
+        for (const targetLangCode of Object.keys(targetGroup)) {
+          if (token.isCancellationRequested) {
+            // cancel
+            Toast.i(`🟠 Canceled`);
+            break;
+          }
+          const sameTarget = targetGroup[targetLangCode];
+          const { sourceARB, targetARB } = sameTarget[0];
+          const queries = sameTarget.map((v) => v.sourceARB.data[v.key]);
+          nComplete += queries.length;
+
+          // Translation
+          const translatedTextList = (
+            await this.translationService.translate({
+              queries,
+              sourceLang: sourceARB.language,
+              targetLang: targetARB.language,
+              useCache: false,
+            })
+          ).data;
+
+          // Upsert
+          for (let i = 0; i < sameTarget.length; i++) {
+            const { key } = sameTarget[i];
+            const translatedText = translatedTextList[i];
+            targetARB.data[key] = translatedText;
+          }
+          this.arbService.upsert(targetARB.filePath, targetARB.data);
+
+          progress.report({
+            increment: 100 / nGroup,
+            message: `${nComplete} / ${validationResultList.length} re-translating...`,
+          });
+        }
+      }
+    );
   }
 
   public async decodeHtmlEntities(targetArb: ARB, keyList: string[]) {

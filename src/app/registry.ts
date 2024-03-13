@@ -133,6 +133,7 @@ export class Registry {
       arbService: this.arbService,
       configService: this.configService,
       languageService: this.languageService,
+      translationService: this.translationService,
       arbValidationRepository: this.arbValidationRepository,
     }
   );

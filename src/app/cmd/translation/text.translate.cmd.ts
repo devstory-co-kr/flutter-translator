@@ -10,6 +10,7 @@ interface InitParams {
 
 export type TextTranslateCmdArgs = {
   queries: string[];
+  translatedTextList: string[];
   selections: vscode.Selection[];
   sourceLang: Language;
   targetLang: Language;
@@ -87,17 +88,21 @@ export class TextTranslateCmd {
     }
 
     // translate
-    const translatedTextList = await this.translationService.translate({
-      queries,
-      sourceLang,
-      targetLang,
-      useCache: args?.useCache,
-    });
+    const translatedTextList =
+      args?.translatedTextList ??
+      (
+        await this.translationService.translate({
+          queries,
+          sourceLang,
+          targetLang,
+          useCache: args?.useCache,
+        })
+      ).data;
 
     await editor.edit((editBuilder) => {
       for (let i = 0; i < selections.length; i++) {
         const selection = selections[i];
-        const translatedText = translatedTextList.data[i];
+        const translatedText = translatedTextList[i];
         editBuilder.replace(selection, translatedText);
       }
     });

@@ -6,6 +6,7 @@ import { Editor } from "../../../util/editor";
 import { Highlight, HighlightType } from "../../../util/highlight";
 import { ARB } from "../arb";
 import { ARBValidation, InvalidType, ValidationResult } from "./arb_validation";
+import { LanguageCode } from "../../config/config";
 
 export class ARBValidationRepository extends BaseDisposable {
   public async *generateValidationResult(
@@ -18,31 +19,6 @@ export class ARBValidationRepository extends BaseDisposable {
     const sourceValidationKeys = Object.keys(sourceValidation);
     const targetValidationKeys = Object.keys(targetValidation);
     for (const key of sourceValidationKeys) {
-      // not excluded
-      let isNotExcluded = false;
-      let notFoundKeyword: string = "";
-      for (const keyword of excludeKeywords) {
-        const reg = new RegExp(keyword, "gi");
-        const nSource = sourceValidation[key].value.match(reg)?.length ?? 0;
-        const nTarget = targetValidation[key].value.match(reg)?.length ?? 0;
-        if (nSource !== nTarget) {
-          isNotExcluded = true;
-          notFoundKeyword = keyword;
-          break;
-        }
-      }
-      if (isNotExcluded) {
-        yield <ValidationResult>{
-          sourceValidationData: sourceValidation[key],
-          invalidType: InvalidType.notExcluded,
-          invalidMessage: `"${notFoundKeyword}" not found`,
-          sourceARB,
-          targetARB,
-          key,
-        };
-        continue;
-      }
-
       // key not found
       if (!targetValidationKeys.includes(key)) {
         yield <ValidationResult>{
@@ -53,6 +29,31 @@ export class ARBValidationRepository extends BaseDisposable {
           key,
         };
         continue;
+      } else {
+        // not excluded
+        let isNotExcluded = false;
+        let notFoundKeyword: string = "";
+        for (const keyword of excludeKeywords) {
+          const reg = new RegExp(keyword, "gi");
+          const nSource = sourceValidation[key].value.match(reg)?.length ?? 0;
+          const nTarget = targetValidation[key].value.match(reg)?.length ?? 0;
+          if (nSource !== nTarget) {
+            isNotExcluded = true;
+            notFoundKeyword = keyword;
+            break;
+          }
+        }
+        if (isNotExcluded) {
+          yield <ValidationResult>{
+            sourceValidationData: sourceValidation[key],
+            invalidType: InvalidType.notExcluded,
+            invalidMessage: `"${notFoundKeyword}" not found`,
+            sourceARB,
+            targetARB,
+            key,
+          };
+          continue;
+        }
       }
 
       // undecoded html entity exists
@@ -243,7 +244,17 @@ export class ARBValidationRepository extends BaseDisposable {
     return parmsValidation;
   }
 
-  public async retranslate(sourceARB: ARB, targetARB: ARB, key: string) {
+  public async retranslate({
+    sourceARB,
+    targetARB,
+    key,
+    translatedText,
+  }: {
+    sourceARB: ARB;
+    targetARB: ARB;
+    key: string;
+    translatedText?: string;
+  }) {
     const { editor: targetEditor } = await Editor.open(
       targetARB.filePath,
       vscode.ViewColumn.Two
@@ -254,11 +265,15 @@ export class ARBValidationRepository extends BaseDisposable {
       `${targetARB.data[key]}`
     );
     // Set newline character (\n) to be displayed as \n when translated
-    const query = sourceARB.data[key].replace(/\n/g, "\\n");
+    const queries = [sourceARB.data[key].replace(/\n/g, "\\n")];
+    const translatedTextList = translatedText
+      ? [translatedText.replace(/\n/g, "\\n")]
+      : undefined;
     await vscode.commands.executeCommand(Cmd.TextTranslate, <
       TextTranslateCmdArgs
     >{
-      queries: [query],
+      queries,
+      translatedTextList,
       selections: [selection],
       sourceLang: sourceARB.language,
       targetLang: targetARB.language,

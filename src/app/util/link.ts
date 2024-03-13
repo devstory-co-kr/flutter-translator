@@ -16,17 +16,21 @@ export class Link {
     sourceLanguage,
     targetLanguage,
     text,
+    isConfirm,
   }: {
     sourceLanguage?: Language;
     targetLanguage?: Language;
     text: string;
+    isConfirm?: boolean;
   }) {
-    const isShow = await Dialog.showConfirmDialog({
-      title: "Open Google Translate Website",
-      placeHolder: "Do you want to open the Google Translate website?",
-    });
-    if (!isShow) {
-      return;
+    if (isConfirm ?? true) {
+      const isShow = await Dialog.showConfirmDialog({
+        title: "Open Google Translate Website",
+        placeHolder: "Do you want to open the Google Translate website?",
+      });
+      if (!isShow) {
+        return;
+      }
     }
 
     const sl = sourceLanguage?.gt ?? "auto";

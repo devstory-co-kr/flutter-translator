@@ -91,10 +91,12 @@ export class ARBValidationService {
             key,
             `${targetARB.data[key]}`
           );
+          // Set newline character (\n) to be displayed as \n when translated
+          const query = sourceARB.data[key].replace(/\n/g, "\\n");
           await vscode.commands.executeCommand(Cmd.TextTranslate, <
             TextTranslateCmdArgs
           >{
-            queries: [sourceARB.data[key]],
+            queries: [query],
             selections: [selection],
             sourceLang: sourceARB.language,
             targetLang: targetARB.language,

@@ -2,6 +2,13 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
+## [2.3.4] - 24.03.13
+### Added
+- Add `Translation - Use Cache` command.
+
+### Updated
+- Update replace key to use keycaps when translating to odia(or) language.
+
 ## [2.3.3] - 24.03.13
 ### Added
 - Add `Google Translation - Open Web` command.

@@ -144,7 +144,8 @@ It is recommended to set the configuration in the project workspace(`.vscode/set
       }
     },
     "translationConfig": {
-      "exclude": ["BRAND_NAME", "APPLICATION_NAME"]
+      "useCache": true,
+      "exclude": ["BRAND_NAME", "APPLICATION_NAME"],
     }
   }
 }
@@ -167,6 +168,7 @@ It is recommended to set the configuration in the project workspace(`.vscode/set
 - **xcodeConfig**
   - `projectLanguageCode`: Set the language to translate `locale.lproj` into. Enter the folder name ending with `.lproj` and the [ARB language code](https://gist.github.com/nero-angela/37984030bcc5dd0e62dc3143bb8c053d) name.
 - **translationConfig**
+  - `useCache` : whether to use cache When translating.
   - `exclude` : List of keywords you do not want translated (ignoring case).
 
 

@@ -8,7 +8,6 @@ import { LanguageRepository } from "../../../component/language/language.reposit
 import { LanguageService } from "../../../component/language/language.service";
 import { TranslationService } from "../../../component/translation/translation.service";
 import { TranslationStatistic } from "../../../component/translation/translation.statistic";
-import { Constant } from "../../../util/constant";
 import { Dialog } from "../../../util/dialog";
 import { Toast } from "../../../util/toast";
 import { Cmd } from "../../cmd";
@@ -260,24 +259,26 @@ export class ARBTranslateCmd {
   /**
    * Encode ARB parameters
    */
-  private encodeParametersText(text: string): EncodeResult {
+  private encodeParametersText(
+    text: string,
+    targetLanguage: Language
+  ): EncodeResult {
     let count = 0;
     const parmKeywordDict: Record<string, string> = {};
     const keywordParmDict: Record<string, string> = {};
+    const replacerKeys = LanguageRepository.getReplaceKeys(targetLanguage);
     const encodedText = text.replace(/\{(.+?)\}/g, (match, _) => {
       let paramReplaceKey: string;
       if (keywordParmDict[match]) {
         paramReplaceKey = keywordParmDict[match];
-      } else if (count >= Constant.paramReplaceKeys.length) {
-        const share = Math.floor(count / Constant.paramReplaceKeys.length);
-        const remainder = count % Constant.paramReplaceKeys.length;
-        paramReplaceKey =
-          Constant.paramReplaceKeys[share] +
-          Constant.paramReplaceKeys[remainder];
+      } else if (count >= replacerKeys.length) {
+        const share = Math.floor(count / replacerKeys.length);
+        const remainder = count % replacerKeys.length;
+        paramReplaceKey = replacerKeys[share] + replacerKeys[remainder];
         keywordParmDict[match] = paramReplaceKey;
         count++;
       } else {
-        paramReplaceKey = Constant.paramReplaceKeys[count];
+        paramReplaceKey = replacerKeys[count];
         keywordParmDict[match] = paramReplaceKey;
         count++;
       }

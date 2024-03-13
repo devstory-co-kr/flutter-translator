@@ -19,7 +19,7 @@ export interface FreeTranslateServiceParams {
   sourceLang: Language;
   targetLang: Language;
   useCache: boolean;
-  encode: (query: string) => EncodeResult;
+  encode: (query: string, targetLanguage: Language) => EncodeResult;
   decode: (dictionary: Record<string, string>, encodedQuery: string) => string;
 }
 
@@ -38,7 +38,7 @@ export interface TranslationService {
     sourceLang: Language;
     targetLang: Language;
     useCache?: boolean;
-    encode?: (query: string) => EncodeResult;
+    encode?: (query: string, targetLanguage: Language) => EncodeResult;
     decode?: (
       dictionary: Record<string, string>,
       encodedQuery: string

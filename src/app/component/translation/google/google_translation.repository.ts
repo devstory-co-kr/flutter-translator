@@ -1,6 +1,7 @@
 import * as he from "he";
-import { Constant } from "../../../util/constant";
 import { TranslationFailureException } from "../../../util/exceptions";
+import { Language } from "../../language/language";
+import { LanguageRepository } from "../../language/language.repository";
 import { TranslationCacheRepository } from "../cache/translation_cache.repository";
 import { TranslationDataSource } from "../translation.datasource";
 import {
@@ -33,7 +34,7 @@ export class GoogleTranslationRepository implements TranslationRepository {
     sourceLang,
     targetLang,
   }: PaidTranslateRepositoryParams): Promise<string> {
-    return this.translate(query, exclude, (text: string) =>
+    return this.translate(query, exclude, targetLang, (text: string) =>
       this.translationDataSource.paidTranslate({
         apiKey,
         text,
@@ -49,7 +50,7 @@ export class GoogleTranslationRepository implements TranslationRepository {
     sourceLang,
     targetLang,
   }: FreeTranslateRepositoryParams): Promise<string> {
-    return this.translate(query, exclude, (text: string) =>
+    return this.translate(query, exclude, targetLang, (text: string) =>
       this.translationDataSource.freeTranslate({
         text,
         sourceLang,
@@ -61,10 +62,15 @@ export class GoogleTranslationRepository implements TranslationRepository {
   /**
    * Encode exclusion keywords
    */
-  private encode(text: string, exclude: string[]): EncodeResult {
+  private encode(
+    text: string,
+    exclude: string[],
+    targetLanguage: Language
+  ): EncodeResult {
     let count = 0;
     const parmKeywordDict: Record<string, string> = {};
     const keywordParmDict: Record<string, string> = {};
+    const replaceKeys = LanguageRepository.getReplaceKeys(targetLanguage);
     const encodedText = text
       .split(" ")
       .map((keyword) => {
@@ -75,16 +81,14 @@ export class GoogleTranslationRepository implements TranslationRepository {
           let paramReplaceKey: string;
           if (keywordParmDict[keyword]) {
             paramReplaceKey = keywordParmDict[keyword];
-          } else if (count >= Constant.paramReplaceKeys.length) {
-            const share = Math.floor(count / Constant.paramReplaceKeys.length);
-            const remainder = count % Constant.paramReplaceKeys.length;
-            paramReplaceKey =
-              Constant.paramReplaceKeys[share] +
-              Constant.paramReplaceKeys[remainder];
+          } else if (count >= replaceKeys.length) {
+            const share = Math.floor(count / replaceKeys.length);
+            const remainder = count % replaceKeys.length;
+            paramReplaceKey = replaceKeys[share] + replaceKeys[remainder];
             keywordParmDict[keyword] = paramReplaceKey;
             count++;
           } else {
-            paramReplaceKey = Constant.paramReplaceKeys[count];
+            paramReplaceKey = replaceKeys[count];
             keywordParmDict[keyword] = paramReplaceKey;
             count++;
           }
@@ -130,13 +134,15 @@ export class GoogleTranslationRepository implements TranslationRepository {
   private async translate(
     query: string,
     exclude: string[],
+    targetLanguage: Language,
     onTranslate: (encodedText: string) => Promise<string>
   ): Promise<string> {
     try {
       // encode
       const { dictionary, encodedText }: EncodeResult = this.encode(
         query,
-        exclude
+        exclude,
+        targetLanguage
       );
 
       // translate

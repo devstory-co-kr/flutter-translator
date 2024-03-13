@@ -1,3 +1,4 @@
+import { Constant } from "../../util/constant";
 import { Language } from "./language";
 
 export class LanguageRepository {
@@ -941,4 +942,12 @@ export class LanguageRepository {
     LanguageRepository.yoruba,
     LanguageRepository.zulu,
   ];
+
+  public static getReplaceKeys(language: Language): string[] {
+    if (language.languageCode === LanguageRepository.odia.languageCode) {
+      return Constant.keycaps;
+    } else {
+      return Constant.emojis;
+    }
+  }
 }

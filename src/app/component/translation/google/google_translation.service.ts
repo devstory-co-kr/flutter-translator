@@ -157,7 +157,7 @@ export class GoogleTranslationService implements TranslationService {
       targetLang: targetLang,
       useCache,
       onTranslate: async (query) => {
-        const { dictionary, encodedText } = encode(query);
+        const { dictionary, encodedText } = encode(query, targetLang);
         const translatedText = await this.translationRepository.freeTranslate({
           query: encodedText,
           exclude: this.configService.getTranslationExclude(),

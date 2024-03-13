@@ -2,6 +2,10 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
+## [2.3.3] - 24.03.13
+### Added
+- Add `Google Translation - Open Web` command.
+
 ## [2.3.2] - 24.03.13
 ### Updated
 - Update to check exclusion keywords starting from longest length.

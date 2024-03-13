@@ -44,8 +44,8 @@ export class ARBDecodeAllHtmlEntitiesCmd {
         validationResult.invalidType === InvalidType.undecodedHtmlEntityExists
       ) {
         total += 1;
-        undecodedHtmlEntities[validationResult.targetArb.filePath] = [
-          ...(undecodedHtmlEntities[validationResult.targetArb.filePath] ?? []),
+        undecodedHtmlEntities[validationResult.targetARB.filePath] = [
+          ...(undecodedHtmlEntities[validationResult.targetARB.filePath] ?? []),
           validationResult,
         ];
       }
@@ -57,7 +57,8 @@ export class ARBDecodeAllHtmlEntitiesCmd {
     }
 
     const isDecode = await Dialog.showConfirmDialog({
-      title: `Do you want to decode all ${total} undecoded HTML entities?`,
+      title: "Decode HTML Entities",
+      placeHolder: `Do you want to decode all ${total} undecoded HTML entities?`,
       confirmText: "Decode",
     });
     if (isDecode) {
@@ -65,7 +66,7 @@ export class ARBDecodeAllHtmlEntitiesCmd {
         const keysByFile = undecodedHtmlEntities[key].map(
           (validationResult) => validationResult.key
         );
-        const targetArb = undecodedHtmlEntities[key][0].targetArb;
+        const targetArb = undecodedHtmlEntities[key][0].targetARB;
         await this.arbValidationService.decodeHtmlEntities(
           targetArb,
           keysByFile

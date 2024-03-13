@@ -12,7 +12,6 @@ import {
   MetadataValidationItem,
   MetadataValidationType,
 } from "../../component/metadata/metadata.validation";
-import { TranslationType } from "../../component/translation/translation";
 import { TranslationService } from "../../component/translation/translation.service";
 import { Dialog } from "../../util/dialog";
 import { Toast } from "../../util/toast";
@@ -41,7 +40,7 @@ export class MetadataTranslateCmd {
   }
 
   public async run() {
-    // select a platform.
+    // select a platform
     const platform = await this.metadataService.selectPlatform({
       placeHolder: `Select the platform to edit.`,
     });
@@ -85,14 +84,17 @@ export class MetadataTranslateCmd {
     );
 
     // check source metadata validation
-    const sourceValidation = this.metadataService.check(sourceMetadata);
+    const sourceValidation = this.metadataService.check(
+      sourceMetadata,
+      sourceMetadata
+    );
     const sourceValidationItems = sourceValidation.validationList
       .filter((validation) => validation.type !== MetadataValidationType.normal)
       .map((validation) => {
         return <MetadataValidationItem>{
           sectionName: sourceMetadata.platform,
-          metadata: sourceMetadata,
-          data: validation.data,
+          targetMetadata: sourceMetadata,
+          targetData: validation.targetData,
           type: validation.type,
         };
       });
@@ -163,13 +165,6 @@ export class MetadataTranslateCmd {
       return;
     }
 
-    // select translation type
-    const translationType =
-      await this.translationService.selectTranslationType();
-    if (!translationType) {
-      return;
-    }
-
     const total = targetMetadataLanguages.length;
     let totalTranslated = 0;
 
@@ -196,7 +191,6 @@ export class MetadataTranslateCmd {
             targetMetadata,
             textListToTranslate,
             urlFilesProcessingPolicy,
-            translationType,
           });
           totalTranslated += 1;
 
@@ -212,7 +206,8 @@ export class MetadataTranslateCmd {
 
     // check
     const isPreceedValidation = await Dialog.showConfirmDialog({
-      title: "Would you like to check the results?",
+      title: "Metadata Check",
+      placeHolder: "Would you like to check the results?",
     });
     if (isPreceedValidation) {
       await vscode.commands.executeCommand(Cmd.MetadataCheck);
@@ -224,13 +219,11 @@ export class MetadataTranslateCmd {
     targetMetadata,
     textListToTranslate,
     urlFilesProcessingPolicy,
-    translationType,
   }: {
     sourceMetadata: Metadata;
     targetMetadata: Metadata;
     textListToTranslate: MetadataText[];
     urlFilesProcessingPolicy: MetadataUrlFilesProcessingPolicy;
-    translationType: TranslationType;
   }): Promise<void> {
     for (const sourceData of sourceMetadata.dataList) {
       const targetFilePath = path.join(
@@ -244,7 +237,6 @@ export class MetadataTranslateCmd {
           }
           // translate
           const result = await this.translationService.translate({
-            type: translationType,
             queries: sourceData.text.split("\n"),
             sourceLang: sourceMetadata.language.translateLanguage,
             targetLang: targetMetadata.language.translateLanguage,

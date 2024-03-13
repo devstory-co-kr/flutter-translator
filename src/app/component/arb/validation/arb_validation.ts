@@ -1,17 +1,18 @@
 import { ARB } from "../arb";
 
-export interface ArbValidationData {
+export interface ARBValidationData {
   value: string;
   nParams: number;
   nParentheses: number;
   nHtmlEntities: number;
 }
 
-export interface ArbValidation {
-  [key: string]: ArbValidationData;
+export interface ARBValidation {
+  [key: string]: ARBValidationData;
 }
 
 export enum InvalidType {
+  notExcluded = "Not excluded",
   keyNotFound = "Key does not exist",
   invalidParameters = "Incorrect number of parameters",
   invalidParentheses = "Incorrect number of parentheses",
@@ -19,9 +20,10 @@ export enum InvalidType {
 }
 
 export interface ValidationResult {
-  sourceValidationData: ArbValidationData;
+  sourceValidationData: ARBValidationData;
   invalidType: InvalidType;
-  sourceArb: ARB;
-  targetArb: ARB;
+  invalidMessage?: string;
+  sourceARB: ARB;
+  targetARB: ARB;
   key: string;
 }

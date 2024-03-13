@@ -25,6 +25,10 @@ export type GoogleSheetConfig = {
   exclude: LanguageCode[];
 };
 
+export type TranslationConfig = {
+  exclude: string[];
+};
+
 export type XcodeConfig = {
   projectLanguageCode: Record<XcodeProjectName, LanguageCode>;
 };
@@ -44,6 +48,7 @@ export type Config = {
   metadataConfig: MetadataConfig;
   changelogConfig: ChangelogConfig;
   xcodeConfig: XcodeConfig;
+  translationConfig: TranslationConfig;
 };
 
 export interface ConfigDataSourceI {
@@ -70,6 +75,11 @@ export interface ConfigRepositoryI {
 
   getXcodeConfig(): XcodeConfig;
   setXcodeConfig(xcodeConfig: Partial<XcodeConfig>): Thenable<void>;
+
+  getTranslationConfig(): TranslationConfig;
+  setTranslationConfig(
+    translationConfig: Partial<TranslationConfig>
+  ): Thenable<void>;
 }
 
 export interface ConfigService {
@@ -86,4 +96,6 @@ export interface ConfigService {
   setCustomXcodeProjectLanguage(
     projectName: XcodeProjectName
   ): Promise<Language | undefined>;
+  getTranslationExclude(): string[];
+  setTranslationExclude(exclude: string[]): Promise<void>;
 }

@@ -4,6 +4,7 @@ import { Dialog } from "../../util/dialog";
 import { Link } from "../../util/link";
 import { Toast } from "../../util/toast";
 import { Workspace } from "../../util/workspace";
+import { ConfigService } from "../config/config";
 import {
   Metadata,
   MetadataLanguage,
@@ -21,13 +22,16 @@ import {
 } from "./metadata.validation";
 
 interface InitParams {
+  configService: ConfigService;
   metadataRepository: MetadataRepository;
 }
 
 export class MetadataService {
+  private configService: ConfigService;
   private metadataRepository: MetadataRepository;
 
-  constructor({ metadataRepository }: InitParams) {
+  constructor({ configService, metadataRepository }: InitParams) {
+    this.configService = configService;
     this.metadataRepository = metadataRepository;
   }
 
@@ -323,21 +327,37 @@ export class MetadataService {
     return metadata;
   }
 
-  public check(metadata: Metadata): MetadataValidation {
-    return this.metadataRepository.check(metadata);
+  public check(
+    sourceMetadata: Metadata,
+    targetMetadata: Metadata
+  ): MetadataValidation {
+    const exclude = this.configService.getTranslationExclude();
+    return this.metadataRepository.check(
+      sourceMetadata,
+      targetMetadata,
+      exclude
+    );
   }
 
-  public checkAll(): MetadataValidation[] {
+  public checkAll(sourceMetadata: Metadata): MetadataValidation[] {
     const validationList: MetadataValidation[] = [];
+    const exclude = this.configService.getTranslationExclude();
     for (const platform of Object.values(MetadataSupportPlatform)) {
       const metadataLangauges = this.getMetadataLanguagesInPlatform(platform);
       for (const metadataLanguage of metadataLangauges) {
-        const metadata = this.getExistMetadataFile(platform, metadataLanguage);
-        if (!metadata) {
+        const targetMetadata = this.getExistMetadataFile(
+          platform,
+          metadataLanguage
+        );
+        if (!targetMetadata) {
           continue;
         }
 
-        const validation = this.metadataRepository.check(metadata);
+        const validation = this.metadataRepository.check(
+          sourceMetadata,
+          targetMetadata,
+          exclude
+        );
         validationList.push(validation);
       }
     }
@@ -368,8 +388,8 @@ export class MetadataService {
         return {
           section: item.sectionName,
           item: {
-            label: item.data.fileName,
-            detail: item.type,
+            label: item.targetData.fileName,
+            detail: item.message ?? item.type,
             picked: false,
           },
           data: item,
@@ -390,40 +410,28 @@ export class MetadataService {
     validationItemList: MetadataValidationItem[];
   }) {
     const filePath = path.join(
-      validation.metadata.languagePath,
-      validation.data.fileName
+      validation.targetMetadata.languagePath,
+      validation.targetData.fileName
     );
-
-    const currentLength = validation.data.text.length;
-    const maxLength = validation.data.maxLength ?? 0;
-    const { platform, language } = validation.metadata;
+    const { platform, language } = validation.targetMetadata;
+    Toast.e(validation.message);
     switch (validation.type) {
+      case MetadataValidationType.notExcluded:
+        await this.metadataRepository.openInvalidEditor(validation);
+        break;
       case MetadataValidationType.overflow:
         await Workspace.open(filePath);
-        const overflow = currentLength - maxLength;
-        Toast.e(
-          `Characters overflow (max: ${maxLength.toLocaleString()} / current: ${currentLength} / overflow: ${overflow.toLocaleString()})`
-        );
         // open google translate website
         await Link.openGoogleTranslateWebsite({
-          sourceLanguage: validation.metadata.language.translateLanguage,
-          text: validation.data.text,
+          sourceLanguage: validation.targetMetadata.language.translateLanguage,
+          text: validation.targetData.text,
         });
         break;
       case MetadataValidationType.required:
         await Workspace.open(filePath);
-        Toast.e(
-          `${
-            validation.data.fileName
-          } is required (maxLength: ${maxLength.toLocaleString()})`
-        );
         break;
       case MetadataValidationType.invalidURL:
         await Workspace.open(filePath);
-        const message = validation.data.optional
-          ? `${validation.data.fileName} can enter a URL starting with http or leave it blank.`
-          : `${validation.data.fileName} must enter a URL starting with http.`;
-        Toast.e(message);
         break;
       case MetadataValidationType.notExist:
         const notExistItemList = validationItemList.filter(
@@ -433,14 +441,15 @@ export class MetadataService {
         if (notExistItemList.length === 1) {
           // create one
           Workspace.createPath(filePath);
-          const fileName = `${platform}/${language.locale}/${validation.data.fileName}`;
+          const fileName = `${platform}/${language.locale}/${validation.targetData.fileName}`;
           Toast.i(`${fileName} created.`);
           await Workspace.open(filePath);
           return;
         }
 
         const isConfirm = Dialog.showConfirmDialog({
-          title: `Do you want to create all missing ${notExistItemList.length} files?`,
+          title: "Create Metadata",
+          placeHolder: `Do you want to create all missing ${notExistItemList.length} files?`,
         });
         if (!isConfirm) {
           // canceled
@@ -449,7 +458,10 @@ export class MetadataService {
           // confirm
           for (const item of notExistItemList) {
             Workspace.createPath(
-              path.join(item.metadata.languagePath, item.data.fileName)
+              path.join(
+                item.targetMetadata.languagePath,
+                item.targetData.fileName
+              )
             );
           }
           Toast.i(`${notExistItemList.length} files created.`);

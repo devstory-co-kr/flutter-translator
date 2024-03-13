@@ -36,7 +36,7 @@ export class ARBUploadToGoogleSheetCmd {
     this.arbService = arbService;
   }
 
-  async run() {
+  async run(): Promise<void> {
     const sourceArb = await this.arbService.getSourceARB();
 
     // Select target language list to upload

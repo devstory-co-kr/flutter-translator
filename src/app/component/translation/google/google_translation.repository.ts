@@ -1,4 +1,5 @@
 import * as he from "he";
+import { Constant } from "../../../util/constant";
 import { TranslationFailureException } from "../../../util/exceptions";
 import { TranslationCacheRepository } from "../cache/translation_cache.repository";
 import { TranslationDataSource } from "../translation.datasource";
@@ -28,10 +29,11 @@ export class GoogleTranslationRepository implements TranslationRepository {
   public async paidTranslate({
     apiKey,
     query,
+    exclude,
     sourceLang,
     targetLang,
   }: PaidTranslateRepositoryParams): Promise<string> {
-    return this.translate(query, (text: string) =>
+    return this.translate(query, exclude, (text: string) =>
       this.translationDataSource.paidTranslate({
         apiKey,
         text,
@@ -43,10 +45,11 @@ export class GoogleTranslationRepository implements TranslationRepository {
 
   public async freeTranslate({
     query,
+    exclude,
     sourceLang,
     targetLang,
   }: FreeTranslateRepositoryParams): Promise<string> {
-    return this.translate(query, (text: string) =>
+    return this.translate(query, exclude, (text: string) =>
       this.translationDataSource.freeTranslate({
         text,
         sourceLang,
@@ -55,73 +58,64 @@ export class GoogleTranslationRepository implements TranslationRepository {
     );
   }
 
-  private paramReplaceKeys: string[] = [
-    "0️⃣",
-    "1️⃣",
-    "2️⃣",
-    "3️⃣",
-    "4️⃣",
-    "5️⃣",
-    "6️⃣",
-    "7️⃣",
-    "8️⃣",
-    "9️⃣",
-    "🔟",
-  ];
-
   /**
-   * Encode arb parameters
-   * @param text
-   * @returns EncodeResult
+   * Encode exclusion keywords
    */
-  private encodeText(text: string): EncodeResult {
+  private encode(text: string, exclude: string[]): EncodeResult {
     let count = 0;
-    const dictionary: Record<string, string> = {};
-    const encodedText: string = text.replace(/\{(.+?)\}/g, (_, match) => {
-      if (count >= this.paramReplaceKeys.length) {
-        throw new TranslationFailureException(
-          `The number of parameters has exceeded the maximum (${this.paramReplaceKeys.length}).`
-        );
+    const parmKeywordDict: Record<string, string> = {};
+    const keywordParmDict: Record<string, string> = {};
+    const encodedText = text.replace(/\b(\w+)\b/g, (match, keyword) => {
+      const isInExclude = exclude.some(
+        (e) => e.toLocaleLowerCase() === keyword.toLowerCase()
+      );
+      if (isInExclude) {
+        let paramReplaceKey: string;
+        if (keywordParmDict[keyword]) {
+          paramReplaceKey = keywordParmDict[keyword];
+        } else if (count >= Constant.paramReplaceKeys.length) {
+          const share = Math.floor(count / Constant.paramReplaceKeys.length);
+          const remainder = count % Constant.paramReplaceKeys.length;
+          paramReplaceKey =
+            Constant.paramReplaceKeys[share] +
+            Constant.paramReplaceKeys[remainder];
+          keywordParmDict[keyword] = paramReplaceKey;
+          count++;
+        } else {
+          paramReplaceKey = Constant.paramReplaceKeys[count];
+          keywordParmDict[keyword] = paramReplaceKey;
+          count++;
+        }
+        parmKeywordDict[paramReplaceKey] = keyword;
+        return paramReplaceKey;
+      } else {
+        return match;
       }
-      const replacement = this.paramReplaceKeys[count];
-      dictionary[replacement] = `{${match}}`;
-      count++;
-      return replacement;
     });
     return {
-      dictionary,
+      dictionary: parmKeywordDict,
       encodedText,
     };
   }
 
   /**
    * Decode encoded text
-   * @param dictionary
-   * @param text
-   * @returns string
    */
-  private decodeText(dictionary: Record<string, string>, text: string): string {
-    let result: string = text;
-    const dictKeys = Object.keys(dictionary);
-
-    // restore {params}
-    for (const i in dictKeys) {
-      const key = dictKeys[i];
-      result = result.replace(key, (match) => {
-        return dictionary[match] || match;
-      });
+  private decode(dictionary: Record<string, string>, text: string): string {
+    const keys = Object.keys(dictionary).sort((a, b) => b.length - a.length);
+    for (const key of keys) {
+      text = text.replace(new RegExp(key, "g"), dictionary[key]);
     }
 
     // decode html entity (e.g. &#39; -> ' / &gt; -> >)
-    result = he.decode(result);
+    text = he.decode(text);
 
     // replace punctuation marks
-    result.replaceAll("（", "(");
-    result.replaceAll("）", ")");
-    result.replaceAll("！", "!");
-    result.replaceAll("？", "?");
-
-    return result;
+    text.replaceAll("（", "(");
+    text.replaceAll("）", ")");
+    text.replaceAll("！", "!");
+    text.replaceAll("？", "?");
+    return text;
   }
 
   /**
@@ -132,17 +126,21 @@ export class GoogleTranslationRepository implements TranslationRepository {
    */
   private async translate(
     query: string,
+    exclude: string[],
     onTranslate: (encodedText: string) => Promise<string>
   ): Promise<string> {
     try {
       // encode
-      const { dictionary, encodedText }: EncodeResult = this.encodeText(query);
+      const { dictionary, encodedText }: EncodeResult = this.encode(
+        query,
+        exclude
+      );
 
       // translate
       const translatedText = await onTranslate(encodedText);
 
       // decode
-      const decodedText = this.decodeText(dictionary, translatedText);
+      const decodedText = this.decode(dictionary, translatedText);
       return decodedText;
     } catch (e: any) {
       throw new TranslationFailureException(

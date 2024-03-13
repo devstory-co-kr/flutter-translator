@@ -220,4 +220,17 @@ export class ConfigServiceImpl implements ConfigService {
     }
     return language;
   }
+
+  public getTranslationExclude(): string[] {
+    const { exclude } = this.configRepository.getTranslationConfig();
+    return exclude;
+  }
+
+  public async setTranslationExclude(exclude: string[]): Promise<void> {
+    const translationConfig = this.configRepository.getTranslationConfig();
+    await this.configRepository.setTranslationConfig({
+      ...translationConfig,
+      exclude,
+    });
+  }
 }

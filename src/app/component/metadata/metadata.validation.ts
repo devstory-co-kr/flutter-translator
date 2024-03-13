@@ -1,6 +1,7 @@
 import { Metadata, MetadataText } from "./metadata";
 
 export enum MetadataValidationType {
+  notExcluded = "Not Excluded",
   notExist = "Not Exist",
   overflow = "Overflow",
   required = "Required",
@@ -9,17 +10,23 @@ export enum MetadataValidationType {
 }
 
 export type MetadataValidation = {
-  metadata: Metadata;
+  sourceMetadata: Metadata;
+  targetMetadata: Metadata;
   sectionName: string;
   validationList: {
-    data: MetadataText;
+    sourceData?: MetadataText;
+    targetData: MetadataText;
     type: MetadataValidationType;
+    message: string;
   }[];
 };
 
 export type MetadataValidationItem = {
-  metadata: Metadata;
+  sourceMetadata: Metadata;
+  targetMetadata: Metadata;
   sectionName: string;
-  data: MetadataText;
+  sourceData?: MetadataText;
+  targetData: MetadataText;
+  message: string;
   type: MetadataValidationType;
 };

@@ -1,9 +1,14 @@
 import * as fs from "fs";
 import * as he from "he";
 import path from "path";
+import * as vscode from "vscode";
+import { Cmd } from "../../../cmd/cmd";
+import { TextTranslateCmdArgs } from "../../../cmd/translation/text.translate.cmd";
 import { Dialog } from "../../../util/dialog";
+import { Editor } from "../../../util/editor";
 import { Link } from "../../../util/link";
 import { Toast } from "../../../util/toast";
+import { ConfigService } from "../../config/config";
 import { Language } from "../../language/language";
 import { LanguageService } from "../../language/language.service";
 import { ARB, ARBService } from "../arb";
@@ -11,21 +16,25 @@ import { InvalidType, ValidationResult } from "./arb_validation";
 import { ARBValidationRepository } from "./arb_validation.repository";
 
 interface InitParams {
-  arbValidationRepository: ARBValidationRepository;
-  languageService: LanguageService;
   arbService: ARBService;
+  configService: ConfigService;
+  languageService: LanguageService;
+  arbValidationRepository: ARBValidationRepository;
 }
 
 export class ARBValidationService {
   private arbService: ARBService;
+  private configService: ConfigService;
   private languageService: LanguageService;
   private arbValidationRepository: ARBValidationRepository;
   constructor({
     arbService,
+    configService,
     languageService,
     arbValidationRepository,
   }: InitParams) {
     this.arbService = arbService;
+    this.configService = configService;
     this.languageService = languageService;
     this.arbValidationRepository = arbValidationRepository;
   }
@@ -34,7 +43,7 @@ export class ARBValidationService {
     sourceArb: ARB,
     validateLanguages: Language[]
   ): Promise<ValidationResult[]> {
-    const generator = await this.generateValidationResult(
+    const generator = this.generateValidationResult(
       sourceArb,
       validateLanguages
     );
@@ -52,36 +61,65 @@ export class ARBValidationService {
   }
 
   public async validate(validationResult: ValidationResult): Promise<boolean> {
-    const { sourceArb, targetArb, invalidType, key } = validationResult;
-    const targetFileName = path.basename(targetArb.filePath);
+    const { sourceARB, targetARB, invalidType, invalidMessage, key } =
+      validationResult;
+    const targetFileName = path.basename(targetARB.filePath);
     // toast
-    Toast.i(`${targetFileName} : ${invalidType}.`);
+    Toast.i(`${targetFileName} : ${invalidMessage ?? invalidType}.`);
 
     // highlight
     await this.arbValidationRepository.highlight(
-      sourceArb,
-      validationResult.targetArb,
+      sourceARB,
+      validationResult.targetARB,
       validationResult.key
     );
 
     switch (validationResult.invalidType) {
+      case InvalidType.notExcluded:
+        // text translate
+        const yes = await Dialog.showConfirmDialog({
+          title: "Excluded Text Not Found",
+          placeHolder: "Do you want to translate again without cache?",
+        });
+        if (yes) {
+          const { editor: targetEditor } = await Editor.open(
+            targetARB.filePath,
+            vscode.ViewColumn.Two
+          );
+          const selection = Editor.selectFromARB(
+            targetEditor,
+            key,
+            `${targetARB.data[key]}`
+          );
+          await vscode.commands.executeCommand(Cmd.TextTranslate, <
+            TextTranslateCmdArgs
+          >{
+            queries: [sourceARB.data[key]],
+            selections: [selection],
+            sourceLang: sourceARB.language,
+            targetLang: targetARB.language,
+            useCache: false,
+          });
+        }
+        break;
       case InvalidType.keyNotFound:
       case InvalidType.invalidParameters:
       case InvalidType.invalidParentheses:
         // open translation website
         await Link.openGoogleTranslateWebsite({
-          sourceLanguage: sourceArb.language,
-          targetLanguage: validationResult.targetArb.language,
-          text: sourceArb.data[validationResult.key],
+          sourceLanguage: sourceARB.language,
+          targetLanguage: validationResult.targetARB.language,
+          text: sourceARB.data[validationResult.key],
         });
         break;
       case InvalidType.undecodedHtmlEntityExists:
-        // decode html entity
+        // decode html entities
         const isDecode = await Dialog.showConfirmDialog({
-          title: "Do you want to decode HTML entities?",
+          title: "Decode HTML Entities",
+          placeHolder: "Do you want to decode HTML entities?",
         });
         if (isDecode) {
-          this.decodeHtmlEntities(targetArb, [key]);
+          this.decodeHtmlEntities(targetARB, [key]);
         }
         break;
     }
@@ -97,7 +135,7 @@ export class ARBValidationService {
         decodedData[key] = decodedText;
       }
     }
-    await this.arbService.upsert(targetArb.filePath, decodedData);
+    this.arbService.upsert(targetArb.filePath, decodedData);
   }
 
   private async *generateValidationResult(
@@ -111,6 +149,7 @@ export class ARBValidationService {
       return;
     }
 
+    const exclude = this.configService.getTranslationExclude();
     for (const targetLanguage of targetLanguages) {
       if (targetLanguage.languageCode === sourceArb.language.languageCode) {
         continue;
@@ -131,6 +170,7 @@ export class ARBValidationService {
 
       // generate validation result
       yield* this.arbValidationRepository.generateValidationResult(
+        exclude,
         sourceArb,
         sourceValidation,
         targetArb,

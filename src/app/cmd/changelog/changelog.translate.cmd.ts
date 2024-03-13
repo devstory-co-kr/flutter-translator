@@ -123,13 +123,6 @@ export class ChangelogTranslateCmd {
       return;
     }
 
-    // select translation type
-    const translationType =
-      await this.translationService.selectTranslationType();
-    if (!translationType) {
-      return;
-    }
-
     // translate
     const total = targetPlatformLanguages.length;
     let totalTranslated: number = 0;
@@ -160,7 +153,6 @@ export class ChangelogTranslateCmd {
           } else {
             // different language -> translate
             const result = await this.translationService.translate({
-              type: translationType,
               queries: sourceChangelog.file.text.split("\n"),
               sourceLang,
               targetLang,
@@ -183,7 +175,8 @@ export class ChangelogTranslateCmd {
 
     // check
     const isPreceedValidation = await Dialog.showConfirmDialog({
-      title: "Would you like to check the results?",
+      title: "Changelog Check",
+      placeHolder: "Would you like to check the results?",
     });
     if (isPreceedValidation) {
       await vscode.commands.executeCommand(Cmd.ChangelogCheck);

@@ -1,9 +1,11 @@
 import * as fs from "fs";
 import path from "path";
+import * as vscode from "vscode";
 import { AndroidMetadata } from "../../platform/android/android.metadata";
 import { AndroidMetadataLanguage } from "../../platform/android/android.metadata_language";
 import { IosMetadata } from "../../platform/ios/ios.metadata";
 import { IosMetadataLanguage } from "../../platform/ios/ios.metadata_language";
+import { Editor } from "../../util/editor";
 import { Workspace } from "../../util/workspace";
 import {
   Metadata,
@@ -13,6 +15,7 @@ import {
 } from "./metadata";
 import {
   MetadataValidation,
+  MetadataValidationItem,
   MetadataValidationType,
 } from "./metadata.validation";
 
@@ -160,39 +163,120 @@ export class MetadataRepository {
     fs.writeFileSync(filePath, text);
   }
 
-  public check(metadata: Metadata): MetadataValidation {
+  public async openInvalidEditor(validation: MetadataValidationItem) {
+    const { sourceMetadata, targetMetadata, sourceData, targetData, type } =
+      validation;
+    if (!sourceData) {
+      return;
+    }
+
+    // open document
+    await Editor.open(
+      path.join(sourceMetadata.languagePath, sourceData.fileName),
+      vscode.ViewColumn.One
+    );
+    await Editor.open(
+      path.join(targetMetadata.languagePath, targetData.fileName),
+      vscode.ViewColumn.Two
+    );
+  }
+
+  public check(
+    sourceMetadata: Metadata,
+    targetMetadata: Metadata,
+    excludeKeywords: string[]
+  ): MetadataValidation {
     const validation: MetadataValidation = {
-      metadata: metadata,
-      sectionName: `${metadata.platform}/${metadata.language.locale}`,
+      sourceMetadata,
+      targetMetadata,
+      sectionName: `${targetMetadata.platform}/${targetMetadata.language.locale}`,
       validationList: [],
     };
-    for (const data of metadata.dataList) {
-      let type = MetadataValidationType.normal;
-      const filePath = path.join(metadata.languagePath, data.fileName);
-      if (!fs.existsSync(filePath)) {
+    for (const targetData of targetMetadata.dataList) {
+      const targetFilePath = path.join(
+        targetMetadata.languagePath,
+        targetData.fileName
+      );
+      const sourceData = sourceMetadata.dataList.find(
+        (data) => data.fileName === targetData.fileName
+      );
+      const currentLength = targetData.text.length;
+      const maxLength = targetData.maxLength ?? 0;
+      const overflow = currentLength - maxLength;
+
+      if (!fs.existsSync(targetFilePath)) {
         // file not exist
-        type = MetadataValidationType.notExist;
-      } else if (!data.optional && data.text.trim().length === 0) {
-        // check required
-        type = MetadataValidationType.required;
+        validation.validationList.push({
+          sourceData,
+          targetData,
+          type: MetadataValidationType.notExist,
+          message: `${targetFilePath} does not exist.`,
+        });
+      } else if (!targetData.optional && targetData.text.trim().length === 0) {
+        // required
+        validation.validationList.push({
+          sourceData,
+          targetData,
+          type: MetadataValidationType.required,
+          message: `${
+            targetData.fileName
+          } is required (maxLength: ${maxLength.toLocaleString()})`,
+        });
       } else {
-        switch (data.type) {
+        switch (targetData.type) {
           case MetadataType.text:
-            if (data.maxLength && data.text.length > data.maxLength) {
-              type = MetadataValidationType.overflow;
+            if (maxLength && currentLength > maxLength) {
+              // over flow
+              validation.validationList.push({
+                sourceData,
+                targetData,
+                type: MetadataValidationType.overflow,
+                message: `Characters overflow (max: ${maxLength.toLocaleString()} / current: ${currentLength} / overflow: ${overflow.toLocaleString()})`,
+              });
+            }
+
+            if (sourceData) {
+              let isNotExcluded = false;
+              let notFoundKeyword: string = "";
+              for (const keyword of excludeKeywords) {
+                const reg = new RegExp(keyword, "gi");
+                const nSource = sourceData.text.match(reg)?.length ?? 0;
+                const nTarget = targetData.text.match(reg)?.length ?? 0;
+                if (nSource !== nTarget) {
+                  isNotExcluded = true;
+                  notFoundKeyword = keyword;
+                  break;
+                }
+              }
+              if (isNotExcluded) {
+                // not excluded
+                validation.validationList.push({
+                  sourceData,
+                  targetData,
+                  type: MetadataValidationType.notExcluded,
+                  message: `"${notFoundKeyword}" not found`,
+                });
+              }
             }
             break;
           case MetadataType.url:
-            if (data.text.length > 0 && !data.text.startsWith("http")) {
-              type = MetadataValidationType.invalidURL;
+            if (
+              targetData.text.length > 0 &&
+              !targetData.text.startsWith("http")
+            ) {
+              // invalid URL
+              validation.validationList.push({
+                sourceData,
+                targetData,
+                type: MetadataValidationType.invalidURL,
+                message: targetData.optional
+                  ? `${targetData.fileName} can enter a URL starting with http or leave it blank.`
+                  : `${targetData.fileName} must enter a URL starting with http.`,
+              });
             }
             break;
         }
       }
-      validation.validationList.push({
-        data,
-        type,
-      });
     }
     return validation;
   }

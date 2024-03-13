@@ -6,9 +6,9 @@ import { HistoryService } from "../../../component/history/history.service";
 import { Language } from "../../../component/language/language";
 import { LanguageRepository } from "../../../component/language/language.repository";
 import { LanguageService } from "../../../component/language/language.service";
-import { TranslationType } from "../../../component/translation/translation";
 import { TranslationService } from "../../../component/translation/translation.service";
 import { TranslationStatistic } from "../../../component/translation/translation.statistic";
+import { Constant } from "../../../util/constant";
 import { Dialog } from "../../../util/dialog";
 import { Toast } from "../../../util/toast";
 import { Cmd } from "../../cmd";
@@ -21,13 +21,17 @@ interface InitParams {
   arbStatisticService: ARBStatisticService;
 }
 
+interface EncodeResult {
+  dictionary: Record<string, string>;
+  encodedText: string;
+}
+
 export type ARBTranslateCmdArgs = {
   sourceArb?: ARB;
   history?: History;
   targetLanguages?: Language[];
   excludeLanguages?: Language[];
   selectedTargetLanguages?: Language[];
-  translationType?: TranslationType;
   isPreceedValidation?: boolean;
 };
 
@@ -87,17 +91,8 @@ export class ARBTranslateCmd {
       return;
     }
 
-    // select translation type
-    const translationType: TranslationType | undefined =
-      args?.translationType ??
-      (await this.translationService.selectTranslationType());
-    if (!translationType) {
-      return;
-    }
-
     // translate
     await this.translate({
-      translationType,
       sourceArb,
       history,
       targetLanguages: selectedTargetLanguages,
@@ -107,20 +102,19 @@ export class ARBTranslateCmd {
     const isPreceedValidation: boolean =
       args?.isPreceedValidation ??
       (await Dialog.showConfirmDialog({
-        title: "Would you like to check the translation results?",
+        title: "ARB Check",
+        placeHolder: "Would you like to check the translation results?",
       }));
     if (isPreceedValidation) {
       await vscode.commands.executeCommand(Cmd.ARBCheck);
     }
   }
 
-  async translate({
-    translationType,
+  private async translate({
     sourceArb,
     history,
     targetLanguages,
   }: {
-    translationType: TranslationType;
     sourceArb: ARB;
     history: History;
     targetLanguages: Language[];
@@ -144,7 +138,6 @@ export class ARBTranslateCmd {
           }
           totalTranslated += 1;
           const translationStatistic = await this.translateTargetLanguage({
-            translationType,
             sourceArb,
             history,
             targetLanguage,
@@ -174,19 +167,15 @@ export class ARBTranslateCmd {
       new TranslationStatistic()
     );
     Toast.i(
-      `Total ${totalTranslated} languages translated. (${translationType.toString()} ${
-        totalTranslateStatistic.log
-      })`
+      `Total ${totalTranslated} languages translated. (${totalTranslateStatistic.log})`
     );
   }
 
   private async translateTargetLanguage({
-    translationType,
     sourceArb,
     history,
     targetLanguage,
   }: {
-    translationType: TranslationType;
     sourceArb: ARB;
     history: History;
     targetLanguage: Language;
@@ -250,10 +239,11 @@ export class ARBTranslateCmd {
     if (nWillTranslate > 0) {
       // translate
       const translateResult = await this.translationService.translate({
-        type: translationType,
         queries: willTranslateValues,
         sourceLang: sourceArb.language,
         targetLang: targetArb.language,
+        encode: this.encodeParametersText,
+        decode: this.decodeParametersText,
       });
       willTranslateKeys.forEach(
         (key, index) => (nextTargetArbData[key] = translateResult.data[index])
@@ -265,5 +255,52 @@ export class ARBTranslateCmd {
     // upsert target arb file
     this.arbService.upsert(targetArbFilePath, nextTargetArbData);
     return translationStatistic;
+  }
+
+  /**
+   * Encode ARB parameters
+   */
+  private encodeParametersText(text: string): EncodeResult {
+    let count = 0;
+    const parmKeywordDict: Record<string, string> = {};
+    const keywordParmDict: Record<string, string> = {};
+    const encodedText = text.replace(/\{(.+?)\}/g, (match, _) => {
+      let paramReplaceKey: string;
+      if (keywordParmDict[match]) {
+        paramReplaceKey = keywordParmDict[match];
+      } else if (count >= Constant.paramReplaceKeys.length) {
+        const share = Math.floor(count / Constant.paramReplaceKeys.length);
+        const remainder = count % Constant.paramReplaceKeys.length;
+        paramReplaceKey =
+          Constant.paramReplaceKeys[share] +
+          Constant.paramReplaceKeys[remainder];
+        keywordParmDict[match] = paramReplaceKey;
+        count++;
+      } else {
+        paramReplaceKey = Constant.paramReplaceKeys[count];
+        keywordParmDict[match] = paramReplaceKey;
+        count++;
+      }
+      parmKeywordDict[paramReplaceKey] = match;
+      return paramReplaceKey;
+    });
+    return {
+      dictionary: parmKeywordDict,
+      encodedText,
+    };
+  }
+
+  /**
+   * Decode ARB parameters
+   */
+  private decodeParametersText(
+    dictionary: Record<string, string>,
+    text: string
+  ): string {
+    const keys = Object.keys(dictionary).sort((a, b) => b.length - a.length);
+    for (const key of keys) {
+      text = text.replace(new RegExp(key, "g"), dictionary[key]);
+    }
+    return text;
   }
 }

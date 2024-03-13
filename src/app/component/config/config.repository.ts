@@ -6,6 +6,7 @@ import {
   GoogleAuthConfig,
   GoogleSheetConfig,
   MetadataConfig,
+  TranslationConfig,
   XcodeConfig,
 } from "./config";
 import { ConfigDataSource } from "./config.datasource";
@@ -115,6 +116,26 @@ export class ConfigRepository implements ConfigRepositoryI {
       xcodeConfig: {
         ...this.getXcodeConfig(),
         ...xcodeConfig,
+      },
+    });
+  }
+
+  public getTranslationConfig(): TranslationConfig {
+    return (
+      this.config.translationConfig ?? {
+        exclude: [],
+      }
+    );
+  }
+
+  public setTranslationConfig(
+    translationConfig: Partial<TranslationConfig>
+  ): Thenable<void> {
+    return this.configDataSource.setConfig({
+      ...this.config,
+      translationConfig: {
+        ...this.getTranslationConfig(),
+        ...translationConfig,
       },
     });
   }

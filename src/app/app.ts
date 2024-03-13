@@ -5,7 +5,8 @@ import { ChangelogTranslateCmdArgs } from "./cmd/changelog/changelog.translate.c
 import { Cmd } from "./cmd/cmd";
 import { MetadataCreateCmdArgs } from "./cmd/metadata/metadata.create.cmd";
 import { MetadataDeleteCmdArgs } from "./cmd/metadata/metadata.delete.cmd";
-import { TextTranslateCmdArgs } from "./cmd/text/text_translate.cmd";
+import { TextTranslateCmdArgs } from "./cmd/translation/text.translate.cmd";
+import { TranslationExcludeCmdArgs } from "./cmd/translation/translation.exclude.cmd";
 import { XcodeStringsTranslateCmdArgs } from "./cmd/xcode_strings/xcode_strings.translate.cmd";
 import { Registry } from "./registry";
 import { Constant } from "./util/constant";
@@ -18,7 +19,7 @@ import { Toast } from "./util/toast";
 
 export interface App {
   name: string;
-  commands: Record<Cmd, (args: any) => void>;
+  commands: Record<Cmd, (args: any) => Promise<void>>;
   init: () => any;
   migrate: (context: vscode.ExtensionContext) => Promise<void>;
   disposed: () => void;
@@ -107,6 +108,12 @@ export class FlutterTranslator implements App {
      */
     [Cmd.XcodeStringsTranslate]: (args?: XcodeStringsTranslateCmdArgs) => {
       return this.registry.xcodeStringsTranslateCmd.run(args);
+    },
+    /**
+     * Translation Command
+     */
+    [Cmd.TranslationExclude]: (args?: TranslationExcludeCmdArgs) => {
+      return this.registry.translationExcludeCmd.run(args);
     },
   };
 

@@ -15,7 +15,8 @@ import { MetadataCreateCmd } from "./cmd/metadata/metadata.create.cmd";
 import { MetadataDeleteCmd } from "./cmd/metadata/metadata.delete.cmd";
 import { MetadataOpenCmd } from "./cmd/metadata/metadata.open.cmd";
 import { MetadataTranslateCmd } from "./cmd/metadata/metadata.translate.cmd";
-import { TextTranslateCmd } from "./cmd/text/text_translate.cmd";
+import { TextTranslateCmd } from "./cmd/translation/text.translate.cmd";
+import { TranslationExcludeCmd } from "./cmd/translation/translation.exclude.cmd";
 import { XcodeStringsTranslateCmd } from "./cmd/xcode_strings/xcode_strings.translate.cmd";
 import { ARBService } from "./component/arb/arb";
 import { ARBServiceImpl } from "./component/arb/arb.service";
@@ -128,6 +129,7 @@ export class Registry {
   private arbValidationService: ARBValidationService = new ARBValidationService(
     {
       arbService: this.arbService,
+      configService: this.configService,
       languageService: this.languageService,
       arbValidationRepository: this.arbValidationRepository,
     }
@@ -141,6 +143,7 @@ export class Registry {
     googleSheetRepository: this.googleSheetRepository,
   });
   private metadataService: MetadataService = new MetadataService({
+    configService: this.configService,
     metadataRepository: this.metadataRepository,
   });
   private changelogService: ChangelogService = new ChangelogService({
@@ -239,6 +242,10 @@ export class Registry {
     new XcodeStringsTranslateCmd({
       xcodeService: this.xcodeService,
       translationService: this.translationService,
+    });
+  public translationExcludeCmd: TranslationExcludeCmd =
+    new TranslationExcludeCmd({
+      configService: this.configService,
     });
 
   public init(): Promise<void[]> {

@@ -4,7 +4,7 @@
   "license": "SEE LICENSE IN LICENSE",
   "displayName": "Flutter Translator",
   "description": "It supports the internationalization of flutter applications using Google Translator.",
-  "version": "2.2.1",
+  "version": "2.3.0",
   "engines": {
     "vscode": "^1.84.0"
   },
@@ -37,10 +37,6 @@
       }
     },
     "commands": [
-      {
-        "command": "flutter-translator.text.translate",
-        "title": "Flutter Translator: Text - Translate"
-      },
       {
         "command": "flutter-translator.arb.translate",
         "title": "Flutter Translator: ARB - Translate"
@@ -124,6 +120,14 @@
       {
         "command": "flutter-translator.xcodeStrings.translate",
         "title": "Flutter Translator: Xcode Strings - Translate"
+      },
+      {
+        "command": "flutter-translator.text.translate",
+        "title": "Flutter Translator: Text - Translate"
+      },
+      {
+        "command": "flutter-translator.translation.exclude",
+        "title": "Flutter Translator: Translation - Exclude"
       }
     ]
   },

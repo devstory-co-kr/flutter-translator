@@ -6,6 +6,7 @@ import { TranslationCacheRepository } from "../cache/translation_cache.repositor
 import { TranslationResult, TranslationType } from "../translation";
 import { TranslationRepository } from "../translation.repository";
 import {
+  EncodeResult,
   FreeTranslateServiceParams,
   PaidTranslateServiceParams,
   TranslationService,
@@ -20,6 +21,7 @@ interface TranslateParams {
   queries: string[];
   sourceLang: Language;
   targetLang: Language;
+  useCache: boolean;
   onTranslate: (query: string) => Promise<string>;
 }
 
@@ -76,6 +78,7 @@ export class GoogleTranslationService implements TranslationService {
   private async paidTranslate({
     apiKey,
     queries,
+    useCache,
     sourceLang,
     targetLang,
   }: PaidTranslateServiceParams): Promise<TranslationResult> {
@@ -83,8 +86,10 @@ export class GoogleTranslationService implements TranslationService {
       queries: queries,
       sourceLang: sourceLang,
       targetLang: targetLang,
+      useCache,
       onTranslate: async (query) => {
         return this.translationRepository.paidTranslate({
+          exclude: this.configService.getTranslationExclude(),
           apiKey,
           query,
           sourceLang,
@@ -98,31 +103,36 @@ export class GoogleTranslationService implements TranslationService {
    * Translate
    */
   public async translate({
-    type,
     queries,
     sourceLang,
     targetLang,
+    useCache,
+    encode,
+    decode,
   }: {
-    type: TranslationType;
     queries: string[];
     sourceLang: Language;
     targetLang: Language;
+    useCache?: boolean;
+    encode?: (query: string) => EncodeResult;
+    decode?: (
+      dictionary: Record<string, string>,
+      encodedQuery: string
+    ) => string;
   }): Promise<TranslationResult> {
-    switch (type) {
-      case TranslationType.paid:
-        return this.paidTranslate({
-          apiKey: await this.configService.getGoogleAuthAPIKey(),
-          queries: queries,
-          sourceLang: sourceLang,
-          targetLang: targetLang,
-        });
-      case TranslationType.free:
-        return this.freeTranslate({
-          queries: queries,
-          sourceLang: sourceLang,
-          targetLang: targetLang,
-        });
-    }
+    return this.freeTranslate({
+      queries: queries,
+      sourceLang: sourceLang,
+      targetLang: targetLang,
+      useCache: useCache ?? true,
+      encode: encode
+        ? encode
+        : (query) => ({
+            dictionary: {},
+            encodedText: query,
+          }),
+      decode: decode ? decode : (dictionary, encodedText) => encodedText,
+    });
   }
 
   /**
@@ -137,17 +147,25 @@ export class GoogleTranslationService implements TranslationService {
     queries,
     sourceLang,
     targetLang,
+    useCache,
+    encode,
+    decode,
   }: FreeTranslateServiceParams): Promise<TranslationResult> {
     return this.checkCache({
       queries: queries,
       sourceLang: sourceLang,
       targetLang: targetLang,
+      useCache,
       onTranslate: async (query) => {
-        return this.translationRepository.freeTranslate({
-          query,
+        const { dictionary, encodedText } = encode(query);
+        const translatedText = await this.translationRepository.freeTranslate({
+          query: encodedText,
+          exclude: this.configService.getTranslationExclude(),
           sourceLang,
           targetLang,
         });
+        const decodedText = decode(dictionary, translatedText);
+        return decodedText;
       },
     });
   }
@@ -161,6 +179,7 @@ export class GoogleTranslationService implements TranslationService {
     queries,
     sourceLang,
     targetLang,
+    useCache,
     onTranslate,
   }: TranslateParams) {
     let nCache = 0;
@@ -176,21 +195,24 @@ export class GoogleTranslationService implements TranslationService {
           sourceLanguage: sourceLang,
           targetLanguage: targetLang,
         });
-        const cacheValue =
-          this.translationCacheRepository.get<string>(cacheKey);
-        if (cacheValue) {
-          // return cache
-          nCache += 1;
-          return cacheValue;
-        } else {
-          // request API
-          nRequest += 1;
-          const translatedText = await onTranslate(query);
 
-          // update cache
-          this.translationCacheRepository.upsert(cacheKey, translatedText);
-          return translatedText;
+        if (useCache) {
+          const cacheValue =
+            this.translationCacheRepository.get<string>(cacheKey);
+          if (cacheValue) {
+            // return cache
+            nCache += 1;
+            return cacheValue;
+          }
         }
+
+        // request API
+        nRequest += 1;
+        const translatedText = await onTranslate(query);
+
+        // update cache
+        this.translationCacheRepository.upsert(cacheKey, translatedText);
+        return translatedText;
       })
     );
     // Logger.l(`Total translate request : ${nRequest} (cache : ${nCache})`);

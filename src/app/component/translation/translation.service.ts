@@ -1,31 +1,47 @@
 import { Language } from "../language/language";
 import { TranslationResult, TranslationType } from "./translation";
 
+export interface EncodeResult {
+  dictionary: Record<string, string>;
+  encodedText: string;
+}
+
 export interface PaidTranslateServiceParams {
   apiKey: string;
   queries: string[];
   sourceLang: Language;
   targetLang: Language;
+  useCache: boolean;
 }
 
 export interface FreeTranslateServiceParams {
   queries: string[];
   sourceLang: Language;
   targetLang: Language;
+  useCache: boolean;
+  encode: (query: string) => EncodeResult;
+  decode: (dictionary: Record<string, string>, encodedQuery: string) => string;
 }
 
 export interface TranslationService {
   selectTranslationType(): Promise<TranslationType | undefined>;
 
   translate({
-    type,
     queries,
     sourceLang,
     targetLang,
+    useCache,
+    encode,
+    decode,
   }: {
-    type: TranslationType;
     queries: string[];
     sourceLang: Language;
     targetLang: Language;
+    useCache?: boolean;
+    encode?: (query: string) => EncodeResult;
+    decode?: (
+      dictionary: Record<string, string>,
+      encodedQuery: string
+    ) => string;
   }): Promise<TranslationResult>;
 }

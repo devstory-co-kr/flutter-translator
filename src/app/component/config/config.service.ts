@@ -223,7 +223,8 @@ export class ConfigServiceImpl implements ConfigService {
 
   public getTranslationExclude(): string[] {
     const { exclude } = this.configRepository.getTranslationConfig();
-    return exclude;
+    // length decending order
+    return exclude.sort((a, b) => b.length - a.length);
   }
 
   public async setTranslationExclude(exclude: string[]): Promise<void> {

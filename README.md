@@ -155,7 +155,6 @@ It is recommended to set the configuration in the project workspace(`.vscode/set
   - `prefix` : Arb common string to prepend to file name. (e.g. `intl_` : `intl_ko.arb`, `intl_hi.arb`, `intl_fr.arb`)
   - `custom` : You can customize the ARB file name for languageCode in the format `{LanguageCode: CUSTOM_NAME}` and arbFilePrefix is not applied.
 - **googleAuthConfig**
-  - `apiKey` : This is a Google API key and is required when using the paid translation function.
   - `credential` : Absolute path to JSON key files created after creating a [service account](https://developers.google.com/workspace/guides/create-credentials?#service-account) on the Google Cloud console.
 - **googleSheetConfig**
   - `id` : You can find the spreadsheet ID in a Google Sheets URL: `https://docs.google.com/spreadsheets/d/<GOOGLE_SHEET_ID>/edit#gid=0`
@@ -173,13 +172,8 @@ It is recommended to set the configuration in the project workspace(`.vscode/set
 
 
 ## Translate
-- Option1) Free Translation
-  - Translate with free Google Translate API.
-  - An API key is not required, but the number of requests per hour is limited to approximately 100.
-- Option2) Paid Translation
-  - Translate the source ARB file using [Google Cloud Translation - Base(v2)](https://cloud.google.com/translate/docs/basic/translating-text).
-  - A Google API Key is required. Please refer to [the link](https://cloud.google.com/translate/docs/setup) for information on how to obtain the key.
-
+- Translate with free Google Translate API.
+- An API key is not required, but the number of requests per hour is limited to approximately 100.
 - Translation Rules
   - if the `key` contains `@`, it will not be translated.
   - If the `key` does not exist in the `targetARB` file, preceed with translation.

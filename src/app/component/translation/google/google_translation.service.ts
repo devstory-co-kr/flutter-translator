@@ -107,21 +107,14 @@ export class GoogleTranslationService implements TranslationService {
     sourceLang,
     targetLang,
     useCache,
-    encode,
-    decode,
+    isEncodeARBParams,
   }: TranslationServiceTranslateParams): Promise<TranslationResult> {
     return this.freeTranslate({
       queries: queries,
       sourceLang: sourceLang,
       targetLang: targetLang,
       useCache,
-      encode: encode
-        ? encode
-        : (query) => ({
-            dictionary: {},
-            encodedText: query,
-          }),
-      decode: decode ? decode : (dictionary, encodedText) => encodedText,
+      isEncodeARBParams,
     });
   }
 
@@ -138,24 +131,21 @@ export class GoogleTranslationService implements TranslationService {
     sourceLang,
     targetLang,
     useCache,
-    encode,
-    decode,
+    isEncodeARBParams,
   }: TranslationServiceFreeParams): Promise<TranslationResult> {
     return this.checkCache({
       queries: queries,
       sourceLang: sourceLang,
       targetLang: targetLang,
       useCache,
-      onTranslate: async (query) => {
-        const { dictionary, encodedText } = encode(query, targetLang);
-        const translatedText = await this.translationRepository.freeTranslate({
-          query: encodedText,
+      onTranslate: (query) => {
+        return this.translationRepository.freeTranslate({
+          query,
           exclude: this.configService.getTranslationExclude(),
           sourceLang,
           targetLang,
+          isEncodeARBParams,
         });
-        const decodedText = decode(dictionary, translatedText);
-        return decodedText;
       },
     });
   }

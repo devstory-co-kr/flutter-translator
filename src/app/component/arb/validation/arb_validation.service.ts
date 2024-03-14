@@ -122,6 +122,7 @@ export class ARBValidationService {
               sourceLang: sourceARB.language,
               targetLang: targetARB.language,
               useCache: false,
+              isEncodeARBParams: true,
             });
             targetARB.data[key] = translateResult.data[0];
             this.arbService.upsert(targetARB.filePath, targetARB.data);
@@ -233,6 +234,7 @@ export class ARBValidationService {
               sourceLang: sourceARB.language,
               targetLang: targetARB.language,
               useCache: false,
+              isEncodeARBParams: true,
             })
           ).data;
 

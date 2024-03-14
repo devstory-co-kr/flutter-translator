@@ -33,15 +33,21 @@ export class GoogleTranslationRepository implements TranslationRepository {
     exclude,
     sourceLang,
     targetLang,
+    isEncodeARBParams,
   }: PaidTranslateRepositoryParams): Promise<string> {
-    return this.translate(query, exclude, targetLang, (text: string) =>
-      this.translationDataSource.paidTranslate({
-        apiKey,
-        text,
-        sourceLang,
-        targetLang,
-      })
-    );
+    return this.translate({
+      query,
+      exclude,
+      targetLang,
+      isEncodeARBParams,
+      onTranslate: (text: string) =>
+        this.translationDataSource.paidTranslate({
+          apiKey,
+          text,
+          sourceLang,
+          targetLang,
+        }),
+    });
   }
 
   public async freeTranslate({
@@ -49,52 +55,59 @@ export class GoogleTranslationRepository implements TranslationRepository {
     exclude,
     sourceLang,
     targetLang,
+    isEncodeARBParams,
   }: FreeTranslateRepositoryParams): Promise<string> {
-    return this.translate(query, exclude, targetLang, (text: string) =>
-      this.translationDataSource.freeTranslate({
-        text,
-        sourceLang,
-        targetLang,
-      })
-    );
+    return this.translate({
+      query,
+      exclude,
+      targetLang,
+      isEncodeARBParams,
+      onTranslate: (text: string) =>
+        this.translationDataSource.freeTranslate({
+          text,
+          sourceLang,
+          targetLang,
+        }),
+    });
   }
 
   /**
-   * Encode exclusion keywords
+   * Encode
    */
-  private encode(
-    text: string,
-    exclude: string[],
-    targetLanguage: Language
-  ): EncodeResult {
-    let count = 0;
-    const dictionary: Record<string, string> = {};
-    const replaceKeys = LanguageRepository.getReplaceKeys(targetLanguage);
-
-    // Convert \n to replaceKey because Serbian does not support \n translation
-    const replaceKey = replaceKeys[count];
-    text = text.replaceAll("\\n", replaceKey);
-    dictionary[replaceKey] = "\\n";
-    count++;
-
-    for (const e of exclude) {
-      text = text.replace(new RegExp(e, "gi"), (match) => {
-        const i = Object.values(dictionary).indexOf(match);
-        const isDictionary = i !== -1;
-        if (isDictionary) {
-          // in the dictionary
-          const replaceKey = Object.keys(dictionary)[i];
-          return replaceKey;
-        } else {
-          // not in dictionary
-          const replaceKey = replaceKeys[count];
-          dictionary[replaceKey] = match;
-          count++;
-          return replaceKey;
-        }
-      });
-    }
-    return { encodedText: text, dictionary };
+  private encode({
+    text,
+    regex,
+    encodeKeys,
+    dictionary,
+  }: {
+    text: string;
+    regex: RegExp;
+    encodeKeys: string[];
+    dictionary: Record<string, string>;
+  }): string {
+    let count = Object.keys(dictionary).length;
+    const swapedDict = Object.fromEntries(
+      Object.entries(dictionary).map((a) => a.reverse())
+    );
+    const encodedText = text.replace(regex, (match, _) => {
+      let key: string;
+      if (swapedDict[match]) {
+        key = swapedDict[match];
+      } else if (count >= encodeKeys.length) {
+        const share = Math.floor(count / encodeKeys.length);
+        const remainder = count % encodeKeys.length;
+        key = encodeKeys[share] + encodeKeys[remainder];
+        swapedDict[match] = key;
+        count++;
+      } else {
+        key = encodeKeys[count];
+        swapedDict[match] = key;
+        count++;
+      }
+      dictionary[key] = match;
+      return key;
+    });
+    return encodedText;
   }
 
   /**
@@ -123,19 +136,50 @@ export class GoogleTranslationRepository implements TranslationRepository {
    * @param onTranslate
    * @returns Promise<string>
    */
-  private async translate(
-    query: string,
-    exclude: string[],
-    targetLanguage: Language,
-    onTranslate: (encodedText: string) => Promise<string>
-  ): Promise<string> {
+  private async translate({
+    query,
+    exclude,
+    targetLang,
+    isEncodeARBParams,
+    onTranslate,
+  }: {
+    query: string;
+    exclude: string[];
+    targetLang: Language;
+    isEncodeARBParams?: boolean;
+    onTranslate: (encodedText: string) => Promise<string>;
+  }): Promise<string> {
     try {
       // encode
-      const { dictionary, encodedText }: EncodeResult = this.encode(
-        query,
-        exclude,
-        targetLanguage
-      );
+      const dictionary: Record<string, string> = {};
+      const encodeKeys = LanguageRepository.getEncodeKeys(targetLang);
+      let encodedText: string = query;
+
+      // Convert \n to replaceKey because Serbian does not support \n translation
+      const key = encodeKeys[0];
+      encodedText = query.replaceAll("\\n", key);
+      dictionary[key] = "\\n";
+
+      // Encode ARB params
+      if (isEncodeARBParams) {
+        console.log("isEncodeARBParams", true);
+        encodedText = this.encode({
+          text: encodedText,
+          regex: /\{(.+?)\}/g,
+          encodeKeys,
+          dictionary,
+        });
+      }
+
+      // Encode exclusion keywords
+      for (const e of exclude) {
+        encodedText = this.encode({
+          text: encodedText,
+          regex: new RegExp(e, "gi"),
+          encodeKeys,
+          dictionary,
+        });
+      }
 
       // translate
       const translatedText = await onTranslate(encodedText);

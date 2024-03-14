@@ -943,7 +943,7 @@ export class LanguageRepository {
     LanguageRepository.zulu,
   ];
 
-  public static getReplaceKeys(language: Language): string[] {
+  public static getEncodeKeys(language: Language): string[] {
     if (
       [
         LanguageRepository.odia.languageCode,

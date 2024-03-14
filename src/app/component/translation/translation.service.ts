@@ -12,6 +12,7 @@ export interface TranslationServicePaidParams {
   sourceLang: Language;
   targetLang: Language;
   useCache?: boolean;
+  isEncodeARBParams?: boolean;
 }
 
 export interface TranslationServiceFreeParams {
@@ -19,8 +20,7 @@ export interface TranslationServiceFreeParams {
   sourceLang: Language;
   targetLang: Language;
   useCache?: boolean;
-  encode: (query: string, targetLanguage: Language) => EncodeResult;
-  decode: (dictionary: Record<string, string>, encodedQuery: string) => string;
+  isEncodeARBParams?: boolean;
 }
 
 export interface TranslationServiceTranslateParams {
@@ -28,8 +28,7 @@ export interface TranslationServiceTranslateParams {
   sourceLang: Language;
   targetLang: Language;
   useCache?: boolean;
-  encode?: (query: string, targetLanguage: Language) => EncodeResult;
-  decode?: (dictionary: Record<string, string>, encodedQuery: string) => string;
+  isEncodeARBParams?: boolean;
 }
 
 export interface TranslationService {
@@ -40,7 +39,6 @@ export interface TranslationService {
     sourceLang,
     targetLang,
     useCache,
-    encode,
-    decode,
+    isEncodeARBParams,
   }: TranslationServiceTranslateParams): Promise<TranslationResult>;
 }

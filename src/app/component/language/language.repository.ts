@@ -948,6 +948,7 @@ export class LanguageRepository {
       [
         LanguageRepository.odia.languageCode,
         LanguageRepository.myanmar.languageCode,
+        LanguageRepository.malayalam.languageCode,
       ].includes(language.languageCode)
     ) {
       return Constant.keycaps;

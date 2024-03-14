@@ -9,6 +9,7 @@ import { Toast } from "../../../util/toast";
 import { ConfigService, LanguageCode } from "../../config/config";
 import { Language } from "../../language/language";
 import { LanguageService } from "../../language/language.service";
+import { TranslationResult } from "../../translation/translation";
 import { TranslationService } from "../../translation/translation.service";
 import { ARB, ARBService } from "../arb";
 import { InvalidType, ValidationResult } from "./arb_validation";
@@ -20,6 +21,12 @@ interface InitParams {
   languageService: LanguageService;
   translationService: TranslationService;
   arbValidationRepository: ARBValidationRepository;
+}
+
+enum RetranslateScope {
+  selection = "selection",
+  type = "type",
+  all = "all",
 }
 
 export class ARBValidationService {
@@ -103,30 +110,43 @@ export class ARBValidationService {
           const sameTypeValidationResults = validationResultList.filter(
             (v) => v.invalidType === validationResult.invalidType
           );
-          const isReTranslateAll = await this.confirmReTranslateAll(
-            sameTypeValidationResults.length,
-            invalidType
-          );
-          if (isReTranslateAll === undefined) {
+          const retranslateScope = await this.selectRetranslateScope({
+            nTotal: validationResultList.length,
+            nType: sameTypeValidationResults.length,
+            invalidType,
+          });
+          if (!retranslateScope) {
             return false;
           }
 
-          if (isReTranslateAll) {
-            // translate all [validationResult.invalidType]
-            await this.retranslateAll(sameTypeValidationResults);
-            Toast.i(`🟢 Re-translation Complete.`);
-          } else {
-            // retranslate only selected item
-            const translateResult = await this.translationService.translate({
-              queries: [sourceARB.data[key]],
-              sourceLang: sourceARB.language,
-              targetLang: targetARB.language,
-              useCache: false,
-              isEncodeARBParams: true,
-            });
-            targetARB.data[key] = translateResult.data[0];
-            this.arbService.upsert(targetARB.filePath, targetARB.data);
+          let translateResult: TranslationResult;
+          switch (retranslateScope) {
+            case RetranslateScope.selection:
+              // retranslate only selected item
+              translateResult = await this.translationService.translate({
+                queries: [sourceARB.data[key]],
+                sourceLang: sourceARB.language,
+                targetLang: targetARB.language,
+                useCache: false,
+                isEncodeARBParams: true,
+              });
+              targetARB.data[key] = translateResult.data[0];
+              this.arbService.upsert(targetARB.filePath, targetARB.data);
+              break;
+            case RetranslateScope.type:
+              // translate [validationResult.invalidType]
+              translateResult = await this.retranslateAll(
+                sameTypeValidationResults
+              );
+              break;
+            case RetranslateScope.all:
+              // retranslate all
+              translateResult = await this.retranslateAll(validationResultList);
+              break;
           }
+          Toast.i(
+            `🟢 Re-translation Complete. (API: ${translateResult.nAPICall.toLocaleString()}, Cache: ${translateResult.nCache.toLocaleString()})`
+          );
         }
         break;
       case InvalidType.undecodedHtmlEntityExists:
@@ -167,26 +187,35 @@ export class ARBValidationService {
     )?.data;
   }
 
-  private async confirmReTranslateAll(
-    total: number,
-    invalidType: InvalidType
-  ): Promise<boolean | undefined> {
+  private async selectRetranslateScope({
+    nType,
+    nTotal,
+    invalidType,
+  }: {
+    nType: number;
+    nTotal: number;
+    invalidType: InvalidType;
+  }): Promise<RetranslateScope | undefined> {
     return (
       await vscode.window.showQuickPick(
         [
           {
-            label: "Only selected item",
-            data: false,
+            label: "Selected item (1)",
+            data: RetranslateScope.selection,
           },
           {
-            label: `All items (${total})`,
-            data: true,
+            label: `Selected types - ${invalidType} (${nType.toLocaleString()})`,
+            data: RetranslateScope.type,
+          },
+          {
+            label: `All (${nTotal.toLocaleString()})`,
+            data: RetranslateScope.all,
           },
         ],
         {
           ignoreFocusOut: true,
           title: "Re-translation Scope",
-          placeHolder: `Do you want to retranslate all ${invalidType} issues?`,
+          placeHolder: `Select re-translate scope`,
         }
       )
     )?.data;
@@ -194,8 +223,13 @@ export class ARBValidationService {
 
   private async retranslateAll(
     validationResultList: ValidationResult[]
-  ): Promise<void> {
+  ): Promise<TranslationResult> {
     let nComplete: number = 0;
+    const translateResult: TranslationResult = {
+      data: [],
+      nAPICall: 0,
+      nCache: 0,
+    };
     await vscode.window.withProgress(
       {
         location: vscode.ProgressLocation.Notification,
@@ -233,15 +267,17 @@ export class ARBValidationService {
           });
 
           // Translation
-          const translatedTextList = (
-            await this.translationService.translate({
-              queries,
-              sourceLang: sourceARB.language,
-              targetLang: targetARB.language,
-              useCache: false,
-              isEncodeARBParams: true,
-            })
-          ).data;
+          const result = await this.translationService.translate({
+            queries,
+            sourceLang: sourceARB.language,
+            targetLang: targetARB.language,
+            useCache: false,
+            isEncodeARBParams: true,
+          });
+          translateResult.data.push(...result.data),
+            (translateResult.nCache += result.nCache);
+          translateResult.nAPICall += result.nAPICall;
+          const translatedTextList = result.data;
 
           // Upsert
           for (let i = 0; i < sameTarget.length; i++) {
@@ -253,6 +289,8 @@ export class ARBValidationService {
         }
       }
     );
+
+    return translateResult;
   }
 
   public async decodeHtmlEntities(targetArb: ARB, keyList: string[]) {

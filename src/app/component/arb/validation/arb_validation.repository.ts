@@ -1,12 +1,9 @@
 import * as vscode from "vscode";
-import { Cmd } from "../../../cmd/cmd";
-import { TextTranslateCmdArgs } from "../../../cmd/translation/text.translate.cmd";
 import { BaseDisposable } from "../../../util/base/base_disposable";
 import { Editor } from "../../../util/editor";
 import { Highlight, HighlightType } from "../../../util/highlight";
 import { ARB } from "../arb";
 import { ARBValidation, InvalidType, ValidationResult } from "./arb_validation";
-import { LanguageCode } from "../../config/config";
 
 export class ARBValidationRepository extends BaseDisposable {
   public async *generateValidationResult(
@@ -137,12 +134,10 @@ export class ARBValidationRepository extends BaseDisposable {
 
         // select target value
         const targetValue = targetARB.data[key];
-        const targetValueStartIdx = targetDocument
-          .getText()
-          .indexOf(targetValue);
-        targetEditor.selection = new vscode.Selection(
-          targetDocument.positionAt(targetValueStartIdx),
-          targetDocument.positionAt(targetValueStartIdx + targetValue.length)
+        targetEditor.selection = Editor.selectFromARB(
+          targetEditor,
+          key,
+          targetValue
         );
       } else {
         // If the key does't exist in the target arb file
@@ -242,43 +237,5 @@ export class ARBValidationRepository extends BaseDisposable {
       };
     }
     return parmsValidation;
-  }
-
-  public async retranslate({
-    sourceARB,
-    targetARB,
-    key,
-    translatedText,
-  }: {
-    sourceARB: ARB;
-    targetARB: ARB;
-    key: string;
-    translatedText?: string;
-  }) {
-    const { editor: targetEditor } = await Editor.open(
-      targetARB.filePath,
-      vscode.ViewColumn.Two
-    );
-    const selection = Editor.selectFromARB(
-      targetEditor,
-      key,
-      `${targetARB.data[key]}`
-    );
-    // Set newline character (\n) to be displayed as \n when translated
-    const queries = [sourceARB.data[key].replace(/\n/g, "\\n")];
-    const translatedTextList = translatedText
-      ? [translatedText.replace(/\n/g, "\\n")]
-      : undefined;
-    await vscode.commands.executeCommand(Cmd.TextTranslate, <
-      TextTranslateCmdArgs
-    >{
-      queries,
-      translatedTextList,
-      selections: [selection],
-      sourceLang: sourceARB.language,
-      targetLang: targetARB.language,
-      useCache: false,
-      showCompleteNoti: false,
-    });
   }
 }

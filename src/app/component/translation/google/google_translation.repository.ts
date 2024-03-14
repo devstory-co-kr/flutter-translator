@@ -94,7 +94,6 @@ export class GoogleTranslationRepository implements TranslationRepository {
         }
       });
     }
-
     return { encodedText: text, dictionary };
   }
 

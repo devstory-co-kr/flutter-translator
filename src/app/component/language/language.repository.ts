@@ -944,7 +944,12 @@ export class LanguageRepository {
   ];
 
   public static getReplaceKeys(language: Language): string[] {
-    if (language.languageCode === LanguageRepository.odia.languageCode) {
+    if (
+      [
+        LanguageRepository.odia.languageCode,
+        LanguageRepository.myanmar.languageCode,
+      ].includes(language.languageCode)
+    ) {
       return Constant.keycaps;
     } else {
       return Constant.emojis;

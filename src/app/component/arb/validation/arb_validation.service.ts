@@ -107,7 +107,7 @@ export class ARBValidationService {
             sameTypeValidationResults.length,
             invalidType
           );
-          if (!isReTranslateAll) {
+          if (isReTranslateAll === undefined) {
             return false;
           }
 

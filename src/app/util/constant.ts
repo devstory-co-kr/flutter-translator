@@ -17,7 +17,6 @@ export class Constant {
   ];
   public static emojis: string[] = [
     "😀",
-    "😃",
     "😄",
     "😁",
     "🥹",

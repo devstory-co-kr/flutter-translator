@@ -1,4 +1,3 @@
-import { Constant } from "../../util/constant";
 import { Language } from "./language";
 
 export class LanguageRepository {
@@ -942,18 +941,4 @@ export class LanguageRepository {
     LanguageRepository.yoruba,
     LanguageRepository.zulu,
   ];
-
-  public static getEncodeKeys(language: Language): string[] {
-    if (
-      [
-        LanguageRepository.odia.languageCode,
-        LanguageRepository.myanmar.languageCode,
-        LanguageRepository.malayalam.languageCode,
-      ].includes(language.languageCode)
-    ) {
-      return Constant.keycaps;
-    } else {
-      return Constant.emojis;
-    }
-  }
 }

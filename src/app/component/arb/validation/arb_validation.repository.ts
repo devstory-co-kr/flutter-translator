@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { BaseDisposable } from "../../../util/base/base_disposable";
 import { Editor } from "../../../util/editor";
 import { Highlight, HighlightType } from "../../../util/highlight";
+import Statistic from "../../../util/statistic";
 import { ARB } from "../arb";
 import { ARBValidation, InvalidType, ValidationResult } from "./arb_validation";
 
@@ -16,33 +17,6 @@ export class ARBValidationRepository extends BaseDisposable {
     const sourceValidationKeys = Object.keys(sourceValidation);
     const targetValidationKeys = Object.keys(targetValidation);
     for (const key of sourceValidationKeys) {
-      const sourceTotalParams = sourceValidation[key].nParams;
-
-      // not excluded
-      let isNotExcluded = false;
-      let notFoundKeyword: string = "";
-      for (const keyword of excludeKeywords) {
-        const reg = new RegExp(keyword, "gi");
-        const nSource = sourceValidation[key].value.match(reg)?.length ?? 0;
-        const nTarget = targetValidation[key].value.match(reg)?.length ?? 0;
-        if (nSource !== nTarget) {
-          isNotExcluded = true;
-          notFoundKeyword = keyword;
-          break;
-        }
-      }
-      if (isNotExcluded) {
-        yield <ValidationResult>{
-          sourceValidationData: sourceValidation[key],
-          invalidType: InvalidType.notExcluded,
-          invalidMessage: `"${notFoundKeyword}" not found`,
-          sourceARB,
-          targetARB,
-          key,
-        };
-        continue;
-      }
-
       // key not found
       if (!targetValidationKeys.includes(key)) {
         yield <ValidationResult>{
@@ -53,6 +27,31 @@ export class ARBValidationRepository extends BaseDisposable {
           key,
         };
         continue;
+      } else {
+        // not excluded
+        let isNotExcluded = false;
+        let notFoundKeyword: string = "";
+        for (const keyword of excludeKeywords) {
+          const reg = new RegExp(keyword, "gi");
+          const nSource = sourceValidation[key].text.match(reg)?.length ?? 0;
+          const nTarget = targetValidation[key].text.match(reg)?.length ?? 0;
+          if (nSource !== nTarget) {
+            isNotExcluded = true;
+            notFoundKeyword = keyword;
+            break;
+          }
+        }
+        if (isNotExcluded) {
+          yield <ValidationResult>{
+            sourceValidationData: sourceValidation[key],
+            invalidType: InvalidType.notExcluded,
+            invalidMessage: `"${notFoundKeyword}" not found`,
+            sourceARB,
+            targetARB,
+            key,
+          };
+          continue;
+        }
       }
 
       // undecoded html entity exists
@@ -66,8 +65,21 @@ export class ARBValidationRepository extends BaseDisposable {
         };
       }
 
+      // incorrect number of line breaks
+      if (
+        sourceValidation[key].nLineBreaks !== targetValidation[key].nLineBreaks
+      ) {
+        yield <ValidationResult>{
+          sourceValidationData: sourceValidation[key],
+          invalidType: InvalidType.invalidLineBreaks,
+          sourceARB,
+          targetARB,
+          key,
+        };
+      }
+
       // incorrect number of parameters
-      if (sourceTotalParams !== targetValidation[key].nParams) {
+      if (sourceValidation[key].nParams !== targetValidation[key].nParams) {
         yield <ValidationResult>{
           sourceValidationData: sourceValidation[key],
           invalidType: InvalidType.invalidParameters,
@@ -123,12 +135,10 @@ export class ARBValidationRepository extends BaseDisposable {
 
         // select target value
         const targetValue = targetARB.data[key];
-        const targetValueStartIdx = targetDocument
-          .getText()
-          .indexOf(targetValue);
-        targetEditor.selection = new vscode.Selection(
-          targetDocument.positionAt(targetValueStartIdx),
-          targetDocument.positionAt(targetValueStartIdx + targetValue.length)
+        targetEditor.selection = Editor.selectFromARB(
+          targetEditor,
+          key,
+          targetValue
         );
       } else {
         // If the key does't exist in the target arb file
@@ -167,19 +177,6 @@ export class ARBValidationRepository extends BaseDisposable {
     }
   }
 
-  private getTotalParams(value: string): number {
-    return (value.match(/\{.*?\}/g) || []).length;
-  }
-
-  private getTotalParentheses(value: string): number {
-    return (value.match(/[(){}\[\]⌜⌟『』<>《》〔〕〘〙【】〖〗⦅⦆]/g) || [])
-      .length;
-  }
-
-  private getTotalHtmlEntites(value: string): number {
-    return (value.match(/&[a-zA-Z]+;/g) || []).length;
-  }
-
   private isValid(
     sourceData: Record<string, string>,
     targetData: Record<string, string>,
@@ -190,17 +187,18 @@ export class ARBValidationRepository extends BaseDisposable {
     if (!targetValue) {
       return false;
     } else if (
-      this.getTotalParams(sourceValue) !== this.getTotalParams(targetValue)
+      Statistic.getTotalParams(sourceValue) !==
+      Statistic.getTotalParams(targetValue)
     ) {
       return false;
     } else if (
-      this.getTotalParentheses(sourceValue) !==
-      this.getTotalParentheses(targetValue)
+      Statistic.getTotalParentheses(sourceValue) !==
+      Statistic.getTotalParentheses(targetValue)
     ) {
       return false;
     } else if (
-      this.getTotalHtmlEntites(sourceValue) !==
-      this.getTotalHtmlEntites(targetValue)
+      Statistic.getTotalHtmlEntites(sourceValue) !==
+      Statistic.getTotalHtmlEntites(targetValue)
     ) {
       return false;
     } else {
@@ -208,19 +206,14 @@ export class ARBValidationRepository extends BaseDisposable {
     }
   }
 
-  public getParamsValidation(arb: ARB): ARBValidation {
+  public getValidation(arb: ARB): ARBValidation {
     const parmsValidation: ARBValidation = {};
     for (const [key, value] of Object.entries(arb.data)) {
       if (key !== "@@locale" && key.includes("@")) {
         continue;
       }
 
-      parmsValidation[key] = {
-        value,
-        nParams: this.getTotalParams(value),
-        nParentheses: this.getTotalParentheses(value),
-        nHtmlEntities: this.getTotalHtmlEntites(value),
-      };
+      parmsValidation[key] = Statistic.getTextStatistic(value);
     }
     return parmsValidation;
   }

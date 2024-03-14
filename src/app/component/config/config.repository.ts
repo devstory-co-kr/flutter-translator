@@ -124,6 +124,7 @@ export class ConfigRepository implements ConfigRepositoryI {
     return (
       this.config.translationConfig ?? {
         exclude: [],
+        useCache: true,
       }
     );
   }

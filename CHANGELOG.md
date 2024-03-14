@@ -2,6 +2,17 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
+## [2.3.4] - 24.03.13
+### Added
+- Add `Translation - Use Cache` command.
+- Add re-translation function when checking ARB
+- Add translation batch.
+
+### Updated
+- Update to ignore case in string translation exclusions and make exclusions even for substrings.
+- Update to change the encoding key and retry if the number of encodings does not match after translation.
+- Improve translation performance by adding translation evaluation function.
+
 ## [2.3.3] - 24.03.13
 ### Added
 - Add `Google Translation - Open Web` command.
@@ -15,6 +26,8 @@ All notable changes to the [flutter-translator extension](https://marketplace.vi
 ### Added
 - Add `Translation - Exclude` command.
 - Add `translationConfig.exclude` configuration.
+- Add line break symbol count check logic to ARB check command.
+- Add retranslate all items option to ARB check command.
 
 ### Updated
 - Update to check whether translation exceptions apply when checking ARB and Metadata.

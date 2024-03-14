@@ -3,7 +3,6 @@ import { Language } from "../../component/language/language";
 import { LanguageRepository } from "../../component/language/language.repository";
 import { TranslationService } from "../../component/translation/translation.service";
 import { Toast } from "../../util/toast";
-import { Dialog } from "../../util/dialog";
 
 interface InitParams {
   translationService: TranslationService;
@@ -11,10 +10,12 @@ interface InitParams {
 
 export type TextTranslateCmdArgs = {
   queries: string[];
+  translatedTextList: string[];
   selections: vscode.Selection[];
   sourceLang: Language;
   targetLang: Language;
   useCache: boolean;
+  showCompleteNoti: boolean;
 };
 
 export class TextTranslateCmd {
@@ -86,24 +87,28 @@ export class TextTranslateCmd {
       targetLang = targetSelection.language;
     }
 
-    // select use cache
-
     // translate
-    const translatedTextList = await this.translationService.translate({
-      queries,
-      sourceLang,
-      targetLang,
-      useCache: args?.useCache,
-    });
+    const translatedTextList =
+      args?.translatedTextList ??
+      (
+        await this.translationService.translate({
+          queries,
+          sourceLang,
+          targetLang,
+          useCache: args?.useCache,
+        })
+      ).data;
 
     await editor.edit((editBuilder) => {
       for (let i = 0; i < selections.length; i++) {
         const selection = selections[i];
-        const translatedText = translatedTextList.data[i];
+        const translatedText = translatedTextList[i];
         editBuilder.replace(selection, translatedText);
       }
     });
 
-    Toast.i("🟢 Translated.");
+    if (args?.showCompleteNoti ?? true) {
+      Toast.i("🟢 Translated.");
+    }
   }
 }

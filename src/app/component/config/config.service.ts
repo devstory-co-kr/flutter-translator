@@ -234,4 +234,17 @@ export class ConfigServiceImpl implements ConfigService {
       exclude,
     });
   }
+
+  public getTranslationUseCache(): boolean {
+    const { useCache } = this.configRepository.getTranslationConfig();
+    return useCache;
+  }
+
+  public async setTranslationUseCache(useCache: boolean): Promise<void> {
+    const translationConfig = this.configRepository.getTranslationConfig();
+    await this.configRepository.setTranslationConfig({
+      ...translationConfig,
+      useCache,
+    });
+  }
 }

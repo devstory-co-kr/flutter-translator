@@ -26,6 +26,7 @@ export type GoogleSheetConfig = {
 };
 
 export type TranslationConfig = {
+  useCache: boolean;
   exclude: string[];
 };
 
@@ -84,18 +85,31 @@ export interface ConfigRepositoryI {
 
 export interface ConfigService {
   getSourceARBPath(): Promise<string>;
+
   getCustomARBFileName(): Promise<CustomARBFileName>;
+
   getARBPrefix(): Promise<string | undefined>;
+
   getARBExcludeLanguageCodeList(): LanguageCode[];
+
   setARBCustom(custom: Record<LanguageCode, ARBFileName>): Promise<void>;
+
   getGoogleAuthCredential(): Promise<FilePath>;
+
   getGoogleAuthAPIKey(): Promise<GoogleAPIKey>;
+
   getMetadataExcludeLocaleList(): MetadataLocale[];
+
   getChangelogExcludeLocaleList(): MetadataLocale[];
+
   getCustomXcodeProjectLanguageCode(): Record<XcodeProjectName, LanguageCode>;
   setCustomXcodeProjectLanguage(
     projectName: XcodeProjectName
   ): Promise<Language | undefined>;
+
   getTranslationExclude(): string[];
   setTranslationExclude(exclude: string[]): Promise<void>;
+
+  getTranslationUseCache(): boolean;
+  setTranslationUseCache(useCache: boolean): Promise<void>;
 }

@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import Batch from "../../../util/batch";
 import { ConfigService } from "../../config/config";
 import { Language } from "../../language/language";
 import { TranslationCacheKey } from "../cache/translation_cache";
@@ -6,10 +7,10 @@ import { TranslationCacheRepository } from "../cache/translation_cache.repositor
 import { TranslationResult, TranslationType } from "../translation";
 import { TranslationRepository } from "../translation.repository";
 import {
-  EncodeResult,
-  FreeTranslateServiceParams,
-  PaidTranslateServiceParams,
   TranslationService,
+  TranslationServiceFreeParams,
+  TranslationServicePaidParams,
+  TranslationServiceTranslateParams,
 } from "../translation.service";
 
 interface InitParams {
@@ -21,7 +22,7 @@ interface TranslateParams {
   queries: string[];
   sourceLang: Language;
   targetLang: Language;
-  useCache: boolean;
+  useCache?: boolean;
   onTranslate: (query: string) => Promise<string>;
 }
 
@@ -81,7 +82,7 @@ export class GoogleTranslationService implements TranslationService {
     useCache,
     sourceLang,
     targetLang,
-  }: PaidTranslateServiceParams): Promise<TranslationResult> {
+  }: TranslationServicePaidParams): Promise<TranslationResult> {
     return this.checkCache({
       queries: queries,
       sourceLang: sourceLang,
@@ -107,31 +108,14 @@ export class GoogleTranslationService implements TranslationService {
     sourceLang,
     targetLang,
     useCache,
-    encode,
-    decode,
-  }: {
-    queries: string[];
-    sourceLang: Language;
-    targetLang: Language;
-    useCache?: boolean;
-    encode?: (query: string) => EncodeResult;
-    decode?: (
-      dictionary: Record<string, string>,
-      encodedQuery: string
-    ) => string;
-  }): Promise<TranslationResult> {
+    isEncodeARBParams,
+  }: TranslationServiceTranslateParams): Promise<TranslationResult> {
     return this.freeTranslate({
       queries: queries,
       sourceLang: sourceLang,
       targetLang: targetLang,
-      useCache: useCache ?? true,
-      encode: encode
-        ? encode
-        : (query) => ({
-            dictionary: {},
-            encodedText: query,
-          }),
-      decode: decode ? decode : (dictionary, encodedText) => encodedText,
+      useCache,
+      isEncodeARBParams,
     });
   }
 
@@ -148,24 +132,21 @@ export class GoogleTranslationService implements TranslationService {
     sourceLang,
     targetLang,
     useCache,
-    encode,
-    decode,
-  }: FreeTranslateServiceParams): Promise<TranslationResult> {
+    isEncodeARBParams,
+  }: TranslationServiceFreeParams): Promise<TranslationResult> {
     return this.checkCache({
       queries: queries,
       sourceLang: sourceLang,
       targetLang: targetLang,
       useCache,
-      onTranslate: async (query) => {
-        const { dictionary, encodedText } = encode(query);
-        const translatedText = await this.translationRepository.freeTranslate({
-          query: encodedText,
+      onTranslate: (query) => {
+        return this.translationRepository.freeTranslate({
+          query,
           exclude: this.configService.getTranslationExclude(),
           sourceLang,
           targetLang,
+          isEncodeARBParams,
         });
-        const decodedText = decode(dictionary, translatedText);
-        return decodedText;
       },
     });
   }
@@ -182,10 +163,13 @@ export class GoogleTranslationService implements TranslationService {
     useCache,
     onTranslate,
   }: TranslateParams) {
+    useCache ??= this.configService.getTranslationUseCache();
+
     let nCache = 0;
     let nRequest = 0;
-    const results = await Promise.all(
-      queries.map(async (query) => {
+    const results = await Batch.start({
+      batchSize: 100,
+      promises: queries.map((query) => async () => {
         if (query === "") {
           return query;
         }
@@ -213,9 +197,9 @@ export class GoogleTranslationService implements TranslationService {
         // update cache
         this.translationCacheRepository.upsert(cacheKey, translatedText);
         return translatedText;
-      })
-    );
-    // Logger.l(`Total translate request : ${nRequest} (cache : ${nCache})`);
+      }),
+    });
+
     return {
       data: results,
       nAPICall: nRequest,

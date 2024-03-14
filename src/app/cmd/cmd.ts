@@ -25,6 +25,7 @@ export enum Cmd {
   TextTranslate = "flutter-translator.text.translate",
   TranslationExclude = "flutter-translator.translation.exclude",
   GoogleTranslationOpenWeb = "flutter-translator.googleTranslation.openWeb",
+  translationUseCache = "flutter-translator.translation.useCache",
 }
 
 export const cmdName: Record<Cmd, string> = {
@@ -57,4 +58,5 @@ export const cmdName: Record<Cmd, string> = {
   [Cmd.TranslationExclude]: "Flutter Translator: Translation - Exclude",
   [Cmd.GoogleTranslationOpenWeb]:
     "Flutter Translator: Google Translation - Open Web",
+  [Cmd.translationUseCache]: "Flutter Translator: Translation - Use Cache",
 };

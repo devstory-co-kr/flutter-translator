@@ -8,6 +8,7 @@ import { MetadataDeleteCmdArgs } from "./cmd/metadata/metadata.delete.cmd";
 import { GoogleTranslationOpenWebCmdArgs } from "./cmd/translation/google_translation.open_web.cmd";
 import { TextTranslateCmdArgs } from "./cmd/translation/text.translate.cmd";
 import { TranslationExcludeCmdArgs } from "./cmd/translation/translation.exclude.cmd";
+import { TranslationUseCacheCmdArgs } from "./cmd/translation/translation.use_cache.cmd";
 import { XcodeStringsTranslateCmdArgs } from "./cmd/xcode_strings/xcode_strings.translate.cmd";
 import { Registry } from "./registry";
 import { Constant } from "./util/constant";
@@ -117,6 +118,9 @@ export class FlutterTranslator implements App {
       args?: GoogleTranslationOpenWebCmdArgs
     ) => {
       return this.registry.googleTranslationOpenWebCmd.run(args);
+    },
+    [Cmd.translationUseCache]: (args?: TranslationUseCacheCmdArgs) => {
+      return this.registry.translationUseCacheCmd.run(args);
     },
   };
 

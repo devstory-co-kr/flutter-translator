@@ -6,6 +6,7 @@ export interface PaidTranslateRepositoryParams {
   exclude: string[];
   sourceLang: Language;
   targetLang: Language;
+  isEncodeARBParams?: boolean;
 }
 
 export interface FreeTranslateRepositoryParams {
@@ -13,6 +14,7 @@ export interface FreeTranslateRepositoryParams {
   exclude: string[];
   sourceLang: Language;
   targetLang: Language;
+  isEncodeARBParams?: boolean;
 }
 
 export interface TranslationRepository {

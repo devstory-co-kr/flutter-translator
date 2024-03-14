@@ -8,7 +8,9 @@ export class JsonParser {
   ): Promise<T> {
     try {
       const jsonString = await fs.promises.readFile(filePath, "utf8");
-      return JSON.parse(jsonString.trim() ? `${jsonString}` : defaultValue);
+      return JSON.parse(
+        jsonString.trim() ? `${jsonString}` : JSON.stringify(defaultValue)
+      );
     } catch (e: any) {
       throw new JsonParseException(`${filePath} : ${e.message}`);
     }

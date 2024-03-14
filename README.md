@@ -171,11 +171,8 @@ It is recommended to set the configuration in the project workspace(`.vscode/set
   - `useCache` : whether to use cache When translating.
   - `exclude` : List of keywords you do not want translated (ignoring case).
 
-
-
 ## Translate
 - Translate with free Google Translate API.
-- An API key is not required, but the number of requests per hour is limited to approximately 100.
 - Translation Rules
   - if the `key` contains `@`, it will not be translated.
   - If the `key` does not exist in the `targetARB` file, preceed with translation.
@@ -192,6 +189,7 @@ It is recommended to set the configuration in the project workspace(`.vscode/set
       }
       ```
   - Google Translator's results are stored in a cache file, and the cache is returned when the same request comes in.
+    - You can turn the cache on and off using `Translation - Use Cache` command.
     - `.vscode/flutter-translator/cache.json` : This is a file that caches Google Translate results.
       ```
       {
@@ -206,6 +204,12 @@ It is recommended to set the configuration in the project workspace(`.vscode/set
   - If there are changes in the `sourceARB` file but you do not want to translate them, run the `Flutter Translator: ARB - Exclude Translation` command.
   - Overwrites the changed `value` of `sourceARB` with `history` so that the value is not translated.
   - However, if the `key` does not exist in the `targetARB` file, translation is performed.
+- It has a built-in algorithm that evaluates translation results and selects a better translation.
+  - Translation evaluation parameters
+    - ARB Parameter Count
+    - Number of parentheses
+    - Number of line breaks
+    - Number of keywords excluded from translation
 
 ## License
 ```

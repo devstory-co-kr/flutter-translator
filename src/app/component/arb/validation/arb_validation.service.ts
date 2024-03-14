@@ -225,7 +225,12 @@ export class ARBValidationService {
           const sameTarget = targetGroup[targetLangCode];
           const { sourceARB, targetARB } = sameTarget[0];
           const queries = sameTarget.map((v) => v.sourceARB.data[v.key]);
+
           nComplete += queries.length;
+          progress.report({
+            increment: 100 / nGroup,
+            message: `${nComplete} / ${validationResultList.length} re-translating...`,
+          });
 
           // Translation
           const translatedTextList = (
@@ -245,11 +250,6 @@ export class ARBValidationService {
             targetARB.data[key] = translatedText;
           }
           this.arbService.upsert(targetARB.filePath, targetARB.data);
-
-          progress.report({
-            increment: 100 / nGroup,
-            message: `${nComplete} / ${validationResultList.length} re-translating...`,
-          });
         }
       }
     );

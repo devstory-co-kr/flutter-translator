@@ -135,22 +135,22 @@ export class ARBTranslateCmd {
             Toast.i(`🟠 Canceled`);
             break;
           }
+          const targetArbFileName =
+            await this.languageService.getFileNameFromLanguageCode(
+              targetLanguage.languageCode
+            );
           totalTranslated += 1;
+          progress.report({
+            increment: 100 / total,
+            message: `${targetArbFileName} translated. (${totalTranslated} / ${total})`,
+          });
+
           const translationStatistic = await this.translateTargetLanguage({
             sourceArb,
             history,
             targetLanguage,
           });
           if (translationStatistic) {
-            const targetArbFileName =
-              await this.languageService.getFileNameFromLanguageCode(
-                targetLanguage.languageCode
-              );
-
-            progress.report({
-              increment: 100 / total,
-              message: `${targetArbFileName} translated. (${totalTranslated} / ${total})`,
-            });
             translationStatisticList.push(translationStatistic);
           }
         }

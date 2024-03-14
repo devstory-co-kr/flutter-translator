@@ -186,17 +186,18 @@ export class MetadataTranslateCmd {
             platform,
             targetMetadataLanguage
           );
+
+          totalTranslated += 1;
+          progress.report({
+            increment: 100 / total,
+            message: `${platform}/${targetMetadataLanguage.locale} translated. (${totalTranslated} / ${total})`,
+          });
+
           await this.translate({
             sourceMetadata,
             targetMetadata,
             textListToTranslate,
             urlFilesProcessingPolicy,
-          });
-          totalTranslated += 1;
-
-          progress.report({
-            increment: 100 / total,
-            message: `${platform}/${targetMetadataLanguage.locale} translated. (${totalTranslated} / ${total})`,
           });
         }
       }

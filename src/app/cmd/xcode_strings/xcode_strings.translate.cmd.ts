@@ -196,6 +196,12 @@ export class XcodeStringsTranslateCmd {
               return;
             }
 
+            totalTranslatedProject += 1;
+            progress.report({
+              increment: 100 / total,
+              message: `${targetProject.name} translated. (${totalTranslatedProject} / ${total})`,
+            });
+
             for (const targetStringsFilePath of targetProject.stringsFilePathList) {
               const targetStringsFileName = path.basename(
                 targetStringsFilePath
@@ -222,12 +228,6 @@ export class XcodeStringsTranslateCmd {
                 translatedTargetData
               );
             }
-
-            totalTranslatedProject += 1;
-            progress.report({
-              increment: 100 / total,
-              message: `${targetProject.name} translated. (${totalTranslatedProject} / ${total})`,
-            });
           }
         }
       }
@@ -259,6 +259,12 @@ export class XcodeStringsTranslateCmd {
             return;
           }
 
+          totalSelected += 1;
+          progress.report({
+            increment: 100 / total,
+            message: `Select unknown project language. (${totalSelected} / ${total})`,
+          });
+
           const language = await this.xcodeService.selectUnknownProjectLanguage(
             unknownProject
           );
@@ -269,11 +275,6 @@ export class XcodeStringsTranslateCmd {
           projects.push(<XcodeProject>{
             ...unknownProject,
             language,
-          });
-          totalSelected += 1;
-          progress.report({
-            increment: 100 / total,
-            message: `Select unknown project language. (${totalSelected} / ${total})`,
           });
         }
       }

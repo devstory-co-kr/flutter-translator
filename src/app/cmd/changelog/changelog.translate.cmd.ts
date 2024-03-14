@@ -138,13 +138,19 @@ export class ChangelogTranslateCmd {
             Toast.i(`🟠 Canceled`);
             break;
           }
-
           const targetMetadataLanguage = targetPlatformLanguage.language;
           const targetChangelog = this.changelogService.createChangelog({
             platform: targetPlatformLanguage.platform,
             language: targetPlatformLanguage.language,
             buildNumber,
           });
+
+          totalTranslated += 1;
+          progress.report({
+            increment: 100 / total,
+            message: `${sourcePlatform}/${targetMetadataLanguage.locale} translated. (${totalTranslated} / ${total})`,
+          });
+
           const sourceLang: Language = sourceMetadataLanguage.translateLanguage;
           const targetLang: Language = targetMetadataLanguage.translateLanguage;
           if (sourceLang === targetLang) {
@@ -162,11 +168,6 @@ export class ChangelogTranslateCmd {
 
           // update target changelog
           this.changelogService.updateChangelog(targetChangelog);
-          totalTranslated += 1;
-          progress.report({
-            increment: 100 / total,
-            message: `${sourcePlatform}/${targetMetadataLanguage.locale} translated. (${totalTranslated} / ${total})`,
-          });
         }
       }
     );

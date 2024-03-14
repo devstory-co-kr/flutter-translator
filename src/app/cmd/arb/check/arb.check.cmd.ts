@@ -42,7 +42,10 @@ export class ARBCheckCmd {
       return;
     }
 
-    await this.arbValidationService.validate(validationResult, validationResultList);
+    await this.arbValidationService.validate(
+      validationResult,
+      validationResultList
+    );
   }
 
   private async selectValidationResult(
@@ -63,6 +66,8 @@ export class ARBCheckCmd {
       sectionLabelList: Object.values(sectionMap),
       itemList: validationResultList,
       canPickMany: false,
+      title: `ARB Check Results : Total ${validationResultList.length.toLocaleString()}`,
+      placeHolder: "Please select the item you want to check.",
       itemBuilder: (validationResult) => {
         const targetFileName = path.basename(
           validationResult.targetARB.filePath

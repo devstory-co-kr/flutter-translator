@@ -2,6 +2,7 @@ import * as he from "he";
 import { Constant } from "../../../util/constant";
 import { TranslationFailureException } from "../../../util/exceptions";
 import { Logger } from "../../../util/logger";
+import Statistic from "../../../util/statistic";
 import { TranslationCacheRepository } from "../cache/translation_cache.repository";
 import { TranslationDataSource } from "../translation.datasource";
 import {
@@ -154,19 +155,19 @@ export class GoogleTranslationRepository implements TranslationRepository {
     onTranslate: (encodedText: string) => Promise<string>;
   }): Promise<string> {
     try {
-      const result: {
+      let result: {
         encodedText: string;
         translatedText: string;
         decodedText: string;
-        nEncoded: number;
-        nRemains: number;
+        encodeScore: number;
+        translationScore: number;
         dictionary: Record<string, string>;
       } = {
         encodedText: "",
         translatedText: "",
         decodedText: "",
-        nEncoded: 0,
-        nRemains: 0,
+        encodeScore: 0,
+        translationScore: 0,
         dictionary: {},
       };
       const encodekeysList = [Constant.emojis, Constant.keycaps, []];
@@ -214,39 +215,54 @@ export class GoogleTranslationRepository implements TranslationRepository {
         // translate
         let translatedText = await onTranslate(encodedText);
 
-        // check
+        // decode
+        const decodedText = this.decode(dictionary, translatedText);
+
+        // evaluate
         const nRemains = Object.keys(dictionary).reduce((prev, curr) => {
           return prev + translatedText.split(curr).length - 1;
         }, 0);
-
-        const isPerfect = nEncoded.value === nRemains;
-        const isBetter = nRemains > result.nRemains;
-        const isFirst = i === 0;
-        const isNext = i + 1 < encodekeysList.length;
-        if (isPerfect || isFirst || isBetter) {
-          result.nEncoded = nEncoded.value;
-          result.nRemains = nRemains;
-          result.dictionary = dictionary;
-          result.encodedText = encodedText;
-          result.translatedText = translatedText;
-        }
-
-        if (!isPerfect && isNext) {
-          continue;
-        }
-
-        if (!isPerfect) {
-          Logger.l(
-            `Not perfect translation : ${result.nRemains}/${result.nEncoded} / ${result.translatedText}`
-          );
-        }
-
-        // decode
-        result.decodedText = this.decode(
-          result.dictionary,
-          result.translatedText
+        const encodeScore =
+          nEncoded.value === 0
+            ? 1
+            : Statistic.convertToOneHotScore(nRemains / nEncoded.value);
+        const translationScore = Statistic.getTranslationScore(
+          query,
+          decodedText
         );
-        break;
+        const finalScore = encodeScore * 2 + translationScore;
+        const resultFinalScore =
+          result.encodeScore * 2 + result.translationScore;
+
+        const isFirst = i === 0;
+        const isEncodePerfect = encodeScore === 1;
+        const isTranslationPerfect = translationScore === 1;
+        const isPerfect = isEncodePerfect && isTranslationPerfect;
+        const isBetter = finalScore > resultFinalScore;
+        if (isFirst || isBetter || isPerfect) {
+          result = {
+            encodedText,
+            translatedText,
+            decodedText,
+            encodeScore,
+            translationScore,
+            dictionary,
+          };
+        }
+
+        Logger.l(
+          `🐾 [Not perfect translation]\nfinalScore=${finalScore}\nencodeScore=${
+            result.encodeScore
+          }\ntranslationScore=${
+            result.translationScore
+          }\nencode: ${encodedText.replaceAll(
+            "\n",
+            "\\n"
+          )}\ndecode: ${decodedText.replaceAll("\n", "\\n")}`
+        );
+        if (isPerfect) {
+          break;
+        }
       }
       return result.decodedText;
     } catch (e: any) {
@@ -256,4 +272,3 @@ export class GoogleTranslationRepository implements TranslationRepository {
     }
   }
 }
-

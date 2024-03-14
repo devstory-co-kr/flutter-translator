@@ -1,10 +1,12 @@
+export type OneHotScore = number;
+
 export interface TextStatistic {
   text: string;
   nParams: number;
   nLineBreaks: number;
   nParentheses: number;
   nHtmlEntities: number;
-  total: number;
+  sum: number;
 }
 
 export default class Statistic {
@@ -17,7 +19,7 @@ export default class Statistic {
   }
 
   static getTotalParentheses(value: string): number {
-    return (value.match(/[(){}\[\]⌜⌟『』<>《》〔〕〘〙【】〖〗⦅⦆]/g) || [])
+    return (value.match(/[(){}\[\]⌜⌟『』<>《》〔〕〘〙【】〖〗⦅⦆（）]/g) || [])
       .length;
   }
 
@@ -36,7 +38,22 @@ export default class Statistic {
       nLineBreaks,
       nParentheses,
       nHtmlEntities,
-      total: nParams + nLineBreaks + nParentheses + nHtmlEntities,
+      sum: nParams + nLineBreaks + nParentheses + nHtmlEntities,
     };
+  }
+
+  public static getTranslationScore(
+    answer: string,
+    result: string
+  ): OneHotScore {
+    const nAnswer = this.getTextStatistic(answer).sum;
+    const nResult = this.getTextStatistic(result).sum;
+    return nAnswer === 0 ? 1 : this.convertToOneHotScore(nResult / nAnswer);
+  }
+
+  // The closer it is to 1, the better.
+  // return -infinity ~ 1
+  public static convertToOneHotScore(value: number): OneHotScore {
+    return 1 - Math.abs(1 - value);
   }
 }

@@ -1,4 +1,6 @@
 import * as vscode from "vscode";
+import Batch from "../../../util/batch";
+import { Logger } from "../../../util/logger";
 import { ConfigService } from "../../config/config";
 import { Language } from "../../language/language";
 import { TranslationCacheKey } from "../cache/translation_cache";
@@ -162,10 +164,13 @@ export class GoogleTranslationService implements TranslationService {
     useCache,
     onTranslate,
   }: TranslateParams) {
+    useCache ??= this.configService.getTranslationUseCache();
+
     let nCache = 0;
     let nRequest = 0;
-    const results = await Promise.all(
-      queries.map(async (query) => {
+    const results = await Batch.start({
+      batchSize: 100,
+      promises: queries.map((query) => async () => {
         if (query === "") {
           return query;
         }
@@ -176,7 +181,7 @@ export class GoogleTranslationService implements TranslationService {
           targetLanguage: targetLang,
         });
 
-        if (useCache ?? this.configService.getTranslationUseCache()) {
+        if (useCache) {
           const cacheValue =
             this.translationCacheRepository.get<string>(cacheKey);
           if (cacheValue) {
@@ -193,9 +198,9 @@ export class GoogleTranslationService implements TranslationService {
         // update cache
         this.translationCacheRepository.upsert(cacheKey, translatedText);
         return translatedText;
-      })
-    );
-    // Logger.l(`Total translate request : ${nRequest} (cache : ${nCache})`);
+      }),
+    });
+    Logger.l(`Total translate request : ${nRequest} (cache : ${nCache})`);
     return {
       data: results,
       nAPICall: nRequest,

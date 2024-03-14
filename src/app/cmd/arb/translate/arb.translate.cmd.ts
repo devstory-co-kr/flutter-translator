@@ -20,11 +20,6 @@ interface InitParams {
   arbStatisticService: ARBStatisticService;
 }
 
-interface EncodeResult {
-  dictionary: Record<string, string>;
-  encodedText: string;
-}
-
 export type ARBTranslateCmdArgs = {
   sourceArb?: ARB;
   history?: History;
@@ -141,7 +136,6 @@ export class ARBTranslateCmd {
             );
           totalTranslated += 1;
           progress.report({
-            increment: 100 / total,
             message: `${targetArbFileName} translated. (${totalTranslated} / ${total})`,
           });
 

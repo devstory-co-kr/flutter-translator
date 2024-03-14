@@ -162,7 +162,6 @@ export class GoogleTranslationRepository implements TranslationRepository {
 
       // Encode ARB params
       if (isEncodeARBParams) {
-        console.log("isEncodeARBParams", true);
         encodedText = this.encode({
           text: encodedText,
           regex: /\{(.+?)\}/g,

@@ -256,3 +256,4 @@ export class GoogleTranslationRepository implements TranslationRepository {
     }
   }
 }
+

@@ -311,7 +311,7 @@ export class ARBValidationService {
   ): AsyncGenerator<ValidationResult, undefined, ValidationResult> {
     // get source ParamsValidation
     const sourceValidation =
-      this.arbValidationRepository.getParamsValidation(sourceArb);
+      this.arbValidationRepository.getValidation(sourceArb);
     if (Object.keys(sourceValidation).length === 0) {
       return;
     }
@@ -333,7 +333,7 @@ export class ARBValidationService {
       // get targetArb
       const targetArb: ARB = await this.arbService.getARB(targetArbFilePath);
       const targetValidation =
-        this.arbValidationRepository.getParamsValidation(targetArb);
+        this.arbValidationRepository.getValidation(targetArb);
 
       // generate validation result
       yield* this.arbValidationRepository.generateValidationResult(

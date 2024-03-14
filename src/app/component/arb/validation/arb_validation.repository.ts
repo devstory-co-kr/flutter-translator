@@ -2,6 +2,7 @@ import * as vscode from "vscode";
 import { BaseDisposable } from "../../../util/base/base_disposable";
 import { Editor } from "../../../util/editor";
 import { Highlight, HighlightType } from "../../../util/highlight";
+import Statistic from "../../../util/statistic";
 import { ARB } from "../arb";
 import { ARBValidation, InvalidType, ValidationResult } from "./arb_validation";
 
@@ -32,8 +33,8 @@ export class ARBValidationRepository extends BaseDisposable {
         let notFoundKeyword: string = "";
         for (const keyword of excludeKeywords) {
           const reg = new RegExp(keyword, "gi");
-          const nSource = sourceValidation[key].value.match(reg)?.length ?? 0;
-          const nTarget = targetValidation[key].value.match(reg)?.length ?? 0;
+          const nSource = sourceValidation[key].text.match(reg)?.length ?? 0;
+          const nTarget = targetValidation[key].text.match(reg)?.length ?? 0;
           if (nSource !== nTarget) {
             isNotExcluded = true;
             notFoundKeyword = keyword;
@@ -176,23 +177,6 @@ export class ARBValidationRepository extends BaseDisposable {
     }
   }
 
-  private getTotalParams(value: string): number {
-    return (value.match(/\{.*?\}/g) || []).length;
-  }
-
-  private getTotalLineBreaks(value: string): number {
-    return (value.match(/\n/g) || []).length;
-  }
-
-  private getTotalParentheses(value: string): number {
-    return (value.match(/[(){}\[\]⌜⌟『』<>《》〔〕〘〙【】〖〗⦅⦆]/g) || [])
-      .length;
-  }
-
-  private getTotalHtmlEntites(value: string): number {
-    return (value.match(/&[a-zA-Z]+;/g) || []).length;
-  }
-
   private isValid(
     sourceData: Record<string, string>,
     targetData: Record<string, string>,
@@ -203,17 +187,18 @@ export class ARBValidationRepository extends BaseDisposable {
     if (!targetValue) {
       return false;
     } else if (
-      this.getTotalParams(sourceValue) !== this.getTotalParams(targetValue)
+      Statistic.getTotalParams(sourceValue) !==
+      Statistic.getTotalParams(targetValue)
     ) {
       return false;
     } else if (
-      this.getTotalParentheses(sourceValue) !==
-      this.getTotalParentheses(targetValue)
+      Statistic.getTotalParentheses(sourceValue) !==
+      Statistic.getTotalParentheses(targetValue)
     ) {
       return false;
     } else if (
-      this.getTotalHtmlEntites(sourceValue) !==
-      this.getTotalHtmlEntites(targetValue)
+      Statistic.getTotalHtmlEntites(sourceValue) !==
+      Statistic.getTotalHtmlEntites(targetValue)
     ) {
       return false;
     } else {
@@ -221,20 +206,14 @@ export class ARBValidationRepository extends BaseDisposable {
     }
   }
 
-  public getParamsValidation(arb: ARB): ARBValidation {
+  public getValidation(arb: ARB): ARBValidation {
     const parmsValidation: ARBValidation = {};
     for (const [key, value] of Object.entries(arb.data)) {
       if (key !== "@@locale" && key.includes("@")) {
         continue;
       }
 
-      parmsValidation[key] = {
-        value,
-        nParams: this.getTotalParams(value),
-        nLineBreaks: this.getTotalLineBreaks(value),
-        nParentheses: this.getTotalParentheses(value),
-        nHtmlEntities: this.getTotalHtmlEntites(value),
-      };
+      parmsValidation[key] = Statistic.getTextStatistic(value);
     }
     return parmsValidation;
   }

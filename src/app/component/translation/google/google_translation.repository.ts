@@ -1,6 +1,7 @@
 import * as he from "he";
 import { Constant } from "../../../util/constant";
 import { TranslationFailureException } from "../../../util/exceptions";
+import { Logger } from "../../../util/logger";
 import { TranslationCacheRepository } from "../cache/translation_cache.repository";
 import { TranslationDataSource } from "../translation.datasource";
 import {
@@ -74,12 +75,14 @@ export class GoogleTranslationRepository implements TranslationRepository {
   private encode({
     text,
     regex,
+    isEncode,
     nEncoded,
     encodeKeys,
     dictionary,
   }: {
     text: string;
     regex: RegExp;
+    isEncode: boolean;
     nEncoded: { value: number };
     encodeKeys: string[];
     dictionary: Record<string, string>;
@@ -90,6 +93,12 @@ export class GoogleTranslationRepository implements TranslationRepository {
     );
     const encodedText = text.replace(regex, (match, _) => {
       nEncoded.value += 1;
+      if (!isEncode) {
+        // Not encode
+        dictionary[match] = match;
+        return match;
+      }
+
       let key: string;
       if (swapedDict[match]) {
         key = swapedDict[match];
@@ -149,18 +158,21 @@ export class GoogleTranslationRepository implements TranslationRepository {
         encodedText: string;
         translatedText: string;
         decodedText: string;
-        remains: number;
+        nEncoded: number;
+        nRemains: number;
         dictionary: Record<string, string>;
       } = {
         encodedText: "",
         translatedText: "",
         decodedText: "",
-        remains: 0,
+        nEncoded: 0,
+        nRemains: 0,
         dictionary: {},
       };
-      const encodekeysList = [Constant.emojis, Constant.keycaps];
+      const encodekeysList = [Constant.emojis, Constant.keycaps, []];
       for (let i = 0; i < encodekeysList.length; i++) {
         const encodeKeys = encodekeysList[i];
+        const isEncode = encodeKeys.length > 0;
         const dictionary: Record<string, string> = {};
         let encodedText: string = query;
         let nEncoded = { value: 0 };
@@ -169,6 +181,7 @@ export class GoogleTranslationRepository implements TranslationRepository {
         encodedText = this.encode({
           text: encodedText,
           regex: /\n/g,
+          isEncode,
           nEncoded,
           encodeKeys,
           dictionary,
@@ -179,6 +192,7 @@ export class GoogleTranslationRepository implements TranslationRepository {
           encodedText = this.encode({
             text: encodedText,
             regex: /\{(.+?)\}/g,
+            isEncode,
             nEncoded,
             encodeKeys,
             dictionary,
@@ -190,6 +204,7 @@ export class GoogleTranslationRepository implements TranslationRepository {
           encodedText = this.encode({
             text: encodedText,
             regex: new RegExp(e, "gi"),
+            isEncode,
             nEncoded,
             encodeKeys,
             dictionary,
@@ -200,16 +215,17 @@ export class GoogleTranslationRepository implements TranslationRepository {
         let translatedText = await onTranslate(encodedText);
 
         // check
-        const remains = Object.keys(dictionary).reduce((prev, curr) => {
+        const nRemains = Object.keys(dictionary).reduce((prev, curr) => {
           return prev + translatedText.split(curr).length - 1;
         }, 0);
 
-        const isPerfect = nEncoded.value === remains;
-        const isBetter = remains > result.remains;
+        const isPerfect = nEncoded.value === nRemains;
+        const isBetter = nRemains > result.nRemains;
         const isFirst = i === 0;
         const isNext = i + 1 < encodekeysList.length;
         if (isPerfect || isFirst || isBetter) {
-          result.remains = remains;
+          result.nEncoded = nEncoded.value;
+          result.nRemains = nRemains;
           result.dictionary = dictionary;
           result.encodedText = encodedText;
           result.translatedText = translatedText;
@@ -219,6 +235,12 @@ export class GoogleTranslationRepository implements TranslationRepository {
           continue;
         }
 
+        if (!isPerfect) {
+          Logger.l(
+            `Not perfect translation : ${result.nRemains}/${result.nEncoded} / ${result.translatedText}`
+          );
+        }
+
         // decode
         result.decodedText = this.decode(
           result.dictionary,
@@ -226,7 +248,6 @@ export class GoogleTranslationRepository implements TranslationRepository {
         );
         break;
       }
-      // console.log(result);
       return result.decodedText;
     } catch (e: any) {
       throw new TranslationFailureException(

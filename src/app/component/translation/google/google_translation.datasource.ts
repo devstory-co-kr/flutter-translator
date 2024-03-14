@@ -29,18 +29,21 @@ export class GoogleTranslationDataSource implements TranslationDataSource {
     );
     if (response.status === 429) {
       throw new TranslationFailureException(
-        "You have used up all of your free translation usage. (approximately 100 per hour)"
+        "You have used up all of your free translation usage."
       );
     }
+
+    let result: string = "";
     if ("sentences" in response.data) {
-      let result: string = "";
       for (const sentence of response.data.sentences) {
+        // console.log("origin: ", sentence.orig);
+        // console.log("trans: ", sentence.trans);
         result += sentence.trans;
       }
-      return result;
     } else {
-      return response.data.dict[0].terms[0];
+      result = response.data.dict[0].terms[0];
     }
+    return result;
   }
 
   /**

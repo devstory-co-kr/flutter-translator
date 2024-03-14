@@ -1,6 +1,5 @@
 import * as vscode from "vscode";
 import Batch from "../../../util/batch";
-import { Logger } from "../../../util/logger";
 import { ConfigService } from "../../config/config";
 import { Language } from "../../language/language";
 import { TranslationCacheKey } from "../cache/translation_cache";
@@ -200,7 +199,7 @@ export class GoogleTranslationService implements TranslationService {
         return translatedText;
       }),
     });
-    Logger.l(`Total translate request : ${nRequest} (cache : ${nCache})`);
+
     return {
       data: results,
       nAPICall: nRequest,

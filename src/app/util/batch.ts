@@ -16,7 +16,6 @@ export default class Batch {
       }
       const batchFn = promises.slice(i, i + batchSize);
       const batchResults = await Promise.all(batchFn.map((fn) => fn()));
-      console.log(`Batch : ${i}/${promises.length}`);
       results.push(...batchResults);
     }
 

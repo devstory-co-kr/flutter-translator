@@ -2,7 +2,12 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
-## [2.3.4] - 24.03.13
+## [2.4.1] - 24.03.15
+### Added
+- Add batch to ARB translation.
+- Add encoding function for HTML tags and parentheses.
+
+## [2.4.0] - 24.03.14
 ### Added
 - Add `Translation - Use Cache` command.
 - Add re-translation function when checking ARB

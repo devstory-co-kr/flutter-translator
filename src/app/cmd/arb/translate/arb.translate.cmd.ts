@@ -8,7 +8,6 @@ import { LanguageRepository } from "../../../component/language/language.reposit
 import { LanguageService } from "../../../component/language/language.service";
 import { TranslationService } from "../../../component/translation/translation.service";
 import { TranslationStatistic } from "../../../component/translation/translation.statistic";
-import Batch from "../../../util/batch";
 import { Dialog } from "../../../util/dialog";
 import { Toast } from "../../../util/toast";
 import { Cmd } from "../../cmd";
@@ -36,7 +35,6 @@ export class ARBTranslateCmd {
   private languageService: LanguageService;
   private translationService: TranslationService;
   private arbStatisticService: ARBStatisticService;
-  private willBeTranslated = "will be translated";
 
   constructor({
     arbService,
@@ -224,52 +222,30 @@ export class ARBTranslateCmd {
       } else {
         translationStatistic.data.nCreate += 1;
       }
-      nextTargetArbData[sourceArbKey] = this.willBeTranslated;
+      nextTargetArbData[sourceArbKey] = "will be translated";
       willTranslateData[sourceArbKey] = sourceArb.data[sourceArbKey];
     }
 
     const willTranslateKeys: string[] = Object.keys(willTranslateData);
     const willTranslateValues: string[] = Object.values(willTranslateData);
-
-    if (willTranslateKeys.length > 0) {
+    const nWillTranslate: number = willTranslateKeys.length;
+    if (nWillTranslate > 0) {
       // translate
-      const batchSize = 100;
-      const chunkArrayKeys = Batch.chunkArray(willTranslateKeys, batchSize);
-      const chunkArrayValues = Batch.chunkArray(willTranslateValues, batchSize);
-      for (let i = 0; i < chunkArrayKeys.length; i++) {
-        const chunkKeys = chunkArrayKeys[i];
-        const chunkValues = chunkArrayValues[i];
-        const chunkTranslateResult = await this.translationService.translate({
-          queries: chunkValues,
-          sourceLang: sourceArb.language,
-          targetLang: targetArb.language,
-          isEncodeARBParams: true,
-        });
-        chunkKeys.forEach(
-          (key, index) =>
-            (nextTargetArbData[key] = chunkTranslateResult.data[index])
-        );
-        translationStatistic.data.nAPICall = chunkTranslateResult.nAPICall;
-        translationStatistic.data.nCache = chunkTranslateResult.nCache;
-        // Upsert target arb file
-        this.arbService.upsert(
-          targetArbFilePath,
-          Object.entries(nextTargetArbData).reduce(
-            (prev: Record<string, string>, [key, value]) => {
-              if (value !== this.willBeTranslated) {
-                prev[key] = value;
-              }
-              return prev;
-            },
-            {}
-          )
-        );
-      }
-    } else {
-      // upsert target arb file
-      this.arbService.upsert(targetArbFilePath, nextTargetArbData);
+      const translateResult = await this.translationService.translate({
+        queries: willTranslateValues,
+        sourceLang: sourceArb.language,
+        targetLang: targetArb.language,
+        isEncodeARBParams: true,
+      });
+      willTranslateKeys.forEach(
+        (key, index) => (nextTargetArbData[key] = translateResult.data[index])
+      );
+      translationStatistic.data.nAPICall = translateResult.nAPICall;
+      translationStatistic.data.nCache = translateResult.nCache;
     }
 
+    // upsert target arb file
+    this.arbService.upsert(targetArbFilePath, nextTargetArbData);
     return translationStatistic;
   }
 }

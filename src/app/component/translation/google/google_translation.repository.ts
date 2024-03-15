@@ -11,9 +11,10 @@ import {
   TranslationRepository,
 } from "../translation.repository";
 
-interface EncodeResult {
-  dictionary: Record<string, string>;
-  encodedText: string;
+interface TranslationOption {
+  encodeKeys: string[];
+  isEncodeHTML: boolean;
+  isEncodeParentheses: boolean;
 }
 
 interface InitParams {
@@ -170,9 +171,22 @@ export class GoogleTranslationRepository implements TranslationRepository {
         translationScore: 0,
         dictionary: {},
       };
-      const encodekeysList = [Constant.emojis, Constant.keycaps, []];
-      for (let i = 0; i < encodekeysList.length; i++) {
-        const encodeKeys = encodekeysList[i];
+
+      const options: TranslationOption[] = [
+        {
+          encodeKeys: Constant.emojis,
+          isEncodeHTML: true,
+          isEncodeParentheses: true,
+        },
+        {
+          encodeKeys: Constant.keycaps,
+          isEncodeHTML: true,
+          isEncodeParentheses: true,
+        },
+        { encodeKeys: [], isEncodeHTML: false, isEncodeParentheses: false },
+      ];
+      for (let i = 0; i < options.length; i++) {
+        const { encodeKeys, isEncodeHTML, isEncodeParentheses } = options[i];
         const isEncode = encodeKeys.length > 0;
         const dictionary: Record<string, string> = {};
         let encodedText: string = query;
@@ -205,6 +219,30 @@ export class GoogleTranslationRepository implements TranslationRepository {
           encodedText = this.encode({
             text: encodedText,
             regex: new RegExp(e, "gi"),
+            isEncode,
+            nEncoded,
+            encodeKeys,
+            dictionary,
+          });
+        }
+
+        // Encode HTML
+        if (isEncodeHTML) {
+          encodedText = this.encode({
+            text: encodedText,
+            regex: /<[^>]*>/g,
+            isEncode,
+            nEncoded,
+            encodeKeys,
+            dictionary,
+          });
+        }
+
+        // Encode Parentheses
+        if (isEncodeParentheses) {
+          encodedText = this.encode({
+            text: encodedText,
+            regex: /[(){}\[\]⌜⌟『』<>《》〔〕〘〙【】〖〗⦅⦆（）]/g,
             isEncode,
             nEncoded,
             encodeKeys,
@@ -251,9 +289,9 @@ export class GoogleTranslationRepository implements TranslationRepository {
         }
 
         Logger.l(
-          `🐾 [Not perfect translation]\nfinalScore=${finalScore}\nencodeScore=${
+          `🐾 [Not perfect translation :${i}]\nfinalScore: ${finalScore}\nencodeScore: ${
             result.encodeScore
-          }\ntranslationScore=${
+          }\ntranslationScore: ${
             result.translationScore
           }\nencode: ${encodedText.replaceAll(
             "\n",

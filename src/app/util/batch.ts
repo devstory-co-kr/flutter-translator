@@ -9,7 +9,6 @@ export default class Batch {
     progress?: (current: number, total: number) => void;
   }): Promise<T[]> {
     const results: T[] = [];
-
     for (let i = 0; i < promises.length; i += batchSize) {
       if (progress) {
         progress(i, promises.length);
@@ -20,5 +19,13 @@ export default class Batch {
     }
 
     return results;
+  }
+
+  public static chunkArray<T>(array: T[], size: number): T[][] {
+    const chunkedArray = [];
+    for (let i = 0; i < array.length; i += size) {
+      chunkedArray.push(array.slice(i, i + size));
+    }
+    return chunkedArray;
   }
 }

@@ -257,14 +257,12 @@ export class MetadataService {
     metadata: Metadata
   ): Promise<MetadataText[]> {
     const selections = await vscode.window.showQuickPick(
-      metadata.dataList
-        .filter((data) => data.type === MetadataType.text)
-        .map((data) => ({
-          label: data.fileName,
-          picked: data.text.length > 0,
-          description: `${data.text.length.toLocaleString()} characters`,
-          data,
-        })),
+      metadata.dataList.map((data) => ({
+        label: data.fileName,
+        picked: data.text.length > 0,
+        description: `${data.text.length.toLocaleString()} characters`,
+        data,
+      })),
       {
         title: "Select Files",
         placeHolder: "Select list of files to translate",

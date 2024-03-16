@@ -2,6 +2,13 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
+## [2.4.2] - 24.03.17
+### Fixed
+- Fix the url files can be selected when translating meatadata.
+
+### Changed
+- Change default cache application to off when text translating.
+
 ## [2.4.1] - 24.03.15
 ### Added
 - Add batch to ARB translation.

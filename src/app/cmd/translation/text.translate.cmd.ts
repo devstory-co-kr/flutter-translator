@@ -95,7 +95,7 @@ export class TextTranslateCmd {
           queries,
           sourceLang,
           targetLang,
-          useCache: args?.useCache,
+          useCache: args?.useCache ?? false,
         })
       ).data;
 

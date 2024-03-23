@@ -20,6 +20,7 @@ export interface TranslationServiceFreeParams {
   sourceLang: Language;
   targetLang: Language;
   useCache?: boolean;
+  saveCache?: boolean;
   isEncodeARBParams?: boolean;
 }
 
@@ -28,6 +29,7 @@ export interface TranslationServiceTranslateParams {
   sourceLang: Language;
   targetLang: Language;
   useCache?: boolean;
+  saveCache?: boolean;
   isEncodeARBParams?: boolean;
 }
 

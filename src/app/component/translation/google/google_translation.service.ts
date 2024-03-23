@@ -23,6 +23,7 @@ interface TranslateParams {
   sourceLang: Language;
   targetLang: Language;
   useCache?: boolean;
+  saveCache?: boolean;
   onTranslate: (query: string) => Promise<string>;
 }
 
@@ -108,6 +109,7 @@ export class GoogleTranslationService implements TranslationService {
     sourceLang,
     targetLang,
     useCache,
+    saveCache,
     isEncodeARBParams,
   }: TranslationServiceTranslateParams): Promise<TranslationResult> {
     return this.freeTranslate({
@@ -115,6 +117,7 @@ export class GoogleTranslationService implements TranslationService {
       sourceLang: sourceLang,
       targetLang: targetLang,
       useCache,
+      saveCache,
       isEncodeARBParams,
     });
   }
@@ -132,6 +135,7 @@ export class GoogleTranslationService implements TranslationService {
     sourceLang,
     targetLang,
     useCache,
+    saveCache,
     isEncodeARBParams,
   }: TranslationServiceFreeParams): Promise<TranslationResult> {
     return this.checkCache({
@@ -161,6 +165,7 @@ export class GoogleTranslationService implements TranslationService {
     sourceLang,
     targetLang,
     useCache,
+    saveCache,
     onTranslate,
   }: TranslateParams) {
     useCache ??= this.configService.getTranslationUseCache();
@@ -194,8 +199,10 @@ export class GoogleTranslationService implements TranslationService {
         nRequest += 1;
         const translatedText = await onTranslate(query);
 
-        // update cache
-        this.translationCacheRepository.upsert(cacheKey, translatedText);
+        if (saveCache ?? true) {
+          // update cache
+          this.translationCacheRepository.upsert(cacheKey, translatedText);
+        }
         return translatedText;
       }),
     });

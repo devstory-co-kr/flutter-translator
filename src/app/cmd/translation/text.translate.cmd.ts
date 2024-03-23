@@ -15,6 +15,7 @@ export type TextTranslateCmdArgs = {
   sourceLang: Language;
   targetLang: Language;
   useCache: boolean;
+  saveCache: boolean;
   showCompleteNoti: boolean;
 };
 
@@ -96,6 +97,7 @@ export class TextTranslateCmd {
           sourceLang,
           targetLang,
           useCache: args?.useCache ?? false,
+          saveCache: args?.saveCache ?? false,
         })
       ).data;
 

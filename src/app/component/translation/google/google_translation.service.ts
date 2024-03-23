@@ -143,6 +143,7 @@ export class GoogleTranslationService implements TranslationService {
       sourceLang: sourceLang,
       targetLang: targetLang,
       useCache,
+      saveCache,
       onTranslate: (query) => {
         return this.translationRepository.freeTranslate({
           query,

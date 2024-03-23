@@ -2,7 +2,7 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
-## [2.4.3] - 24.03.23
+## [2.4.4] - 24.03.23
 ### Updated
 - Update not to save cache when translating text.
 

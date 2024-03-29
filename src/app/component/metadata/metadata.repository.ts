@@ -10,7 +10,7 @@ import { Workspace } from "../../util/workspace";
 import {
   Metadata,
   MetadataLanguage,
-  MetadataSupportPlatform,
+  MetadataPlatform,
   MetadataType,
 } from "./metadata";
 import {
@@ -48,28 +48,30 @@ export class MetadataRepository {
     this.iosMetadataLanguage = iosMetadataLanguage;
   }
 
-  public getMetadataPath(platform: MetadataSupportPlatform): string {
+  public getMetadataAbsolutePath(platform: MetadataPlatform): string {
+    return path.join(
+      Workspace.getRoot(),
+      this.getMetadataWorkspacePath(platform),
+    );
+  }
+  
+  public getMetadataWorkspacePath(platform: MetadataPlatform): string {
     switch (platform) {
-      case MetadataSupportPlatform.android:
-        return path.join(
-          Workspace.getRoot(),
-          "android/fastlane/metadata/android"
-        );
-      case MetadataSupportPlatform.ios:
-        return path.join(Workspace.getRoot(), "ios/fastlane/metadata");
+      case MetadataPlatform.android:
+        return "android/fastlane/metadata/android";
+      case MetadataPlatform.ios:
+        return "ios/fastlane/metadata";
     }
   }
 
-  public getSupportLanguages(
-    platform: MetadataSupportPlatform
-  ): MetadataLanguage[] {
+  public getSupportLanguages(platform: MetadataPlatform): MetadataLanguage[] {
     let supportLanguages: MetadataLanguage[] = [];
     switch (platform) {
-      case MetadataSupportPlatform.android:
+      case MetadataPlatform.android:
         supportLanguages =
           this.androidMetadataLanguage.supportMetadataLanguages;
         break;
-      case MetadataSupportPlatform.ios:
+      case MetadataPlatform.ios:
         supportLanguages = this.iosMetadataLanguage.supportMetadataLanguages;
         break;
     }
@@ -77,9 +79,9 @@ export class MetadataRepository {
   }
 
   public getLanguagesInPlatform(
-    platform: MetadataSupportPlatform
+    platform: MetadataPlatform
   ): MetadataLanguage[] {
-    const metadataPath = this.getMetadataPath(platform);
+    const metadataPath = this.getMetadataAbsolutePath(platform);
     return this.getSupportLanguages(platform).filter((language) => {
       const languagePath = path.join(metadataPath, language.locale);
       return fs.existsSync(languagePath);
@@ -87,10 +89,10 @@ export class MetadataRepository {
   }
 
   public getExistMetadataFile(
-    platform: MetadataSupportPlatform,
+    platform: MetadataPlatform,
     language: MetadataLanguage
   ): Metadata | undefined {
-    const metadataPath = this.getMetadataPath(platform);
+    const metadataPath = this.getMetadataAbsolutePath(platform);
     if (!fs.existsSync(metadataPath)) {
       // locale not exist
       return;
@@ -98,10 +100,10 @@ export class MetadataRepository {
 
     let metadata: Metadata;
     switch (platform) {
-      case MetadataSupportPlatform.android:
+      case MetadataPlatform.android:
         metadata = new AndroidMetadata(language, metadataPath);
         break;
-      case MetadataSupportPlatform.ios:
+      case MetadataPlatform.ios:
         metadata = new IosMetadata(language, metadataPath);
         break;
     }
@@ -120,16 +122,16 @@ export class MetadataRepository {
   }
 
   public createMetadataFile(
-    platform: MetadataSupportPlatform,
+    platform: MetadataPlatform,
     language: MetadataLanguage
   ): Metadata {
-    const metadataPath = this.getMetadataPath(platform);
+    const metadataPath = this.getMetadataAbsolutePath(platform);
     let metadata: Metadata;
     switch (platform) {
-      case MetadataSupportPlatform.android:
+      case MetadataPlatform.android:
         metadata = new AndroidMetadata(language, metadataPath);
         break;
-      case MetadataSupportPlatform.ios:
+      case MetadataPlatform.ios:
         metadata = new IosMetadata(language, metadataPath);
         break;
     }

@@ -2,14 +2,14 @@ import path from "path";
 import {
   Metadata,
   MetadataLanguage,
-  MetadataSupportPlatform,
+  MetadataPlatform,
   MetadataText,
   MetadataType,
 } from "../../component/metadata/metadata";
 
 export class AndroidMetadata implements Metadata {
   public metadataPath: string;
-  public platform: MetadataSupportPlatform = MetadataSupportPlatform.android;
+  public platform: MetadataPlatform = MetadataPlatform.android;
   public language: MetadataLanguage;
   public get dataList(): MetadataText[] {
     return [

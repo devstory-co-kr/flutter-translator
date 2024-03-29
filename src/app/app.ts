@@ -99,6 +99,9 @@ export class FlutterTranslator implements App {
     [Cmd.ChangelogOpen]: () => {
       return this.registry.changelogOpenCmd.run();
     },
+    [Cmd.ChangelogDelete]: () => {
+      return this.registry.changelogRenameCmd.run();
+    },
     /**
      * Xcode Strings Command
      */

@@ -1,7 +1,7 @@
 import { ChangelogService } from "../../component/changelog/changelog.service";
 import {
   MetadataLanguage,
-  MetadataSupportPlatform,
+  MetadataPlatform,
 } from "../../component/metadata/metadata";
 import { MetadataService } from "../../component/metadata/metadata.service";
 import { Workspace } from "../../util/workspace";
@@ -26,7 +26,7 @@ export class ChangelogCreateCmd {
 
   public async run(args?: ChangelogCreateCmdArgs) {
     // select metadata language in android
-    const platform = MetadataSupportPlatform.android;
+    const platform = MetadataPlatform.android;
     const language =
       args?.sourceMetadataLanguage ??
       (await this.metadataService.selectLanguage({

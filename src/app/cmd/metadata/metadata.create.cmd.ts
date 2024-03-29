@@ -1,7 +1,7 @@
 import * as vscode from "vscode";
 import {
   MetadataLanguage,
-  MetadataSupportPlatform,
+  MetadataPlatform,
 } from "../../component/metadata/metadata";
 import { MetadataService } from "../../component/metadata/metadata.service";
 import { Toast } from "../../util/toast";
@@ -11,7 +11,7 @@ interface InitParams {
 }
 
 export type MetadataCreateCmdArgs = {
-  platform?: MetadataSupportPlatform;
+  platform?: MetadataPlatform;
   selectedMetadataLanguages?: MetadataLanguage[];
 };
 

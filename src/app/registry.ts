@@ -9,6 +9,7 @@ import { ARBTranslateCmd } from "./cmd/arb/translate/arb.translate.cmd";
 import { ChangelogCheckCmd } from "./cmd/changelog/changelog.check.cmd";
 import { ChangelogCreateCmd } from "./cmd/changelog/changelog.create.cmd";
 import { ChangelogOpenCmd } from "./cmd/changelog/changelog.open.cmd";
+import { ChangelogDeleteCmd } from "./cmd/changelog/changelog.delete.cmd";
 import { ChangelogTranslateCmd } from "./cmd/changelog/changelog.translate.cmd";
 import { MetadataCheckCmd } from "./cmd/metadata/metadata.check.cmd";
 import { MetadataCreateCmd } from "./cmd/metadata/metadata.create.cmd";
@@ -239,6 +240,12 @@ export class Registry {
   });
   public changelogOpenCmd: ChangelogOpenCmd = new ChangelogOpenCmd({
     changelogService: this.changelogService,
+    metadataService: this.metadataService,
+  });
+  public changelogRenameCmd: ChangelogDeleteCmd = new ChangelogDeleteCmd({
+    configService: this.configService,
+    changelogService: this.changelogService,
+    languageService: this.languageService,
     metadataService: this.metadataService,
   });
   public xcodeStringsTranslateCmd: XcodeStringsTranslateCmd =

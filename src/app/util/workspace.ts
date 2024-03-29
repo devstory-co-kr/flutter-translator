@@ -97,4 +97,29 @@ export class Workspace {
     );
     return arbFiles.map((file) => file.path);
   }
+  
+  public static async getFiles(pattern: string): Promise<string[]> {
+    const workspaceFolders = vscode.workspace.workspaceFolders;
+    if (!workspaceFolders) {
+      throw new WorkspaceNotFoundException();
+    }
+
+    // search
+    const arbFilesInFolders: vscode.Uri[][] = await Promise.all(
+      workspaceFolders.map((folder) =>
+        vscode.workspace.findFiles(
+          new vscode.RelativePattern(folder, pattern)
+        )
+      )
+    );
+    const arbFiles: vscode.Uri[] = ([] as vscode.Uri[]).concat(
+      ...arbFilesInFolders
+    );
+    return arbFiles.map((file) => file.path);
+  }
+
+  public static deleteFile(filePath: string): Thenable<void> {
+    const fileUri = vscode.Uri.file(filePath);
+    return vscode.workspace.fs.delete(fileUri);
+  }
 }

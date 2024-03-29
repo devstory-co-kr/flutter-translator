@@ -3,7 +3,7 @@ import { Language } from "../language/language";
 /**
  * Support platform
  */
-export enum MetadataSupportPlatform {
+export enum MetadataPlatform {
   android = "android",
   ios = "ios",
 }
@@ -23,7 +23,7 @@ export type MetadataLanguage = {
 };
 
 export type MetadataPlatformLanguage = {
-  platform: MetadataSupportPlatform;
+  platform: MetadataPlatform;
   language: MetadataLanguage;
 };
 
@@ -47,7 +47,7 @@ export type MetadataText = {
 
 export interface Metadata {
   metadataPath: string;
-  platform: MetadataSupportPlatform;
+  platform: MetadataPlatform;
   language: MetadataLanguage;
   get dataList(): MetadataText[];
   get languagePath(): string;

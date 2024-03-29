@@ -8,8 +8,8 @@ import { ConfigService } from "../config/config";
 import {
   Metadata,
   MetadataLanguage,
+  MetadataPlatform,
   MetadataPlatformLanguage,
-  MetadataSupportPlatform,
   MetadataText,
   MetadataType,
   MetadataUrlFilesProcessingPolicy,
@@ -20,6 +20,16 @@ import {
   MetadataValidationItem,
   MetadataValidationType,
 } from "./metadata.validation";
+
+type SelectMetadataLanguagesParams = {
+  platform: MetadataPlatform;
+  languages?: MetadataLanguage[];
+  selectedLanguages?: MetadataLanguage[];
+  excludeLanguages?: MetadataLanguage[];
+  title?: string;
+  canPickMany?: boolean;
+  placeHolder?: string;
+};
 
 interface InitParams {
   configService: ConfigService;
@@ -41,11 +51,11 @@ export class MetadataService {
   }: {
     title?: string;
     placeHolder?: string;
-  }): Promise<MetadataSupportPlatform | undefined> {
+  }): Promise<MetadataPlatform | undefined> {
     const selectedPlatform = await vscode.window.showQuickPick(
-      Object.entries(MetadataSupportPlatform).map(([label, value]) => ({
+      Object.entries(MetadataPlatform).map(([label, value]) => ({
         label,
-        platform: value as MetadataSupportPlatform,
+        platform: value as MetadataPlatform,
       })),
       {
         title: title ?? "Select Platform",
@@ -56,22 +66,23 @@ export class MetadataService {
     return selectedPlatform?.platform;
   }
 
-  public getMetadataPath(platform: MetadataSupportPlatform): string {
-    return this.metadataRepository.getMetadataPath(platform);
+  public getMetadataPath(platform: MetadataPlatform): string {
+    return this.metadataRepository.getMetadataAbsolutePath(platform);
   }
 
   public getMetadataLanguagesInPlatform(
-    platform: MetadataSupportPlatform
+    platform: MetadataPlatform
   ): MetadataLanguage[] {
     return this.metadataRepository.getLanguagesInPlatform(platform);
   }
 
   public getSupportMetadataLanguages(
-    platform: MetadataSupportPlatform
+    platform: MetadataPlatform
   ): MetadataLanguage[] {
     return this.metadataRepository.getSupportLanguages(platform);
   }
 
+  // Overload signature : selectMetadataLanguages
   public async selectMetadataLanguages({
     platform,
     languages,
@@ -79,14 +90,32 @@ export class MetadataService {
     excludeLanguages,
     title,
     placeHolder,
-  }: {
-    platform: MetadataSupportPlatform;
-    languages?: MetadataLanguage[];
-    selectedLanguages?: MetadataLanguage[];
-    excludeLanguages?: MetadataLanguage[];
-    title?: string;
-    placeHolder?: string;
-  }): Promise<MetadataLanguage[]> {
+    canPickMany,
+  }: SelectMetadataLanguagesParams & {
+    canPickMany?: true;
+  }): Promise<MetadataLanguage[]>;
+  public async selectMetadataLanguages({
+    platform,
+    languages,
+    selectedLanguages,
+    excludeLanguages,
+    title,
+    placeHolder,
+    canPickMany,
+  }: SelectMetadataLanguagesParams & {
+    canPickMany: false;
+  }): Promise<MetadataLanguage | undefined>;
+  public async selectMetadataLanguages({
+    platform,
+    languages,
+    selectedLanguages,
+    excludeLanguages,
+    title,
+    placeHolder,
+    canPickMany,
+  }: SelectMetadataLanguagesParams): Promise<
+    MetadataLanguage[] | MetadataLanguage | undefined
+  > {
     const languageList =
       languages ?? this.getSupportMetadataLanguages(platform);
     const [selected, ltr, rtl] = ["Selected", "LTR", "RTL"];
@@ -95,7 +124,7 @@ export class MetadataService {
       MetadataLanguage
     >({
       sectionLabelList: [selected, rtl, ltr],
-      canPickMany: true,
+      canPickMany: canPickMany ?? true,
       title: title ?? "Select Language list",
       placeHolder: placeHolder ?? "Select Language list",
       itemList: languageList.filter(
@@ -136,19 +165,19 @@ export class MetadataService {
       platformLanguages: MetadataPlatformLanguage[]
     ) => MetadataPlatformLanguage[];
     excludePlatformLanguages?: {
-      [platform in MetadataSupportPlatform]: MetadataLanguage[];
+      [platform in MetadataPlatform]: MetadataLanguage[];
     };
     title?: string;
     placeHolder?: string;
     picked?: boolean;
   }): Promise<
     {
-      platform: MetadataSupportPlatform;
+      platform: MetadataPlatform;
       language: MetadataLanguage;
     }[]
   > {
     const platformLanguages: MetadataPlatformLanguage[] = [];
-    for (const platform of Object.values(MetadataSupportPlatform)) {
+    for (const platform of Object.values(MetadataPlatform)) {
       for (const language of this.getMetadataLanguagesInPlatform(platform)) {
         if (excludePlatformLanguages) {
           const excludePlatform = excludePlatformLanguages[platform];
@@ -166,7 +195,7 @@ export class MetadataService {
       MetadataPlatformLanguage,
       MetadataPlatformLanguage
     >({
-      sectionLabelList: Object.keys(MetadataSupportPlatform),
+      sectionLabelList: Object.keys(MetadataPlatform),
       itemList: itemListFilter
         ? itemListFilter(platformLanguages)
         : platformLanguages,
@@ -213,14 +242,14 @@ export class MetadataService {
   }
 
   public getExistMetadataFile(
-    platform: MetadataSupportPlatform,
+    platform: MetadataPlatform,
     language: MetadataLanguage
   ): Metadata | undefined {
     return this.metadataRepository.getExistMetadataFile(platform, language);
   }
 
   public createMetadataFile(
-    platform: MetadataSupportPlatform,
+    platform: MetadataPlatform,
     language: MetadataLanguage
   ): Metadata {
     return this.metadataRepository.createMetadataFile(platform, language);
@@ -340,7 +369,7 @@ export class MetadataService {
   public checkAll(sourceMetadata: Metadata): MetadataValidation[] {
     const validationList: MetadataValidation[] = [];
     const exclude = this.configService.getTranslationExclude();
-    for (const platform of Object.values(MetadataSupportPlatform)) {
+    for (const platform of Object.values(MetadataPlatform)) {
       const metadataLangauges = this.getMetadataLanguagesInPlatform(platform);
       for (const metadataLanguage of metadataLangauges) {
         const targetMetadata = this.getExistMetadataFile(

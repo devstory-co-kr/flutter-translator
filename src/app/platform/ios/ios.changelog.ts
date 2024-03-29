@@ -2,11 +2,11 @@ import path from "path";
 import { Changelog, ChangelogFile } from "../../component/changelog/changelog";
 import {
   MetadataLanguage,
-  MetadataSupportPlatform,
+  MetadataPlatform,
 } from "../../component/metadata/metadata";
 
 export class IosChangelog implements Changelog {
-  public platform: MetadataSupportPlatform = MetadataSupportPlatform.ios;
+  public platform: MetadataPlatform = MetadataPlatform.ios;
   public language: MetadataLanguage;
   public filePath: string;
   public file: ChangelogFile;

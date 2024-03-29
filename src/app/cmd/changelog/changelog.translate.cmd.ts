@@ -5,7 +5,7 @@ import { ConfigService } from "../../component/config/config";
 import { Language } from "../../component/language/language";
 import {
   MetadataLanguage,
-  MetadataSupportPlatform,
+  MetadataPlatform,
 } from "../../component/metadata/metadata";
 import { MetadataService } from "../../component/metadata/metadata.service";
 import { TranslationService } from "../../component/translation/translation.service";
@@ -25,7 +25,7 @@ interface InitParams {
 export type ChangelogTranslateCmdArgs = {
   sourceMetadataLanguage?: MetadataLanguage;
   targetPlatformLanguages?: {
-    platform: MetadataSupportPlatform;
+    platform: MetadataPlatform;
     language: MetadataLanguage;
   }[];
 };
@@ -50,7 +50,7 @@ export class ChangelogTranslateCmd {
 
   public async run(args?: ChangelogTranslateCmdArgs) {
     // select source metadata language in android
-    const sourcePlatform = MetadataSupportPlatform.android;
+    const sourcePlatform = MetadataPlatform.android;
     const metadataLanguageList =
       this.metadataService.getMetadataLanguagesInPlatform(sourcePlatform);
     const sourceMetadataLanguage =
@@ -103,7 +103,7 @@ export class ChangelogTranslateCmd {
     const changelogExcludeLocales =
       this.configService.getChangelogExcludeLocaleList();
     const targetPlatformLanguages: {
-      platform: MetadataSupportPlatform;
+      platform: MetadataPlatform;
       language: MetadataLanguage;
     }[] =
       args?.targetPlatformLanguages ??

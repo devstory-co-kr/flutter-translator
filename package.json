@@ -118,6 +118,10 @@
         "title": "Flutter Translator: Changelog - Open"
       },
       {
+        "command": "flutter-translator.changelog.delete",
+        "title": "Flutter Translator: Changelog - Delete"
+      },
+      {
         "command": "flutter-translator.xcodeStrings.translate",
         "title": "Flutter Translator: Xcode Strings - Translate"
       },

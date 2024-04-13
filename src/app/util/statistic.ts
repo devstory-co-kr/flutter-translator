@@ -49,8 +49,10 @@ export default class Statistic {
     answer: string,
     result: string
   ): OneHotScore {
-    const nAnswer = this.getTextStatistic(answer).sum;
-    const nResult = this.getTextStatistic(result).sum;
+    const answerStatistic = this.getTextStatistic(answer);
+    const resultStatistic = this.getTextStatistic(result);
+    const nAnswer = answerStatistic.sum;
+    const nResult = resultStatistic.sum;
     return nAnswer === 0 ? 1 : this.convertToOneHotScore(nResult / nAnswer);
   }
 

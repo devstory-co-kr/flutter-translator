@@ -128,6 +128,11 @@ export class GoogleTranslationRepository implements TranslationRepository {
     const keys = Object.keys(dictionary).sort((a, b) => b.length - a.length);
     for (const key of keys) {
       text = text.replaceAll(key, dictionary[key]);
+
+      /// Remove a tag start and end space
+      text = text.replaceAll(/<a>\s+|\s+<\/a>/g, function (match) {
+        return match.startsWith("<a>") ? "<a>" : "</a>";
+      });
     }
 
     // decode html entity (e.g. &#39; -> ' / &gt; -> >)
@@ -182,6 +187,11 @@ export class GoogleTranslationRepository implements TranslationRepository {
           encodeKeys: Constant.keycaps,
           isEncodeHTML: true,
           isEncodeParentheses: true,
+        },
+        {
+          encodeKeys: Constant.googles,
+          isEncodeHTML: true,
+          isEncodeParentheses: false,
         },
         { encodeKeys: [], isEncodeHTML: false, isEncodeParentheses: false },
       ];
@@ -289,14 +299,21 @@ export class GoogleTranslationRepository implements TranslationRepository {
         }
 
         Logger.l(
-          `🐾 [Not perfect translation :${i}]\nfinalScore: ${finalScore}\nencodeScore: ${
-            result.encodeScore
-          }\ntranslationScore: ${
-            result.translationScore
-          }\nencode: ${encodedText.replaceAll(
+          `${
+            i === 0 ? "────────────────────────────────────────────────\n" : ""
+          }🌐 Try${i + 1} : Score=${finalScore.toFixed(
+            4
+          )} (Encode: ${result.encodeScore.toFixed(
+            4
+          )} / Translation: ${result.translationScore.toFixed(
+            4
+          )})\n  1) Encode: ${encodedText.replaceAll(
             "\n",
             "\\n"
-          )}\ndecode: ${decodedText.replaceAll("\n", "\\n")}`
+          )}\n  2) Translate : ${translatedText.replaceAll(
+            "\n",
+            "\\n"
+          )}\n  3) Decode: ${decodedText.replaceAll("\n", "\\n")}\n`
         );
         if (isPerfect) {
           break;

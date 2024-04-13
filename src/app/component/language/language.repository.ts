@@ -146,13 +146,13 @@ export class LanguageRepository {
     languageCode: "da",
   };
   public static dhivehi: Language = {
-    isLTR: true,
+    isLTR: false,
     gt: "dv",
     name: "Dhivehi",
     languageCode: "dv",
   };
   public static dogri: Language = {
-    isLTR: true,
+    isLTR: false,
     gt: "doi",
     name: "Dogri",
     languageCode: "doi",
@@ -374,7 +374,7 @@ export class LanguageRepository {
     languageCode: "kri",
   };
   public static kurdish: Language = {
-    isLTR: true,
+    isLTR: false,
     gt: "ku",
     name: "Kurdish",
     languageCode: "ku",
@@ -536,7 +536,7 @@ export class LanguageRepository {
     languageCode: "om",
   };
   public static pashto: Language = {
-    isLTR: true,
+    isLTR: false,
     gt: "ps",
     name: "Pashto",
     languageCode: "ps",
@@ -626,7 +626,7 @@ export class LanguageRepository {
     languageCode: "sn",
   };
   public static sindhi: Language = {
-    isLTR: true,
+    isLTR: false,
     gt: "sd",
     name: "Sindhi",
     languageCode: "sd",
@@ -758,7 +758,7 @@ export class LanguageRepository {
     languageCode: "ur",
   };
   public static uyghur: Language = {
-    isLTR: true,
+    isLTR: false,
     gt: "ug",
     name: "Uyghur",
     languageCode: "ug",

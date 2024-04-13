@@ -6,6 +6,8 @@ All notable changes to the [flutter-translator extension](https://marketplace.vi
 ### Added
 - Add logic to check whether ARB parameter names match.
 - Add translation option.
+### Fixed
+- Fix Languages incorrectly declared as LTR to RTL.
 
 ## [2.4.5] - 24.03.29
 ### Added

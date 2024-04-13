@@ -2,6 +2,13 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
+## [2.4.6] - 24.04.13
+### Added
+- Add logic to check whether ARB parameter names match.
+- Add translation option.
+### Fixed
+- Fix Languages incorrectly declared as LTR to RTL.
+
 ## [2.4.5] - 24.03.29
 ### Added
 - Add `Changelog - Delete` command.

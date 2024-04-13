@@ -57,6 +57,7 @@ export class ARBCheckCmd {
       [InvalidType.invalidLineBreaks]: `${InvalidType.invalidLineBreaks}`,
       [InvalidType.invalidParameters]: `${InvalidType.invalidParameters}`,
       [InvalidType.invalidParentheses]: `${InvalidType.invalidParentheses}`,
+      [InvalidType.invalidParameterName]: `${InvalidType.invalidParameterName}`,
       [InvalidType.undecodedHtmlEntityExists]: `${InvalidType.undecodedHtmlEntityExists}`,
     };
     const selectItem = await Dialog.showSectionedPicker<

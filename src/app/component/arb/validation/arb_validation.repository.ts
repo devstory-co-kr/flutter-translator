@@ -102,6 +102,20 @@ export class ARBValidationRepository extends BaseDisposable {
           key,
         };
       }
+
+      // incorrect parameter name
+      for (const paramName of sourceValidation[key].paramNames) {
+        if (!targetValidation[key].paramNames.includes(paramName)) {
+          yield <ValidationResult>{
+            sourceValidationData: sourceValidation[key],
+            invalidType: InvalidType.invalidParameterName,
+            invalidMessage: `${paramName} not found`,
+            sourceARB,
+            targetARB,
+            key,
+          };
+        }
+      }
     }
   }
 

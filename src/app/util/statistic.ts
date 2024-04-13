@@ -7,6 +7,7 @@ export interface TextStatistic {
   nParentheses: number;
   nHtmlEntities: number;
   sum: number;
+  paramNames: string[];
 }
 
 export default class Statistic {
@@ -32,13 +33,15 @@ export default class Statistic {
     const nLineBreaks = this.getTotalLineBreaks(text);
     const nParentheses = this.getTotalParentheses(text);
     const nHtmlEntities = this.getTotalHtmlEntites(text);
+    const paramNames = text.match(/\{(.*?)\}/g) ?? [];
     return {
-      text: text,
+      text,
       nParams,
       nLineBreaks,
       nParentheses,
       nHtmlEntities,
       sum: nParams + nLineBreaks + nParentheses + nHtmlEntities,
+      paramNames,
     };
   }
 
@@ -46,8 +49,10 @@ export default class Statistic {
     answer: string,
     result: string
   ): OneHotScore {
-    const nAnswer = this.getTextStatistic(answer).sum;
-    const nResult = this.getTextStatistic(result).sum;
+    const answerStatistic = this.getTextStatistic(answer);
+    const resultStatistic = this.getTextStatistic(result);
+    const nAnswer = answerStatistic.sum;
+    const nResult = resultStatistic.sum;
     return nAnswer === 0 ? 1 : this.convertToOneHotScore(nResult / nAnswer);
   }
 

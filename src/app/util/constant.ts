@@ -15,6 +15,20 @@ export class Constant {
     "8️⃣",
     "9️⃣",
   ];
+
+  public static googles: string[] = [
+    "(Google0)",
+    "(Google1)",
+    "(Google2)",
+    "(Google3)",
+    "(Google4)",
+    "(Google5)",
+    "(Google6)",
+    "(Google7)",
+    "(Google8)",
+    "(Google9)",
+  ];
+
   public static emojis: string[] = [
     "😀",
     "😄",

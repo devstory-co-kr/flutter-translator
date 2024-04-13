@@ -10,6 +10,7 @@ export enum InvalidType {
   keyNotFound = "Key does not exist",
   invalidLineBreaks = "Incorrect number of line breaks",
   invalidParameters = "Incorrect number of parameters",
+  invalidParameterName = "Incorrect parameter name",
   invalidParentheses = "Incorrect number of parentheses",
   undecodedHtmlEntityExists = "Undecoded html entity exists",
 }

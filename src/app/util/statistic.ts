@@ -7,6 +7,7 @@ export interface TextStatistic {
   nParentheses: number;
   nHtmlEntities: number;
   sum: number;
+  paramNames: string[];
 }
 
 export default class Statistic {
@@ -32,13 +33,15 @@ export default class Statistic {
     const nLineBreaks = this.getTotalLineBreaks(text);
     const nParentheses = this.getTotalParentheses(text);
     const nHtmlEntities = this.getTotalHtmlEntites(text);
+    const paramNames = text.match(/\{(.*?)\}/g) ?? [];
     return {
-      text: text,
+      text,
       nParams,
       nLineBreaks,
       nParentheses,
       nHtmlEntities,
       sum: nParams + nLineBreaks + nParentheses + nHtmlEntities,
+      paramNames,
     };
   }
 

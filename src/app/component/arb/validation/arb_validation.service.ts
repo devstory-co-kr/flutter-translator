@@ -92,6 +92,7 @@ export class ARBValidationService {
       case InvalidType.notExcluded:
       case InvalidType.invalidLineBreaks:
       case InvalidType.invalidParameters:
+      case InvalidType.invalidParameterName:
       case InvalidType.invalidParentheses:
         const action = await this.selectNextAction(invalidType);
         if (!action) {

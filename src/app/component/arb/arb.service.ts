@@ -100,12 +100,14 @@ export class ARBServiceImpl implements ARBService {
       arbFilePath
     );
     const data = await this.arbRepository.read(arbFilePath);
+    const keys = Object.keys(data);
+    const values = Object.values(data);
     return {
       filePath: arbFilePath,
-      language: language,
-      data: data,
-      keys: Object.keys(data),
-      values: Object.values(data),
+      language,
+      data,
+      keys,
+      values,
     };
   }
 

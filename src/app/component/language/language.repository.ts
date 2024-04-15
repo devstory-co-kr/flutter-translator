@@ -152,7 +152,7 @@ export class LanguageRepository {
     languageCode: "dv",
   };
   public static dogri: Language = {
-    isLTR: false,
+    isLTR: true,
     gt: "doi",
     name: "Dogri",
     languageCode: "doi",

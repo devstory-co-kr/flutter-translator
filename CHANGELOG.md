@@ -2,6 +2,10 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
+## [2.4.7] - 24.04.15
+### Changed
+- Change Dogri language text direction to LTR.
+
 ## [2.4.6] - 24.04.13
 ### Added
 - Add logic to check whether ARB parameter names match.

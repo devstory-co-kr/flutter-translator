@@ -69,7 +69,7 @@ This is a extension created based on an environment using **Flutter** and **Fast
                 │   ├── privacy_url.txt
                 │   ├── subtitle.txt
                 │   └── support_url.txt
-                └── ko-KR
+                └── ko
                     ├── description.txt
                     ├── keywords.txt
                     ├── marketing_url.txt
@@ -101,9 +101,9 @@ This is a extension created based on an environment using **Flutter** and **Fast
         └── fastlane
             └── metadata
                 ├── en-US
-                │   └── promotional_text.txt
-                └── ko-KR
-                    └── promotional_text.txt
+                │   └── release_notes.txt
+                └── ko
+                    └── release_notes.txt
     ```
 
 ### Xcode Strings

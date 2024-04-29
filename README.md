@@ -1,4 +1,8 @@
 # Flutter Translator
+[![VSCode Badge](https://img.shields.io/badge/VSCode-Extension-007ACC?logo=visualstudiocode&logoColor=fff&style=flat&labelColor=007ACC)](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator)
+<br>
+Supports [internationalization of Flutter applications](https://docs.flutter.dev/ui/accessibility-and-internationalization/internationalization) using [Google Translate](https://cloud.google.com/translate/docs/basic/translating-text).
+
 ## Table of Contents
 - [Introduction](#introduction)
 - [Features](#features)
@@ -8,7 +12,6 @@
 - [License](#license)
 
 ## Introduction
-Supports [internationalization of Flutter applications](https://docs.flutter.dev/ui/accessibility-and-internationalization/internationalization) using [Google Translate](https://cloud.google.com/translate/docs/basic/translating-text).
 This is a extension created based on an environment using **Flutter** and **Fastlane**.
 - Support platform
   - Metadata & Changelog

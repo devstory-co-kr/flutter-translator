@@ -4,7 +4,7 @@
   "license": "SEE LICENSE IN LICENSE",
   "displayName": "Flutter Translator",
   "description": "It supports the internationalization of flutter applications using Google Translator.",
-  "version": "2.4.8",
+  "version": "2.4.9",
   "engines": {
     "vscode": "^1.84.0"
   },
@@ -120,6 +120,10 @@
       {
         "command": "flutter-translator.changelog.delete",
         "title": "Flutter Translator: Changelog - Delete"
+      },
+      {
+        "command": "flutter-translator.changelog.rename",
+        "title": "Flutter Translator: Changelog - Rename"
       },
       {
         "command": "flutter-translator.xcodeStrings.translate",

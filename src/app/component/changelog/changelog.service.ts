@@ -90,4 +90,8 @@ export class ChangelogService {
   public deleteChangelogs(changelogs: Changelog[]): Promise<void[]> {
     return this.changelogRepository.deleteChangelogs(changelogs);
   }
+  
+  public renameChangelogs(changelogs: Changelog[], newFileName: string): Promise<void[]> {
+    return this.changelogRepository.renameChangelogs(changelogs, newFileName);
+  }
 }

@@ -183,7 +183,21 @@ export class ChangelogRepository {
 
   public deleteChangelogs(changelogs: Changelog[]): Promise<void[]> {
     return Promise.all(
-      changelogs.map((changelog => Workspace.deleteFile(changelog.filePath)))
+      changelogs.map((changelog) => Workspace.deleteFile(changelog.filePath))
+    );
+  }
+
+  public renameChangelogs(
+    changelogs: Changelog[],
+    newFileName: string
+  ): Promise<void[]> {
+    return Promise.all(
+      changelogs.map((changelog) =>
+        Workspace.renameFile(
+          changelog.filePath,
+          path.join(path.dirname(changelog.filePath), newFileName)
+        )
+      )
     );
   }
 }

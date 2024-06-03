@@ -97,7 +97,7 @@ export class Workspace {
     );
     return arbFiles.map((file) => file.path);
   }
-  
+
   public static async getFiles(pattern: string): Promise<string[]> {
     const workspaceFolders = vscode.workspace.workspaceFolders;
     if (!workspaceFolders) {
@@ -107,9 +107,7 @@ export class Workspace {
     // search
     const arbFilesInFolders: vscode.Uri[][] = await Promise.all(
       workspaceFolders.map((folder) =>
-        vscode.workspace.findFiles(
-          new vscode.RelativePattern(folder, pattern)
-        )
+        vscode.workspace.findFiles(new vscode.RelativePattern(folder, pattern))
       )
     );
     const arbFiles: vscode.Uri[] = ([] as vscode.Uri[]).concat(
@@ -121,5 +119,16 @@ export class Workspace {
   public static deleteFile(filePath: string): Thenable<void> {
     const fileUri = vscode.Uri.file(filePath);
     return vscode.workspace.fs.delete(fileUri);
+  }
+
+  public static renameFile(
+    filePath: string,
+    newFilePath: string,
+    overwrite: boolean = true
+  ): Thenable<void> {
+    const fileUri = vscode.Uri.file(filePath);
+    return vscode.workspace.fs.rename(fileUri, vscode.Uri.file(newFilePath), {
+      overwrite,
+    });
   }
 }

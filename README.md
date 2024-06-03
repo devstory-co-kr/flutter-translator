@@ -39,10 +39,10 @@ This is a extension created based on an environment using **Flutter** and **Fast
 
 ### ARB
 1. Configure the Flutter project localizations environment by referring to the [documentation](https://docs.flutter.dev/ui/accessibility-and-internationalization/internationalization).
-1. Run `Flutter Translator: ARB - Initialize`
 1. Run `Flutter Translator: ARB - Translate`
 
 ### Metadata
+1. (If metadata is not set) Run `Flutter Translator: Metadata - Create`
 1. Run `Flutter Translator: Metadata - Translate`
 2. The folder structure below is automatically created when the command is executed. (Based on fastlane [upload_to_play_store](https://docs.fastlane.tools/actions/upload_to_play_store/) & [deliver](https://docs.fastlane.tools/actions/deliver/))
     ```
@@ -83,6 +83,7 @@ This is a extension created based on an environment using **Flutter** and **Fast
     ```
 
 ### Changelog
+1. Run `Flutter Translator: Metadata - Create` and select languages you want to add.
 1. Run `Flutter Translator: Changelog - Translate`
 1. The folder structure below is automatically created when the command is executed.  (Based on fastlane [upload_to_play_store](https://docs.fastlane.tools/actions/upload_to_play_store/) & [deliver](https://docs.fastlane.tools/actions/deliver/))
     ```

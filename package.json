@@ -122,6 +122,10 @@
         "title": "Flutter Translator: Changelog - Delete"
       },
       {
+        "command": "flutter-translator.changelog.rename",
+        "title": "Flutter Translator: Changelog - Rename"
+      },
+      {
         "command": "flutter-translator.xcodeStrings.translate",
         "title": "Flutter Translator: Xcode Strings - Translate"
       },

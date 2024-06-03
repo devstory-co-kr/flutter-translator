@@ -100,6 +100,9 @@ export class FlutterTranslator implements App {
       return this.registry.changelogOpenCmd.run();
     },
     [Cmd.ChangelogDelete]: () => {
+      return this.registry.changelogDeleteCmd.run();
+    },
+    [Cmd.ChangelogRename]: () => {
       return this.registry.changelogRenameCmd.run();
     },
     /**

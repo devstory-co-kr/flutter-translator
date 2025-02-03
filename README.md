@@ -161,6 +161,8 @@ It is recommended to set the configuration in the project workspace(`.vscode/set
   - `custom` : You can customize the ARB file name for languageCode in the format `{LanguageCode: CUSTOM_NAME}` and arbFilePrefix is not applied.
 - **googleAuthConfig**
   - `credential` : Absolute path to JSON key files created after creating a [service account](https://developers.google.com/workspace/guides/create-credentials?#service-account) on the Google Cloud console.
+  - Create a JSON key to your service account and download it.
+  - Create a Google Sheet file that will upload the ARB file and add permissions to email the service account.
 - **googleSheetConfig**
   - `id` : You can find the spreadsheet ID in a Google Sheets URL: `https://docs.google.com/spreadsheets/d/<GOOGLE_SHEET_ID>/edit#gid=0`
   - `name` : Sheet name at the bottom of google sheet.

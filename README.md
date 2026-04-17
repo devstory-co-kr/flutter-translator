@@ -1,9 +1,15 @@
 # Flutter Translator
+
 [![VSCode Badge](https://img.shields.io/badge/VSCode-Extension-007ACC?logo=visualstudiocode&logoColor=fff&style=flat&labelColor=007ACC)](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator)
 <br>
 Supports [internationalization of Flutter applications](https://docs.flutter.dev/ui/accessibility-and-internationalization/internationalization) using [Google Translate](https://cloud.google.com/translate/docs/basic/translating-text).
 
+## Wiki
+
+- [Flutter Translator Wiki](https://deepwiki.com/devstory-co-kr/flutter-translator)
+
 ## Table of Contents
+
 - [Introduction](#introduction)
 - [Features](#features)
 - [Usage](#usage)
@@ -12,7 +18,9 @@ Supports [internationalization of Flutter applications](https://docs.flutter.dev
 - [License](#license)
 
 ## Introduction
+
 This is a extension created based on an environment using **Flutter** and **Fastlane**.
+
 - Support platform
   - Metadata & Changelog
     - `Android`
@@ -27,95 +35,104 @@ This is a extension created based on an environment using **Flutter** and **Fast
   - iOS : 39 Languages ([Fastlane Deliver](https://docs.fastlane.tools/actions/deliver/#:~:text=Tips-,Available,-language%20codes) / [AppStore](https://developer.apple.com/help/app-store-connect/reference/app-store-localizations))
 
 ## Features
+
 - [ARB](#arb) files translation and management.
 - [Metadata](#metadata) files translation and management.
 - [Changelog](#changelog) files translation and management.
 - [Xcode Strings](#xcode_strings) files translation.
 
 ## Usage
+
 ### Text Translate
+
 1. Select the text you want to translate.
 1. Run `Flutter Translator: Text - Translate`
 
 ### ARB
+
 1. Configure the Flutter project localizations environment by referring to the [documentation](https://docs.flutter.dev/ui/accessibility-and-internationalization/internationalization).
 1. Run `Flutter Translator: ARB - Translate`
 
 ### Metadata
+
 1. (If metadata is not set) Run `Flutter Translator: Metadata - Create`
 1. Run `Flutter Translator: Metadata - Translate`
-2. The folder structure below is automatically created when the command is executed. (Based on fastlane [upload_to_play_store](https://docs.fastlane.tools/actions/upload_to_play_store/) & [deliver](https://docs.fastlane.tools/actions/deliver/))
-    ```
-    ├── android
-    │    └── fastlane
-    │        └── metadata
-    │            └── android
-    │                ├── en-US
-    │                │   └── changelogs
-    │                │       ├── full_description.txt
-    │                │       ├── short_description.txt
-    │                │       ├── title.txt
-    │                │       └── video.txt
-    │                └── ko-KR
-    │                        ├── full_description.txt
-    │                        ├── short_description.txt
-    │                        ├── title.txt
-    │                        └── video.txt
-    └── ios
-        └── fastlane
-            └── metadata
-                ├── en-US
-                │   ├── description.txt
-                │   ├── keywords.txt
-                │   ├── marketing_url.txt
-                │   ├── name.txt
-                │   ├── privacy_url.txt
-                │   ├── subtitle.txt
-                │   └── support_url.txt
-                └── ko
-                    ├── description.txt
-                    ├── keywords.txt
-                    ├── marketing_url.txt
-                    ├── name.txt
-                    ├── privacy_url.txt
-                    ├── subtitle.txt
-                    └── support_url.txt
-    ```
+1. The folder structure below is automatically created when the command is executed. (Based on fastlane [upload_to_play_store](https://docs.fastlane.tools/actions/upload_to_play_store/) & [deliver](https://docs.fastlane.tools/actions/deliver/))
+   ```
+   ├── android
+   │    └── fastlane
+   │        └── metadata
+   │            └── android
+   │                ├── en-US
+   │                │   └── changelogs
+   │                │       ├── full_description.txt
+   │                │       ├── short_description.txt
+   │                │       ├── title.txt
+   │                │       └── video.txt
+   │                └── ko-KR
+   │                        ├── full_description.txt
+   │                        ├── short_description.txt
+   │                        ├── title.txt
+   │                        └── video.txt
+   └── ios
+       └── fastlane
+           └── metadata
+               ├── en-US
+               │   ├── description.txt
+               │   ├── keywords.txt
+               │   ├── marketing_url.txt
+               │   ├── name.txt
+               │   ├── privacy_url.txt
+               │   ├── subtitle.txt
+               │   └── support_url.txt
+               └── ko
+                   ├── description.txt
+                   ├── keywords.txt
+                   ├── marketing_url.txt
+                   ├── name.txt
+                   ├── privacy_url.txt
+                   ├── subtitle.txt
+                   └── support_url.txt
+   ```
 
 ### Changelog
+
 1. Run `Flutter Translator: Metadata - Create` and select languages you want to add.
 1. Run `Flutter Translator: Changelog - Translate`
-1. The folder structure below is automatically created when the command is executed.  (Based on fastlane [upload_to_play_store](https://docs.fastlane.tools/actions/upload_to_play_store/) & [deliver](https://docs.fastlane.tools/actions/deliver/))
-    ```
-    ├── android
-    │    └── fastlane
-    │        └── metadata
-    │            └── android
-    │                ├── en-US
-    │                │   └── changelogs
-    │                │       ├── default.txt
-    │                │       ├── 1.txt
-    │                │       └── 2.txt
-    │                └── ko-KR
-    │                    └── changelogs
-    │                        ├── default.txt
-    │                        ├── 1.txt
-    │                        └── 2.txt
-    └── ios
-        └── fastlane
-            └── metadata
-                ├── en-US
-                │   └── release_notes.txt
-                └── ko
-                    └── release_notes.txt
-    ```
+1. The folder structure below is automatically created when the command is executed. (Based on fastlane [upload_to_play_store](https://docs.fastlane.tools/actions/upload_to_play_store/) & [deliver](https://docs.fastlane.tools/actions/deliver/))
+   ```
+   ├── android
+   │    └── fastlane
+   │        └── metadata
+   │            └── android
+   │                ├── en-US
+   │                │   └── changelogs
+   │                │       ├── default.txt
+   │                │       ├── 1.txt
+   │                │       └── 2.txt
+   │                └── ko-KR
+   │                    └── changelogs
+   │                        ├── default.txt
+   │                        ├── 1.txt
+   │                        └── 2.txt
+   └── ios
+       └── fastlane
+           └── metadata
+               ├── en-US
+               │   └── release_notes.txt
+               └── ko
+                   └── release_notes.txt
+   ```
 
 ### Xcode Strings
+
 1. Refer to the [link](https://medium.com/@axmadxojaibrohimov/localizing-permissions-in-ios-app-ebe4ef72f3a0) and complete localization settings in xcode and then add the strings file.
 1. Run `Flutter Translator: Xcode Strings - Translate`
 
 ## Configuration
+
 It is recommended to set the configuration in the project workspace(`.vscode/settings.json`).
+
 ```
 {
   "flutterTranslator.config": {
@@ -154,6 +171,7 @@ It is recommended to set the configuration in the project workspace(`.vscode/set
   }
 }
 ```
+
 - **arbConfig**
   - `sourcePath` : Absolute path to the source ARB file you want to translate.
   - `exclude` : [List of ARB language codes](https://gist.github.com/nero-angela/37984030bcc5dd0e62dc3143bb8c053d) that you do not want to translate.
@@ -178,6 +196,7 @@ It is recommended to set the configuration in the project workspace(`.vscode/set
   - `exclude` : List of keywords you do not want translated (ignoring case).
 
 ## Translate
+
 - Translate with free Google Translate API.
 - Translation Rules
   - if the `key` contains `@`, it will not be translated.
@@ -218,6 +237,7 @@ It is recommended to set the configuration in the project workspace(`.vscode/set
     - Number of keywords excluded from translation
 
 ## License
+
 ```
 MIT License
 

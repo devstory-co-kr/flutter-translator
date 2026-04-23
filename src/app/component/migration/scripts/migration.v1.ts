@@ -86,7 +86,7 @@ export class MigrationV1 implements MigrationScript {
   }
 
   private updateWorkspaceAppDirectoryName() {
-    const workspacePath = vscode.workspace.workspaceFolders![0].uri.path;
+    const workspacePath = vscode.workspace.workspaceFolders![0].uri.fsPath;
     const previousAppName = "arb-translator";
     const previousAppDirectory = path.join(
       workspacePath,

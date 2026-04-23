@@ -9,7 +9,7 @@ export class Workspace {
    * open .vscode/settings.json
    */
   public static openSettings() {
-    const workspacePath = vscode.workspace.workspaceFolders![0].uri.path;
+    const workspacePath = vscode.workspace.workspaceFolders![0].uri.fsPath;
     const workspaceSettingsPath = path.join(
       workspacePath,
       ".vscode",
@@ -28,7 +28,7 @@ export class Workspace {
   }
 
   public static getRoot() {
-    return vscode.workspace.workspaceFolders![0].uri.path;
+    return vscode.workspace.workspaceFolders![0].uri.fsPath;
   }
 
   public static getPath(...paths: string[]) {
@@ -95,7 +95,7 @@ export class Workspace {
     const arbFiles: vscode.Uri[] = ([] as vscode.Uri[]).concat(
       ...arbFilesInFolders
     );
-    return arbFiles.map((file) => file.path);
+    return arbFiles.map((file) => file.fsPath);
   }
 
   public static async getFiles(pattern: string): Promise<string[]> {
@@ -113,7 +113,7 @@ export class Workspace {
     const arbFiles: vscode.Uri[] = ([] as vscode.Uri[]).concat(
       ...arbFilesInFolders
     );
-    return arbFiles.map((file) => file.path);
+    return arbFiles.map((file) => file.fsPath);
   }
 
   public static deleteFile(filePath: string): Thenable<void> {

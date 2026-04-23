@@ -21,6 +21,9 @@ export enum Cmd {
   ChangelogOpen = "flutter-translator.changelog.open",
   ChangelogDelete = "flutter-translator.changelog.delete",
   ChangelogRename = "flutter-translator.changelog.rename",
+  // IAP Command
+  IAPTranslate = "flutter-translator.iap.translate",
+  IAPCheck = "flutter-translator.iap.check",
   // Xcode Strings Command
   XcodeStringsTranslate = "flutter-translator.xcodeStrings.translate",
   // Translation Command
@@ -55,6 +58,9 @@ export const cmdName: Record<Cmd, string> = {
   [Cmd.ChangelogOpen]: "Flutter Translator: Changelog - Open",
   [Cmd.ChangelogDelete]: "Flutter Translator: Changelog - Delete",
   [Cmd.ChangelogRename]: "Flutter Translator: Changelog - Rename",
+  // IAP Command
+  [Cmd.IAPTranslate]: "Flutter Translator: IAP - Translate",
+  [Cmd.IAPCheck]: "Flutter Translator: IAP - Check",
   // Xcode Strings Command
   [Cmd.XcodeStringsTranslate]: "Flutter Translator: Xcode Strings - Translate",
   // Translation

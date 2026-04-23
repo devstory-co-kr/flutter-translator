@@ -2,6 +2,13 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
+## [2.5.0] - 26.04.24
+### Added
+- Add `IAP - Translate` command.
+- Add `IAP - Check` command.
+### Fixed
+- Fix incorrect path resolution on Windows by using uri.fsPath.
+
 ## [2.4.9] - 24.06.03
 ### Added
 - Add `Changelog - Rename` command.

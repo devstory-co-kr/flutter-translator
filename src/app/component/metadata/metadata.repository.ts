@@ -28,20 +28,7 @@ export class MetadataRepository {
   private androidMetadataLanguage: AndroidMetadataLanguage;
   private iosMetadataLanguage: IosMetadataLanguage;
 
-  // Sort by MetadataLanguage RTL first & name descending
-  private sortMetadataLanguage(
-    languages: MetadataLanguage[]
-  ): MetadataLanguage[] {
-    return languages.sort((a, b) => {
-      if (a.translateLanguage.isLTR === b.translateLanguage.isLTR) {
-        // If isLTR is the same, sort in ascending order based on name
-        return a.name.localeCompare(b.name);
-      } else {
-        // If isLTR is different, sort elements with false first
-        return a.translateLanguage.isLTR ? 1 : -1;
-      }
-    });
-  }
+  // Removed sortMetadataLanguage to keep the original order from metadata files
 
   constructor({ androidMetadataLanguage, iosMetadataLanguage }: InitParams) {
     this.androidMetadataLanguage = androidMetadataLanguage;
@@ -65,17 +52,18 @@ export class MetadataRepository {
   }
 
   public getSupportLanguages(platform: MetadataPlatform): MetadataLanguage[] {
-    let supportLanguages: MetadataLanguage[] = [];
+    return this.getOriginSupportLanguages(platform);
+  }
+
+  public getOriginSupportLanguages(
+    platform: MetadataPlatform
+  ): MetadataLanguage[] {
     switch (platform) {
       case MetadataPlatform.android:
-        supportLanguages =
-          this.androidMetadataLanguage.supportMetadataLanguages;
-        break;
+        return this.androidMetadataLanguage.supportMetadataLanguages;
       case MetadataPlatform.ios:
-        supportLanguages = this.iosMetadataLanguage.supportMetadataLanguages;
-        break;
+        return this.iosMetadataLanguage.supportMetadataLanguages;
     }
-    return this.sortMetadataLanguage(supportLanguages);
   }
 
   public getLanguagesInPlatform(

@@ -82,6 +82,12 @@ export class MetadataService {
     return this.metadataRepository.getSupportLanguages(platform);
   }
 
+  public getOriginSupportMetadataLanguages(
+    platform: MetadataPlatform
+  ): MetadataLanguage[] {
+    return this.metadataRepository.getOriginSupportLanguages(platform);
+  }
+
   // Overload signature : selectMetadataLanguages
   public async selectMetadataLanguages({
     platform,
@@ -118,40 +124,36 @@ export class MetadataService {
   > {
     const languageList =
       languages ?? this.getSupportMetadataLanguages(platform);
-    const [selected, ltr, rtl] = ["Selected", "LTR", "RTL"];
-    const selections = await Dialog.showSectionedPicker<
-      MetadataLanguage,
-      MetadataLanguage
-    >({
-      sectionLabelList: [selected, rtl, ltr],
-      canPickMany: canPickMany ?? true,
-      title: title ?? "Select Language list",
-      placeHolder: placeHolder ?? "Select Language list",
-      itemList: languageList.filter(
-        (language) => !(excludeLanguages ?? []).includes(language)
-      ),
-      itemBuilder: (language) => {
-        const picked = selectedLanguages?.includes(language);
-        const section = selectedLanguages?.includes(language)
-          ? selected
-          : language.translateLanguage.isLTR
-          ? ltr
-          : rtl;
-        return {
-          section,
-          item: {
-            label: `${
-              section === selected && !language.translateLanguage.isLTR
-                ? "RTL : "
-                : ""
-            }${language.name} (${language.locale})`,
-            picked,
-          },
-          data: language,
-        };
-      },
-    });
-    return selections ?? [];
+    
+    const filteredList = languageList.filter(
+      (language) => !(excludeLanguages ?? []).includes(language)
+    );
+
+    const isMultiSelect = canPickMany ?? true;
+
+    const selections = await vscode.window.showQuickPick(
+      filteredList.map((language) => ({
+        label: `${language.name} (${language.locale})`,
+        picked: selectedLanguages?.includes(language),
+        data: language,
+      })),
+      {
+        title: title ?? "Select Language list",
+        placeHolder: placeHolder ?? "Select Language list",
+        canPickMany: isMultiSelect,
+        ignoreFocusOut: true,
+      }
+    );
+
+    if (!selections) {
+      return isMultiSelect ? [] : undefined;
+    }
+
+    if (Array.isArray(selections)) {
+      return selections.map((s) => s.data);
+    } else {
+      return (selections as any).data;
+    }
   }
 
   public async selectPlatformLanguages({

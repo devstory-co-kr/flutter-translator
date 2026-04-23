@@ -4,7 +4,7 @@
   "license": "SEE LICENSE IN LICENSE",
   "displayName": "Flutter Translator",
   "description": "It supports the internationalization of flutter applications using Google Translator.",
-  "version": "2.4.9",
+  "version": "2.5.0",
   "engines": {
     "vscode": "^1.84.0"
   },
@@ -124,6 +124,14 @@
       {
         "command": "flutter-translator.changelog.rename",
         "title": "Flutter Translator: Changelog - Rename"
+      },
+      {
+        "command": "flutter-translator.iap.translate",
+        "title": "Flutter Translator: IAP - Translate"
+      },
+      {
+        "command": "flutter-translator.iap.check",
+        "title": "Flutter Translator: IAP - Check"
       },
       {
         "command": "flutter-translator.xcodeStrings.translate",

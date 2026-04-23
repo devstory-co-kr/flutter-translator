@@ -126,6 +126,14 @@
         "title": "Flutter Translator: Changelog - Rename"
       },
       {
+        "command": "flutter-translator.iap.translate",
+        "title": "Flutter Translator: IAP - Translate"
+      },
+      {
+        "command": "flutter-translator.iap.check",
+        "title": "Flutter Translator: IAP - Check"
+      },
+      {
         "command": "flutter-translator.xcodeStrings.translate",
         "title": "Flutter Translator: Xcode Strings - Translate"
       },

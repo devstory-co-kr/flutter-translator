@@ -106,6 +106,15 @@ export class FlutterTranslator implements App {
       return this.registry.changelogRenameCmd.run();
     },
     /**
+     * IAP Command
+     */
+    [Cmd.IAPTranslate]: () => {
+      return this.registry.iapTranslateCmd.run();
+    },
+    [Cmd.IAPCheck]: () => {
+      return this.registry.iapCheckCmd.run();
+    },
+    /**
      * Xcode Strings Command
      */
     [Cmd.XcodeStringsTranslate]: (args?: XcodeStringsTranslateCmdArgs) => {

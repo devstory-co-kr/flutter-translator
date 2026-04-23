@@ -17,6 +17,8 @@ import { MetadataCreateCmd } from "./cmd/metadata/metadata.create.cmd";
 import { MetadataDeleteCmd } from "./cmd/metadata/metadata.delete.cmd";
 import { MetadataOpenCmd } from "./cmd/metadata/metadata.open.cmd";
 import { MetadataTranslateCmd } from "./cmd/metadata/metadata.translate.cmd";
+import { IAPTranslateCmd } from "./cmd/iap/iap.translate.cmd";
+import { IAPCheckCmd } from "./cmd/iap/iap.check.cmd";
 import { GoogleTranslationOpenWebCmd } from "./cmd/translation/google_translation.open_web.cmd";
 import { TextTranslateCmd } from "./cmd/translation/text.translate.cmd";
 import { TranslationExcludeCmd } from "./cmd/translation/translation.exclude.cmd";
@@ -41,6 +43,7 @@ import { HistoryService } from "./component/history/history.service";
 import { LanguageService } from "./component/language/language.service";
 import { MetadataRepository } from "./component/metadata/metadata.repository";
 import { MetadataService } from "./component/metadata/metadata.service";
+import { IapService } from "./component/iap/iap.service";
 import { MigrationService } from "./component/migration/migration.service";
 import { VersionRepository } from "./component/migration/version.repository";
 import { TranslationCacheDataSource } from "./component/translation/cache/translation_cache.datasource";
@@ -151,6 +154,10 @@ export class Registry {
     configService: this.configService,
     metadataRepository: this.metadataRepository,
   });
+  private iapService: IapService = new IapService({
+    metadataService: this.metadataService,
+    translationService: this.translationService,
+  });
   private changelogService: ChangelogService = new ChangelogService({
     changelogRepository: this.changelogRepository,
   });
@@ -254,6 +261,14 @@ export class Registry {
     changelogService: this.changelogService,
     languageService: this.languageService,
     metadataService: this.metadataService,
+  });
+  public iapTranslateCmd: IAPTranslateCmd = new IAPTranslateCmd({
+    configService: this.configService,
+    metadataService: this.metadataService,
+    iapService: this.iapService,
+  });
+  public iapCheckCmd: IAPCheckCmd = new IAPCheckCmd({
+    iapService: this.iapService,
   });
   public xcodeStringsTranslateCmd: XcodeStringsTranslateCmd =
     new XcodeStringsTranslateCmd({

@@ -25,6 +25,9 @@ This is a extension created based on an environment using **Flutter** and **Fast
   - Metadata & Changelog
     - `Android`
     - `iOS`
+  - IAP (In-App Purchases)
+    - `Android`
+    - `iOS`
   - Xcode Strings
     - `iOS`
     - `Macos`
@@ -39,6 +42,7 @@ This is a extension created based on an environment using **Flutter** and **Fast
 - [ARB](#arb) files translation and management.
 - [Metadata](#metadata) files translation and management.
 - [Changelog](#changelog) files translation and management.
+- [IAP](#iap) (In-App Purchases) plan files translation and validation.
 - [Xcode Strings](#xcode_strings) files translation.
 
 ## Usage
@@ -123,6 +127,60 @@ This is a extension created based on an environment using **Flutter** and **Fast
                └── ko
                    └── release_notes.txt
    ```
+
+### IAP
+
+Translate and validate In-App Purchase plan files for Android (Google Play Billing) and iOS (App Store Connect).
+
+1. Prepare the IAP plan JSON file(s) under the platform's `fastlane/in_app_purchases` directory.
+1. Run `Flutter Translator: IAP - Translate` to translate plan localizations into selected target languages.
+1. Run `Flutter Translator: IAP - Check` to validate that each localization's `title`/`name` and `description` are within the store-allowed length limits.
+   - Android limits: `title` 55 chars, `description` 200 chars.
+   - iOS limits: `name` 35 chars, `description` 55 chars.
+1. The expected folder structure is as follows. File names under `in_app_purchases` are arbitrary (e.g. `plans.json`, or one JSON per product).
+   ```
+   ├── android
+   │    └── fastlane
+   │        └── in_app_purchases
+   │            └── plans.json
+   └── ios
+       └── fastlane
+           └── in_app_purchases
+               └── plans.json
+   ```
+1. Each `plans.json` contains an array of plans. Localization fields differ per platform.
+   - Android (`languageCode`, `title`, `description`)
+     ```json
+     [
+       {
+         ...,
+         "localizations": [
+           {
+             "languageCode": "en-US",
+             "title": "Premium",
+             "description": "Unlock all premium features."
+           }
+         ]
+       }
+     ]
+     ```
+   - iOS (`locale`, `name`, `description`)
+     ```json
+     [
+       {
+         ...,
+         "localizations": [
+           {
+             "locale": "en-US",
+             "name": "Premium",
+             "description": "Unlock all premium features."
+           }
+         ]
+       }
+     ]
+     ```
+1. The source language list for translation is the set of locales that appears in **every** plan within the platform's JSON files. Add at least one common locale to every plan before running translate.
+1. Target locales configured in `metadataConfig.exclude` are skipped.
 
 ### Xcode Strings
 

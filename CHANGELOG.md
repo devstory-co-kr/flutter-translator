@@ -2,6 +2,11 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
+## [2.5.1] - 26.04.27
+### Added
+- Add iOS subscription group support in `IAP - Translate` command.
+- Add iOS subscription group validation in `IAP - Check` command.
+
 ## [2.5.0] - 26.04.24
 ### Added
 - Add `IAP - Translate` command.

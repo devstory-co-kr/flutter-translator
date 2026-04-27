@@ -15,6 +15,23 @@ export interface IapLocalization {
   description?: string;
 }
 
+export interface IapSubscriptionGroup {
+  localizations?: IapSubscriptionGroupLocalization[];
+}
+
+export interface IapSubscriptionGroupLocalization {
+  locale?: string;
+  name?: string;
+  custom_app_name?: string | null;
+}
+
+export const SUBSCRIPTION_GROUPS_FILE_NAME = "subscription_groups.json";
+
+export enum IapTranslateTarget {
+  plans = "plans",
+  subscriptionGroups = "subscriptionGroups",
+}
+
 export function getIapLocale(
   platform: MetadataPlatform,
   loc: IapLocalization

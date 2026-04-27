@@ -132,12 +132,13 @@ This is a extension created based on an environment using **Flutter** and **Fast
 
 Translate and validate In-App Purchase plan files for Android (Google Play Billing) and iOS (App Store Connect).
 
-1. Prepare the IAP plan JSON file(s) under the platform's `fastlane/in_app_purchases` directory.
-1. Run `Flutter Translator: IAP - Translate` to translate plan localizations into selected target languages.
-1. Run `Flutter Translator: IAP - Check` to validate that each localization's `title`/`name` and `description` are within the store-allowed length limits.
+1. Prepare the IAP plan JSON file(s) under the platform's `fastlane/in_app_purchases` directory. For iOS, optionally place `subscription_groups.json` in the same directory to translate and validate subscription group localizations.
+1. Run `Flutter Translator: IAP - Translate` to translate plan localizations (and iOS subscription group localizations) into selected target languages.
+1. Run `Flutter Translator: IAP - Check` to validate that each localization's fields are within the store-allowed length limits.
    - Android limits: `title` 55 chars, `description` 200 chars.
-   - iOS limits: `name` 35 chars, `description` 55 chars.
-1. The expected folder structure is as follows. File names under `in_app_purchases` are arbitrary (e.g. `plans.json`, or one JSON per product).
+   - iOS plan limits: `name` 35 chars, `description` 55 chars.
+   - iOS subscription group limits: `name` 75 chars, `custom_app_name` 30 chars.
+1. The expected folder structure is as follows. File names under `in_app_purchases` (except `subscription_groups.json`) are arbitrary (e.g. `plans.json`, or one JSON per product).
    ```
    ├── android
    │    └── fastlane
@@ -146,7 +147,8 @@ Translate and validate In-App Purchase plan files for Android (Google Play Billi
    └── ios
        └── fastlane
            └── in_app_purchases
-               └── plans.json
+               ├── plans.json
+               └── subscription_groups.json
    ```
 1. Each `plans.json` contains an array of plans. Localization fields differ per platform.
    - Android (`languageCode`, `title`, `description`)
@@ -179,7 +181,27 @@ Translate and validate In-App Purchase plan files for Android (Google Play Billi
        }
      ]
      ```
-1. The source language list for translation is the set of locales that appears in **every** plan within the platform's JSON files. Add at least one common locale to every plan before running translate.
+1. `subscription_groups.json` (iOS only) contains an array of subscription groups. Each group has a `localizations` array with `locale`, `name`, and `custom_app_name` fields.
+   ```json
+   [
+     {
+       ...,
+       "localizations": [
+         {
+           "locale": "en-US",
+           "name": "Subscription group display name",
+           "custom_app_name": "Custom app name" || null
+         },
+         {
+           "locale": "ko",
+           "name": "구독 그룹 표시 이름",
+           "custom_app_name": "사용자 설정 이름" || null
+         }
+       ]
+     }
+   ]
+   ```
+1. The source language list for translation is the set of locales that appears in **every** plan and subscription group within the platform's JSON files. Add at least one common locale to every entry before running translate.
 1. Target locales configured in `metadataConfig.exclude` are skipped.
 
 ### Xcode Strings

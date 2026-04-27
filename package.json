@@ -4,7 +4,18 @@
   "license": "SEE LICENSE IN LICENSE",
   "displayName": "Flutter Translator",
   "description": "It supports the internationalization of flutter applications using Google Translator.",
-  "version": "2.5.0",
+  "version": "2.5.1",
+  "scripts": {
+    "vscode:prepublish": "npm run compile",
+    "compile": "tsc -p ./",
+    "watch": "tsc -watch -p ./",
+    "pretest": "npm run compile && npm run lint",
+    "lint": "eslint src --ext ts",
+    "lint:watch": "esw --color -w src --ext ts",
+    "test": "vscode-test",
+    "package": "npm run lint && (rm -r out || true) && npm run compile && vsce package",
+    "publish": "npm run package && vsce publish"
+  },
   "engines": {
     "vscode": "^1.84.0"
   },
@@ -154,17 +165,6 @@
         "title": "Flutter Translator: Translation - Use Cache"
       }
     ]
-  },
-  "scripts": {
-    "vscode:prepublish": "npm run compile",
-    "compile": "tsc -p ./",
-    "watch": "tsc -watch -p ./",
-    "pretest": "npm run compile && npm run lint",
-    "lint": "eslint src --ext ts",
-    "lint:watch": "esw --color -w src --ext ts",
-    "test": "vscode-test",
-    "package": "npm run lint && (rm -r out || true) && npm run compile && vsce package",
-    "publish": "npm run package && vsce publish"
   },
   "devDependencies": {
     "@types/gapi": "^0.0.47",

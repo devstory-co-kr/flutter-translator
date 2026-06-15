@@ -23,4 +23,10 @@ export class TranslationCacheRepository {
   public upsert(cacheKey: TranslationCacheKey, value: any): void {
     return this.cacheDataSource.upsert(cacheKey, value);
   }
+
+  public upsertAll(
+    entries: { cacheKey: TranslationCacheKey; value: any }[]
+  ): void {
+    return this.cacheDataSource.upsertAll(entries);
+  }
 }

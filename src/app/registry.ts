@@ -3,6 +3,7 @@ import { ARBDecodeAllHtmlEntitiesCmd } from "./cmd/arb/check/arb.decode_all_html
 import { ARBExcludeTranslationCmd } from "./cmd/arb/configure/arb.exclude_translation.cmd";
 import { ARBOpenGoogleSheetCmd } from "./cmd/arb/google_sheet/arb.open_google_sheet.cmd";
 import { ARBUploadToGoogleSheetCmd } from "./cmd/arb/google_sheet/arb.upload_to_google_sheet.cmd";
+import { ARBCacheUpdateCmd } from "./cmd/arb/cache/arb.cache_update.cmd";
 import { ARBChangeKeysCmd } from "./cmd/arb/keys/arb.change_keys.cmd";
 import { ARBDeleteKeysCmd } from "./cmd/arb/keys/arb.delete_keys.cmd";
 import { ARBTranslateCmd } from "./cmd/arb/translate/arb.translate.cmd";
@@ -54,6 +55,7 @@ import { GoogleTranslationService } from "./component/translation/google/google_
 import { XcodeRepository, XcodeService } from "./component/xcode/xcode";
 import { XcodeRepositoryImpl } from "./component/xcode/xcode.repository";
 import { XcodeServiceImpl } from "./component/xcode/xcode.service";
+import { McpBridge } from "../mcp/bridge";
 import { AndroidMetadataLanguage } from "./platform/android/android.metadata_language";
 import { IosMetadataLanguage } from "./platform/ios/ios.metadata_language";
 import { IosXcodeLanguage } from "./platform/ios/ios.strings_language";
@@ -169,6 +171,13 @@ export class Registry {
   public migrationService: MigrationService = new MigrationService({
     versionRepository: this.versionRepository,
   });
+  public mcpBridge: McpBridge = new McpBridge({
+    arbService: this.arbService,
+    arbValidationRepository: this.arbValidationRepository,
+    languageService: this.languageService,
+    configService: this.configService,
+    translationCacheRepository: this.translationCacheRepository,
+  });
 
   /**
    * Command
@@ -214,6 +223,10 @@ export class Registry {
   public arbDeleteKeysCmd: ARBDeleteKeysCmd = new ARBDeleteKeysCmd({
     historyService: this.historyService,
     arbService: this.arbService,
+  });
+  public arbCacheUpdateCmd: ARBCacheUpdateCmd = new ARBCacheUpdateCmd({
+    arbService: this.arbService,
+    translationCacheRepository: this.translationCacheRepository,
   });
   public metadataCreateCmd: MetadataCreateCmd = new MetadataCreateCmd({
     metadataService: this.metadataService,

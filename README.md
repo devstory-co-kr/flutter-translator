@@ -15,6 +15,7 @@ Supports [internationalization of Flutter applications](https://docs.flutter.dev
 - [Usage](#usage)
 - [Configuration](#configuration)
 - [Translate](#translate)
+- [Claude Code MCP](#claude_code_mcp)
 - [License](#license)
 
 ## Introduction
@@ -44,6 +45,7 @@ This is a extension created based on an environment using **Flutter** and **Fast
 - [Changelog](#changelog) files translation and management.
 - [IAP](#iap) (In-App Purchases) plan files translation and validation.
 - [Xcode Strings](#xcode_strings) files translation.
+- [Claude Code MCP](#claude_code_mcp): translate ARB files with Claude Code using your Claude subscription.
 
 ## Usage
 
@@ -209,6 +211,12 @@ Translate and validate In-App Purchase plan files for Android (Google Play Billi
 1. Refer to the [link](https://medium.com/@axmadxojaibrohimov/localizing-permissions-in-ios-app-ebe4ef72f3a0) and complete localization settings in xcode and then add the strings file.
 1. Run `Flutter Translator: Xcode Strings - Translate`
 
+### Claude Code MCP
+
+1. Install [Claude Code](https://docs.claude.com/en/docs/claude-code/overview) and make sure the `claude` command is on your `PATH`.
+1. Run `Flutter Translator: Register Claude Code MCP`.
+1. Open the project folder with Claude Code and ask it to translate the ARB files. See [Claude Code MCP](#claude_code_mcp) for details.
+
 ## Configuration
 
 It is recommended to set the configuration in the project workspace(`.vscode/settings.json`).
@@ -295,6 +303,7 @@ It is recommended to set the configuration in the project workspace(`.vscode/set
       ```
   - Google Translator's results are stored in a cache file, and the cache is returned when the same request comes in.
     - You can turn the cache on and off using `Translation - Use Cache` command.
+    - You can overwrite or create the cache from your local ARB files using the `ARB - Cache update` command. It reads every local ARB file and stores each existing translation as a cache entry, so that already-translated values are reused without calling the API.
     - `.vscode/flutter-translator/cache.json` : This is a file that caches Google Translate results.
       ```
       {
@@ -315,6 +324,30 @@ It is recommended to set the configuration in the project workspace(`.vscode/set
     - Number of parentheses
     - Number of line breaks
     - Number of keywords excluded from translation
+
+## Claude Code MCP
+
+Translate your ARB files with [Claude Code](https://docs.claude.com/en/docs/claude-code/overview) using your Claude subscription instead of the Google Translate API. The extension ships a built-in [MCP](https://modelcontextprotocol.io) server that exposes the same ARB logic (config, validation, cache) the extension uses, so Claude does the translating while the extension keeps writing the files.
+
+### Setup
+
+1. Install [Claude Code](https://docs.claude.com/en/docs/claude-code/overview) and ensure the `claude` command is available on your `PATH`.
+1. Run `Flutter Translator: Register Claude Code MCP`. This registers the bundled MCP server with Claude Code at user scope (re-run it after extension updates to refresh the path).
+1. Open the project folder with Claude Code and ask it to translate the untranslated ARB strings.
+
+### How it works
+
+While the project is open in VS Code, the extension runs a localhost bridge so the MCP server can reuse the extension's ARB services. Reference languages (the ones in `arbConfig.exclude`) are never translated automatically — they are only used as context. Claude Code uses these tools:
+
+- `list_targets` : lists target languages that have untranslated strings, with the count for each.
+- `start_translation` : returns a batch of untranslated source strings for one language (up to 100 at a time, with the total remaining count). Each string includes the matching wording from your hand-maintained reference languages so Claude can match the intended meaning, tone, and length.
+- `finish_translation` : validates placeholders, writes the passing translations into the target ARB file (keeping the source key order), caches them, and returns any failing items for re-translation.
+- `start_multi_translation` : returns a batch of untranslated keys across all target languages at once (up to 5 keys), with the source string and the list of languages each key is missing in. Best when a small number of strings need to be translated into many languages.
+- `finish_multi_translation` : same validation/write/cache flow as `finish_translation`, but accepts a key → language → translation mapping so one batch can update many languages at once.
+
+Claude Code repeats the start/finish calls in batches until everything is translated.
+
+> The MCP server only works while the project is open in VS Code with the Flutter Translator extension enabled, and Claude Code must be launched from inside that project folder.
 
 ## License
 

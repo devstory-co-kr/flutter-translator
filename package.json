@@ -4,7 +4,7 @@
   "license": "SEE LICENSE IN LICENSE",
   "displayName": "Flutter Translator",
   "description": "It supports the internationalization of flutter applications using Google Translator.",
-  "version": "2.5.1",
+  "version": "2.6.0",
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
@@ -35,7 +35,9 @@
     "google",
     "devstory"
   ],
-  "activationEvents": [],
+  "activationEvents": [
+    "onStartupFinished"
+  ],
   "main": "./out/extension.js",
   "contributes": {
     "configuration": {
@@ -79,6 +81,10 @@
       {
         "command": "flutter-translator.arb.deleteKeys",
         "title": "Flutter Translator: ARB - Delete Keys"
+      },
+      {
+        "command": "flutter-translator.arb.cacheUpdate",
+        "title": "Flutter Translator: ARB - Cache update"
       },
       {
         "command": "flutter-translator.metadata.create",
@@ -163,6 +169,10 @@
       {
         "command": "flutter-translator.translation.useCache",
         "title": "Flutter Translator: Translation - Use Cache"
+      },
+      {
+        "command": "flutter-translator.mcp.register",
+        "title": "Flutter Translator: Register Claude Code MCP"
       }
     ]
   },
@@ -182,10 +192,12 @@
     "typescript": "^5.3.2"
   },
   "dependencies": {
+    "@modelcontextprotocol/sdk": "^1.29.0",
     "axios": "^1.6.2",
     "cheerio": "^1.0.0-rc.12",
     "googleapis": "^130.0.0",
     "he": "^1.2.0",
-    "js-yaml": "^4.1.0"
+    "js-yaml": "^4.1.0",
+    "zod": "^4.4.3"
   }
 }

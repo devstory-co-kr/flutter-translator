@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { ARBCacheUpdateCmdArgs } from "./cmd/arb/cache/arb.cache_update.cmd";
 import { ARBTranslateCmdArgs } from "./cmd/arb/translate/arb.translate.cmd";
 import { ChangelogCreateCmdArgs } from "./cmd/changelog/changelog.create.cmd";
 import { ChangelogTranslateCmdArgs } from "./cmd/changelog/changelog.translate.cmd";
@@ -24,6 +25,7 @@ export interface App {
   commands: Record<Cmd, (args: any) => Promise<void>>;
   init: () => any;
   migrate: (context: vscode.ExtensionContext) => Promise<void>;
+  startMcpBridge: () => Promise<void>;
   disposed: () => void;
   onException: (e: any) => void;
 }
@@ -65,6 +67,9 @@ export class FlutterTranslator implements App {
     },
     [Cmd.ARBDeleteKeys]: () => {
       return this.registry.arbDeleteKeysCmd.run();
+    },
+    [Cmd.ARBCacheUpdate]: (args?: ARBCacheUpdateCmdArgs) => {
+      return this.registry.arbCacheUpdateCmd.run(args);
     },
     /**
      * Metadata Command
@@ -158,7 +163,16 @@ export class FlutterTranslator implements App {
     }
   };
 
+  public startMcpBridge = async () => {
+    if (!vscode.workspace.workspaceFolders) {
+      return;
+    }
+    await this.registry.init();
+    await this.registry.mcpBridge.start();
+  };
+
   public disposed = () => {
+    this.registry.mcpBridge.stop();
     this.registry.disposed();
   };
 

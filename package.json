@@ -4,7 +4,7 @@
   "license": "SEE LICENSE IN LICENSE",
   "displayName": "Flutter Translator",
   "description": "It supports the internationalization of flutter applications using Google Translator.",
-  "version": "2.5.1",
+  "version": "2.5.2",
   "scripts": {
     "vscode:prepublish": "npm run compile",
     "compile": "tsc -p ./",
@@ -79,6 +79,10 @@
       {
         "command": "flutter-translator.arb.deleteKeys",
         "title": "Flutter Translator: ARB - Delete Keys"
+      },
+      {
+        "command": "flutter-translator.arb.cacheUpdate",
+        "title": "Flutter Translator: ARB - Cache update"
       },
       {
         "command": "flutter-translator.metadata.create",

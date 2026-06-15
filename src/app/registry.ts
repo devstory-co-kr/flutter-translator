@@ -3,6 +3,7 @@ import { ARBDecodeAllHtmlEntitiesCmd } from "./cmd/arb/check/arb.decode_all_html
 import { ARBExcludeTranslationCmd } from "./cmd/arb/configure/arb.exclude_translation.cmd";
 import { ARBOpenGoogleSheetCmd } from "./cmd/arb/google_sheet/arb.open_google_sheet.cmd";
 import { ARBUploadToGoogleSheetCmd } from "./cmd/arb/google_sheet/arb.upload_to_google_sheet.cmd";
+import { ARBCacheUpdateCmd } from "./cmd/arb/cache/arb.cache_update.cmd";
 import { ARBChangeKeysCmd } from "./cmd/arb/keys/arb.change_keys.cmd";
 import { ARBDeleteKeysCmd } from "./cmd/arb/keys/arb.delete_keys.cmd";
 import { ARBTranslateCmd } from "./cmd/arb/translate/arb.translate.cmd";
@@ -214,6 +215,10 @@ export class Registry {
   public arbDeleteKeysCmd: ARBDeleteKeysCmd = new ARBDeleteKeysCmd({
     historyService: this.historyService,
     arbService: this.arbService,
+  });
+  public arbCacheUpdateCmd: ARBCacheUpdateCmd = new ARBCacheUpdateCmd({
+    arbService: this.arbService,
+    translationCacheRepository: this.translationCacheRepository,
   });
   public metadataCreateCmd: MetadataCreateCmd = new MetadataCreateCmd({
     metadataService: this.metadataService,

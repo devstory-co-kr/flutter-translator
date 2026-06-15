@@ -50,13 +50,24 @@ export class TranslationCacheDataSource extends BaseInitRequired {
 
   public upsert(cacheKey: TranslationCacheKey, value: any): void {
     super.checkInit();
-    // create cache file
-    if (!this.isCacheFileExist) {
-      if (!Workspace.createPath(this.cacheFilePath)) {
-        throw new FileNotFoundException(this.cacheFilePath);
-      }
-    }
+    this.set(cacheKey, value);
+    this.save();
+  }
 
+  public upsertAll(
+    entries: { cacheKey: TranslationCacheKey; value: any }[]
+  ): void {
+    super.checkInit();
+    if (entries.length === 0) {
+      return;
+    }
+    for (const { cacheKey, value } of entries) {
+      this.set(cacheKey, value);
+    }
+    this.save();
+  }
+
+  private set(cacheKey: TranslationCacheKey, value: any): void {
     const {
       sourceLanguageCode,
       targetLanguageCode,
@@ -72,6 +83,15 @@ export class TranslationCacheDataSource extends BaseInitRequired {
     }
 
     this.cache[sourceLanguageCode][targetLanguageCode][querySHA1] = value;
+  }
+
+  private save(): void {
+    // create cache file
+    if (!this.isCacheFileExist) {
+      if (!Workspace.createPath(this.cacheFilePath)) {
+        throw new FileNotFoundException(this.cacheFilePath);
+      }
+    }
 
     fs.writeFileSync(
       this.cacheFilePath,

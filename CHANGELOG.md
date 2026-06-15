@@ -2,6 +2,10 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
+## [2.5.2] - 26.06.15
+### Added
+- Add `ARB - Cache update` command to overwrite or create the translation cache from local ARB files.
+
 ## [2.5.1] - 26.04.27
 ### Added
 - Add iOS subscription group support in `IAP - Translate` command.

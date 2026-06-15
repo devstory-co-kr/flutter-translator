@@ -295,6 +295,7 @@ It is recommended to set the configuration in the project workspace(`.vscode/set
       ```
   - Google Translator's results are stored in a cache file, and the cache is returned when the same request comes in.
     - You can turn the cache on and off using `Translation - Use Cache` command.
+    - You can overwrite or create the cache from your local ARB files using the `ARB - Cache update` command. It reads every local ARB file and stores each existing translation as a cache entry, so that already-translated values are reused without calling the API.
     - `.vscode/flutter-translator/cache.json` : This is a file that caches Google Translate results.
       ```
       {

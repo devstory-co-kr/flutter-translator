@@ -1,4 +1,5 @@
 import * as vscode from "vscode";
+import { ARBCacheUpdateCmdArgs } from "./cmd/arb/cache/arb.cache_update.cmd";
 import { ARBTranslateCmdArgs } from "./cmd/arb/translate/arb.translate.cmd";
 import { ChangelogCreateCmdArgs } from "./cmd/changelog/changelog.create.cmd";
 import { ChangelogTranslateCmdArgs } from "./cmd/changelog/changelog.translate.cmd";
@@ -65,6 +66,9 @@ export class FlutterTranslator implements App {
     },
     [Cmd.ARBDeleteKeys]: () => {
       return this.registry.arbDeleteKeysCmd.run();
+    },
+    [Cmd.ARBCacheUpdate]: (args?: ARBCacheUpdateCmdArgs) => {
+      return this.registry.arbCacheUpdateCmd.run(args);
     },
     /**
      * Metadata Command

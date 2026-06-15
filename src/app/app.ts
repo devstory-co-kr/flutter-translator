@@ -25,6 +25,7 @@ export interface App {
   commands: Record<Cmd, (args: any) => Promise<void>>;
   init: () => any;
   migrate: (context: vscode.ExtensionContext) => Promise<void>;
+  startMcpBridge: () => Promise<void>;
   disposed: () => void;
   onException: (e: any) => void;
 }
@@ -162,7 +163,16 @@ export class FlutterTranslator implements App {
     }
   };
 
+  public startMcpBridge = async () => {
+    if (!vscode.workspace.workspaceFolders) {
+      return;
+    }
+    await this.registry.init();
+    await this.registry.mcpBridge.start();
+  };
+
   public disposed = () => {
+    this.registry.mcpBridge.stop();
     this.registry.disposed();
   };
 

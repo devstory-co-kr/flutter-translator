@@ -55,6 +55,7 @@ import { GoogleTranslationService } from "./component/translation/google/google_
 import { XcodeRepository, XcodeService } from "./component/xcode/xcode";
 import { XcodeRepositoryImpl } from "./component/xcode/xcode.repository";
 import { XcodeServiceImpl } from "./component/xcode/xcode.service";
+import { McpBridge } from "../mcp/bridge";
 import { AndroidMetadataLanguage } from "./platform/android/android.metadata_language";
 import { IosMetadataLanguage } from "./platform/ios/ios.metadata_language";
 import { IosXcodeLanguage } from "./platform/ios/ios.strings_language";
@@ -169,6 +170,13 @@ export class Registry {
   });
   public migrationService: MigrationService = new MigrationService({
     versionRepository: this.versionRepository,
+  });
+  public mcpBridge: McpBridge = new McpBridge({
+    arbService: this.arbService,
+    arbValidationRepository: this.arbValidationRepository,
+    languageService: this.languageService,
+    configService: this.configService,
+    translationCacheRepository: this.translationCacheRepository,
   });
 
   /**

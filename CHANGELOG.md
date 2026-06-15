@@ -2,134 +2,190 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
-## [2.5.2] - 26.06.15
+## [2.6.0] - 26.06.15
+
 ### Added
+
+- Add `Register Claude Code MCP` command to translate ARB files with Claude Code (using your Claude subscription) through a bundled MCP server.
 - Add `ARB - Cache update` command to overwrite or create the translation cache from local ARB files.
 
 ## [2.5.1] - 26.04.27
+
 ### Added
+
 - Add iOS subscription group support in `IAP - Translate` command.
 - Add iOS subscription group validation in `IAP - Check` command.
 
 ## [2.5.0] - 26.04.24
+
 ### Added
+
 - Add `IAP - Translate` command.
 - Add `IAP - Check` command.
+
 ### Fixed
+
 - Fix incorrect path resolution on Windows by using uri.fsPath.
 
 ## [2.4.9] - 24.06.03
+
 ### Added
+
 - Add `Changelog - Rename` command.
 
 ## [2.4.7] - 24.04.15
+
 ### Changed
+
 - Change Dogri language text direction to LTR.
 
 ## [2.4.6] - 24.04.13
+
 ### Added
+
 - Add logic to check whether ARB parameter names match.
 - Add translation option.
+
 ### Fixed
+
 - Fix Languages incorrectly declared as LTR to RTL.
 
 ## [2.4.5] - 24.03.29
+
 ### Added
+
 - Add `Changelog - Delete` command.
 
 ## [2.4.4] - 24.03.23
+
 ### Updated
+
 - Update not to save cache when translating text.
 
 ## [2.4.2] - 24.03.17
+
 ### Fixed
+
 - Fix the url files can be selected when translating meatadata.
 
 ### Changed
+
 - Change default cache application to off when text translating.
 
 ## [2.4.1] - 24.03.15
+
 ### Added
+
 - Add batch to ARB translation.
 - Add encoding function for HTML tags and parentheses.
 
 ## [2.4.0] - 24.03.14
+
 ### Added
+
 - Add `Translation - Use Cache` command.
 - Add re-translation function when checking ARB
 - Add translation batch.
 
 ### Updated
+
 - Update to ignore case in string translation exclusions and make exclusions even for substrings.
 - Update to change the encoding key and retry if the number of encodings does not match after translation.
 - Improve translation performance by adding translation evaluation function.
 
 ## [2.3.3] - 24.03.13
+
 ### Added
+
 - Add `Google Translation - Open Web` command.
 
 ## [2.3.2] - 24.03.13
+
 ### Updated
+
 - Update to check exclusion keywords starting from longest length.
 - Update to handle translation exclusions by cutting strings based on spacing.
 
 ## [2.3.0] - 24.03.13
+
 ### Added
+
 - Add `Translation - Exclude` command.
 - Add `translationConfig.exclude` configuration.
 - Add line break symbol count check logic to ARB check command.
 - Add retranslate all items option to ARB check command.
 
 ### Updated
+
 - Update to check whether translation exceptions apply when checking ARB and Metadata.
 
 ### Deleted
+
 - Delete paid translation feature.
 
 ## [2.2.1] - 24.02.27
+
 ### Updated
+
 - Update to select a language when accessing files that languages are not verified.
 
 ## [2.2.0] - 24.02.27
+
 ### Added
+
 - Add `Text - Translate` command.
 
 ## [2.1.5] - 24.02.27
+
 ### Changed
+
 - Change the source ARB file path input method.
 
 ### Fixed
+
 - Fix config updates to be processed synchronously.
 
 ## [2.1.4] - 24.02.24
+
 ### Fixed
+
 - Fix text direction for `Amharic(LTR)`, `Arabic(RTL)`, and `Yiddish(RTL)`.
 
 ## [2.1.3] - 24.02.20
+
 ### Added
+
 - Add `Metadata - Delete` command.
 - Add `LTR` & `RTL` indication when translating metadata.
 
 ## [2.1.2] - 24.02.20
+
 ### Added
+
 - Add `metadataConfig.exclude` configuration.
 - Add `changelogConfig.exclude` configuration.
 
 ## Changed
+
 - Rename `xcodeConfig.custom` configuration to `xcode.projectLanguageCode`.
 
 ## [2.1.0] - 24.02.19
+
 ### Added
+
 - Add `Xcode Strings - Translate` command.
 
 ## [2.0.0] - 24.02.13
+
 ### Changed
+
 - Change extension name from `arb-translator` to `flutter-translator`
 - Change configuration.
   - When updating, settings from version 1.3.11 will be automatically migrated.
   - Instead of `targetLanguageCodeList`, the target language for translation is detected by the list of files that accompany the `sourceARB` file.
 
 ### Added
+
 - Add `Metadata - Create` command.
 - Add `Metadata - Translate` command.
 - Add `Metadata - Check` command.
@@ -140,71 +196,97 @@ All notable changes to the [flutter-translator extension](https://marketplace.vi
 - Add `Changelog - Open` command.
 
 ## Removed
+
 - Remove `Initialize` command.
 - Remove `Configure Target Language Code` command.
 - Remove `targetLanguageCodeList` from configuration.
 - Remove `validateLanguageCodeList` from configuration.
 
 ## [1.3.11] - 24.01.30
+
 ### Updated
+
 - Update to create @@locale during translation if it does not exist.
 - Update to check the existence of @@locale.
 
 ## [1.3.10] - 24.01.29
+
 ### Fixed
+
 - Fix an invalid url encoding problem.
 
 ## [1.3.8] - 24.01.24
+
 ### Updated
+
 - Update to validate `Change Arb Keys` command.
 
 ## [1.3.6] - 24.01.24
+
 ### Updated
+
 - Update `Change key` command to support multiple changes.
 - Update `Delete key` command to support multiple deletion.
 
 ## [1.3.5] - 24.01.23
+
 ### Added
+
 - Add `Delete key` command.
 
 ### Updated
+
 - Update history when key changings.
 
 ## [1.3.4] - 24.01.23
+
 ### Added
+
 - Add `Change key` command.
 
 ## [1.3.3] - 24.01.23
+
 ### Added
+
 - Add `validateLanguageCodeList` setting.
 
 ## [1.3.2] - 24.01.18
+
 ### Added
+
 - Add notification of progress in translation.
 
 ### Updated
+
 - Update logic for inspecting settings in the `Upload To Google Sheet` command.
 
 ## [1.3.1] - 24.01.18
+
 ### Added
+
 - Add `googleSheet.uploadLanguageCodeList` setting.
 - Add `Open Google Sheet` command.
 
 ## [1.3.0] - 24.01.18
+
 ### Added
+
 - Add `Upload To Google Sheet` command.
 
 ## [1.2.1] - 24.01.14
 
 ### Removed
+
 - Remove unused HTML files.
 
 ### Fixed
+
 - Fix command not found issue by adding a dependency.
 
 ## [1.2.0] - 24.01.14
 
 ### Added
+
 - Add `Decode All HTML Entities` command.
 - Add a check for the decoding HTML entities to the `Validate Translation` command.
 - Add eslint-watch.
@@ -212,25 +294,31 @@ All notable changes to the [flutter-translator extension](https://marketplace.vi
 ## [1.1.1] - 24.01.12
 
 ### Updated
+
 - Update preview picker UI.
 
 ### Fixed
+
 - Fix `Validation Translation` command broken issue.
 
 ## [1.1.0] - 24.01.12
 
 ### Added
+
 - Add validation result preview.
 
 ### Updated
+
 - Update quick pick UI.
 
 ### Fixed
+
 - Fix the highlight remaining issue.
 
 ## [1.0.0] - 24.01.12
 
 ### Added
+
 - Add `Initialize` command.
 - Add `Translate` command.
 - Add `Translation Preview` command.

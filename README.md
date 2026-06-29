@@ -214,7 +214,7 @@ Translate and validate In-App Purchase plan files for Android (Google Play Billi
 ### Claude Code MCP
 
 1. Install [Claude Code](https://docs.claude.com/en/docs/claude-code/overview) and make sure the `claude` command is on your `PATH`.
-1. Run `Flutter Translator: Register Claude Code MCP`.
+1. Run `Flutter Translator: Register Claude Code MCP`. Re-run this command whenever the extension version changes to update the registered server path.
 1. Open the project folder with Claude Code and ask it to translate the ARB files. See [Claude Code MCP](#claude_code_mcp) for details.
 
 ## Configuration
@@ -332,7 +332,7 @@ Translate your ARB files with [Claude Code](https://docs.claude.com/en/docs/clau
 ### Setup
 
 1. Install [Claude Code](https://docs.claude.com/en/docs/claude-code/overview) and ensure the `claude` command is available on your `PATH`.
-1. Run `Flutter Translator: Register Claude Code MCP`. This registers the bundled MCP server with Claude Code at user scope (re-run it after extension updates to refresh the path).
+1. Run `Flutter Translator: Register Claude Code MCP`. This registers the bundled MCP server with Claude Code at user scope. Re-run this command whenever the extension version changes — the registered path includes the version, so it must be refreshed after every update.
 1. Open the project folder with Claude Code and ask it to translate the untranslated ARB strings.
 
 ### How it works

@@ -2,6 +2,12 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
+## [2.6.1] - 26.06.30
+
+### Fixed
+
+- Fix `Register Claude Code MCP` command to overwrite the existing MCP server entry, keeping the server path current after extension updates.
+
 ## [2.6.0] - 26.06.15
 
 ### Added

@@ -111,48 +111,45 @@ async function main() {
   server.registerTool(
     "start_translation",
     {
-      title: "Start ARB translation for one language",
+      title: "Start ARB translation for one key",
       description:
-        "Get a batch of untranslated strings for one target language (max 100). " +
-        "Returns a sessionId, total remaining count, the source/target language names, and an `items` array " +
-        "(in order). Each item is { source, reference } where `source` is the " +
-        "string to translate and `reference` maps language names to the same " +
+        "Get ONE untranslated key together with every target language it is " +
+        "still missing in. Returns a sessionId, totalRemaining (the number of " +
+        "keys still missing somewhere across the project), and a single " +
+        "`item`: { key, source, missingIn: [lang1, lang2, ...], reference }. " +
+        "Translate the `source` string into EVERY language code listed in " +
+        "`missingIn` in one pass. `reference` maps language names to the same " +
         "key's wording in the user's hand-maintained reference languages " +
-        "(e.g. Korean). These are Flutter app UI strings (button labels, " +
-        "status text, messages), so keep translations concise and natural for " +
-        "an app UI, and use `reference` to match the intended meaning, tone, " +
-        "and length rather than translating the source literally. Preserve " +
-        "placeholders like {count}. Then call finish_translation with one " +
-        "translated string per item, in the same order. " +
-        "If totalRemaining > items.length, repeat start_translation & finish_translation until all are translated. " +
-        "IMPORTANT: If the average number of untranslated strings per target language is 10 or less, " +
-        "DO NOT use this tool. Use `start_multi_translation` instead.",
-      inputSchema: {
-        languageCode: z
-          .string()
-          .describe("Target language code from list_targets (e.g. 'fr')"),
-      },
+        "(e.g. Korean) — use it to match the intended meaning, tone, and " +
+        "length rather than translating the source literally. These are " +
+        "Flutter app UI strings (button labels, status text, messages), so " +
+        "keep translations concise and natural for an app UI and preserve " +
+        "placeholders like {count}. Then call finish_translation with the " +
+        "translations for this key, then call start_translation again for the " +
+        "next key. Repeat until totalRemaining is 0.",
+      inputSchema: {},
     },
-    async ({ languageCode }: { languageCode: string }) =>
-      asResult(await callBridge({ action: "start", languageCode }))
+    async () => asResult(await callBridge({ action: "start" }))
   );
 
   server.registerTool(
     "finish_translation",
     {
-      title: "Finish ARB translation",
+      title: "Finish ARB translation for one key",
       description:
-        "Submit translated strings for a session. The extension validates " +
-        "placeholders, writes the passing translations, caches them, and " +
-        "returns any failing items as { index, source } for re-translation. " +
-        "On failure, fix those indices and call finish_translation again with " +
-        "the full translations array.",
+        "Submit the translations for the key returned by start_translation. " +
+        "Provide an object mapping each target language code to its translated " +
+        'string, e.g. { "fr": "Bonjour", "es": "Hola" }. The extension ' +
+        "validates placeholders, writes and caches the passing translations " +
+        "immediately, and returns any failing items as { languageCode, key, " +
+        "source } for re-translation. On success, call start_translation again " +
+        "for the next key.",
       inputSchema: {
         sessionId: z.string().describe("sessionId from start_translation"),
         translations: z
-          .array(z.string())
+          .record(z.string(), z.string())
           .describe(
-            "Translated strings, same order and length as the items array"
+            "Object mapping each target language code to its translated string"
           ),
       },
     },
@@ -161,54 +158,9 @@ async function main() {
       translations,
     }: {
       sessionId: string;
-      translations: string[];
+      translations: Record<string, string>;
     }) =>
       asResult(await callBridge({ action: "finish", sessionId, translations }))
-  );
-
-  server.registerTool(
-    "start_multi_translation",
-    {
-      title: "Start multi-language translation for missing keys",
-      description:
-        "Get a batch of untranslated keys across ALL target languages. " +
-        "Use this tool when translating a small number of strings into many languages. " +
-        "Returns a sessionId, total remaining keys, and an `items` array (max 5 keys). " +
-        "Each item is { key, source, missingIn: [lang1, lang2...], reference }. " +
-        "You must translate the `source` string into ALL languages listed in `missingIn`. " +
-        "Then call finish_multi_translation.",
-      inputSchema: {},
-    },
-    async () => asResult(await callBridge({ action: "start_multi" }))
-  );
-
-  server.registerTool(
-    "finish_multi_translation",
-    {
-      title: "Finish multi-language translation",
-      description:
-        "Submit translated strings for a multi-language session. " +
-        "You must provide a nested object mapping each `key` to its translations for each language. " +
-        "For example: { \"title_key\": { \"fr\": \"Bonjour\", \"es\": \"Hola\" } }. " +
-        "If the previous start_multi_translation returned totalRemaining > items.length, " +
-        "call start_multi_translation again to get the next batch of keys.",
-      inputSchema: {
-        sessionId: z.string().describe("sessionId from start_multi_translation"),
-        translations: z
-          .record(z.string(), z.record(z.string(), z.string()))
-          .describe(
-            "Nested object: { [key: string]: { [languageCode: string]: string } }"
-          ),
-      },
-    },
-    async ({
-      sessionId,
-      translations,
-    }: {
-      sessionId: string;
-      translations: Record<string, Record<string, string>>;
-    }) =>
-      asResult(await callBridge({ action: "finish_multi", sessionId, translations }))
   );
 
   const transport = new StdioServerTransport();

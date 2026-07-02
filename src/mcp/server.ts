@@ -138,8 +138,15 @@ async function main() {
       title: "Finish ARB translation for one key",
       description:
         "Submit the translations for the key returned by start_translation. " +
-        "Provide an object mapping each target language code to its translated " +
-        'string, e.g. { "fr": "Bonjour", "es": "Hola" }. The extension ' +
+        "Pass `sessionId` and `translations` as SEPARATE structured arguments. " +
+        "Do NOT serialize the whole input into one big raw JSON string — a " +
+        "single raw blob gets truncated mid-content on long payloads (many " +
+        "languages) and then fails to parse. `translations` is an object " +
+        'mapping each target language code to its translated string, e.g. ' +
+        '{ "fr": "Bonjour", "es": "Hola" }. Write each value as literal ' +
+        "Unicode characters (the actual ಕನ್ನಡ / 日本語 glyphs), not \\uXXXX " +
+        "escape sequences, and keep it on a single line: escapes bloat the " +
+        "payload ~6x and make truncation far more likely. The extension " +
         "validates placeholders, writes and caches the passing translations " +
         "immediately, and returns any failing items as { languageCode, key, " +
         "source } for re-translation. On success, call start_translation again " +

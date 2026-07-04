@@ -676,78 +676,77 @@ export class McpBridge {
     return units;
   }
 
-  // Untranslated field units for the iOS subscription_groups.json file.
+  // Untranslated field units for every iOS subscription_groups.json file
+  // (one per flavor when flavor subfolders are used).
   private enumerateSubscriptionGroupUnits(): IapUnit[] {
     const platform = MetadataPlatform.ios;
-    const filePath = this.iapService.getSubscriptionGroupsFilePath();
-    if (!fs.existsSync(filePath)) {
-      return [];
-    }
-    let groups;
-    try {
-      groups = this.iapService.readSubscriptionGroupsFile();
-    } catch {
-      return [];
-    }
     const excludeSet = this.getIapExcludeLocaleSet();
-    const fileName = path.basename(filePath);
-    const present = new Set<string>();
-    for (const group of groups) {
-      for (const loc of group.localizations ?? []) {
-        if (loc.locale) {
-          present.add(loc.locale);
-        }
-      }
-    }
-    const sourceInfo = this.findSourceLocale(platform, present);
-    if (!sourceInfo) {
-      return [];
-    }
-    const sourceLocale = sourceInfo.locale;
-    const targetLocales = this.getIapTargetLocales(
-      platform,
-      sourceInfo.languageCode,
-    );
-
     const units: IapUnit[] = [];
-    groups.forEach((group, itemIndex) => {
-      const locs = group.localizations ?? [];
-      const sourceLoc = locs.find((l) => l.locale === sourceLocale);
-      if (!sourceLoc) {
-        return;
+    for (const filePath of this.iapService.getSubscriptionGroupsFiles()) {
+      let groups;
+      try {
+        groups = this.iapService.readSubscriptionGroupsFile(filePath);
+      } catch {
+        continue;
       }
-      for (const field of [IapField.name, IapField.customAppName]) {
-        const source = this.getGroupFieldValue(sourceLoc, field);
-        if (!source) {
-          continue;
+      const fileName = path.basename(filePath);
+      const present = new Set<string>();
+      for (const group of groups) {
+        for (const loc of group.localizations ?? []) {
+          if (loc.locale) {
+            present.add(loc.locale);
+          }
         }
-        // Re-translate all target locales, not only the missing ones.
-        if (targetLocales.length === 0) {
-          continue;
+      }
+      const sourceInfo = this.findSourceLocale(platform, present);
+      if (!sourceInfo) {
+        continue;
+      }
+      const sourceLocale = sourceInfo.locale;
+      const targetLocales = this.getIapTargetLocales(
+        platform,
+        sourceInfo.languageCode,
+      );
+
+      groups.forEach((group, itemIndex) => {
+        const locs = group.localizations ?? [];
+        const sourceLoc = locs.find((l) => l.locale === sourceLocale);
+        if (!sourceLoc) {
+          return;
         }
-        const reference: Record<string, string> = {};
-        for (const loc of locs) {
-          if (!loc.locale || !excludeSet.has(loc.locale)) {
+        for (const field of [IapField.name, IapField.customAppName]) {
+          const source = this.getGroupFieldValue(sourceLoc, field);
+          if (!source) {
             continue;
           }
-          const value = this.getGroupFieldValue(loc, field);
-          if (value) {
-            reference[this.getLocaleName(platform, loc.locale)] = value;
+          // Re-translate all target locales, not only the missing ones.
+          if (targetLocales.length === 0) {
+            continue;
           }
+          const reference: Record<string, string> = {};
+          for (const loc of locs) {
+            if (!loc.locale || !excludeSet.has(loc.locale)) {
+              continue;
+            }
+            const value = this.getGroupFieldValue(loc, field);
+            if (value) {
+              reference[this.getLocaleName(platform, loc.locale)] = value;
+            }
+          }
+          units.push({
+            platform,
+            target: IapTranslateTarget.subscriptionGroups,
+            filePath,
+            fileName,
+            itemIndex,
+            field,
+            source,
+            targetLocales,
+            reference,
+          });
         }
-        units.push({
-          platform,
-          target: IapTranslateTarget.subscriptionGroups,
-          filePath,
-          fileName,
-          itemIndex,
-          field,
-          source,
-          targetLocales,
-          reference,
-        });
-      }
-    });
+      });
+    }
     return units;
   }
 
@@ -846,7 +845,7 @@ export class McpBridge {
       if (isPlans) {
         plans = this.iapService.readPlans(filePath);
       } else {
-        groups = this.iapService.readSubscriptionGroupsFile();
+        groups = this.iapService.readSubscriptionGroupsFile(filePath);
       }
     } catch (e: any) {
       return { error: `Failed to read ${filePath}: ${e?.message ?? e}` };
@@ -904,7 +903,7 @@ export class McpBridge {
       if (isPlans) {
         this.iapService.writePlans(filePath, plans!);
       } else {
-        this.iapService.writeSubscriptionGroupsFile(groups!);
+        this.iapService.writeSubscriptionGroupsFile(filePath, groups!);
       }
     }
 

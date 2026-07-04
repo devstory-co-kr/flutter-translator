@@ -263,16 +263,18 @@ async function main() {
     {
       title: "Check all IAP translations",
       description:
-        "Verify every written in-app purchase string across all files. Call " +
-        "this once after totalRemaining reaches 0 to confirm the translations " +
-        "are valid. Runs the extension's full check: each field's length " +
-        "against the store limit AND custom_app_name consistency (all or none " +
-        "of a subscription group's locales must set it). Returns { ok, issues } " +
+        "Verify every written in-app purchase string across all files, AND " +
+        "report locales that are still untranslated (missing/empty while the " +
+        "en-US source has a value). Use this to answer \"is anything not " +
+        "translated?\". Runs the extension's full check: untranslated target " +
+        "locales (type \"Untranslated\"), each field's length against the " +
+        "store limit, AND custom_app_name consistency (all or none of a " +
+        "subscription group's locales must set it). Returns { ok, issues } " +
         "where each issue is { type, platform, file, locale, reason }. When " +
-        "`ok` is false, fix the reported fields — for a too-long field, " +
-        "shorten it (there is no per-field session here, so re-run the matching " +
-        "start_iap_translation flow or correct the value) — then call this " +
-        "again until `ok` is true and `issues` is empty.",
+        "`ok` is false, fix the reported fields — for an Untranslated locale " +
+        "run the start_iap_translation / finish_iap_translation loop; for a " +
+        "too-long field, shorten it — then call this again until `ok` is true " +
+        "and `issues` is empty.",
       inputSchema: {},
     },
     async () => asResult(await callBridge({ action: "iap_check" }))

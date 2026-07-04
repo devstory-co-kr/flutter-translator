@@ -80,6 +80,7 @@ export enum IapCheckIssueType {
   groupNameTooLong = "Group name too long",
   customAppNameTooLong = "custom_app_name too long",
   customAppNameInconsistent = "custom_app_name inconsistent",
+  untranslated = "Untranslated",
 }
 
 // A single problem found by the IAP check, carrying both what to show in the

@@ -58,6 +58,30 @@ export const IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS = {
   custom_app_name: 30,
 };
 
+// Categories of problems reported by IapService.checkIapFiles, used as the
+// section labels in the IAP check picker.
+export enum IapCheckIssueType {
+  titleTooLong = "Title too long",
+  descriptionTooLong = "Description too long",
+  groupNameTooLong = "Group name too long",
+  customAppNameTooLong = "custom_app_name too long",
+  customAppNameInconsistent = "custom_app_name inconsistent",
+}
+
+// A single problem found by the IAP check, carrying both what to show in the
+// picker and where to jump to when selected.
+export interface IapCheckIssue {
+  type: IapCheckIssueType;
+  filePath: string;
+  // Path relative to in_app_purchases/, e.g. "dev/plans.json", for display.
+  fileLabel: string;
+  platformTag: string;
+  locale: string;
+  reason: string;
+  // Text to locate in the file for navigation ("" → just open the file).
+  searchAnchor: string;
+}
+
 export function getIapLocale(
   platform: MetadataPlatform,
   loc: IapLocalization

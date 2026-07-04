@@ -11,6 +11,8 @@ import {
   getIapTitle,
   IAP_PLAN_LENGTH_LIMITS,
   IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS,
+  IapCheckIssue,
+  IapCheckIssueType,
   IapPlan,
   IapSubscriptionGroup,
   IapTranslateTarget,
@@ -391,15 +393,22 @@ export class IapService {
     );
   }
 
-  public checkIapFiles() {
-    let hasError = false;
+  // Anchor text to locate a "key": "value" pair in a 2-space-indented JSON file.
+  private fieldAnchor(jsonKey: string, value: string): string {
+    return `${JSON.stringify(jsonKey)}: ${JSON.stringify(value)}`;
+  }
+
+  // Scan every IAP file and return the length/consistency problems found, so the
+  // caller can list them for selection and navigation.
+  public checkIapFiles(): IapCheckIssue[] {
+    const issues: IapCheckIssue[] = [];
 
     for (const platform of [MetadataPlatform.android, MetadataPlatform.ios]) {
       const { title: titleLimit, description: descLimit } =
         IAP_PLAN_LENGTH_LIMITS[platform];
       const tag = platform === MetadataPlatform.android ? "Android" : "iOS";
-      const files = this.getIapFiles(platform);
-      for (const file of files) {
+      const titleKey = platform === MetadataPlatform.android ? "title" : "name";
+      for (const file of this.getIapFiles(platform)) {
         const label = this.getIapRelativePath(platform, file);
         try {
           const plans = this.readPlans(file);
@@ -409,16 +418,26 @@ export class IapService {
               const code = getIapLocale(platform, loc) ?? "";
               const title = getIapTitle(platform, loc);
               if (title && title.length > titleLimit) {
-                Toast.e(
-                  `[${tag}] ${label} - ${code}: title exceeds ${titleLimit} chars (${title.length})`
-                );
-                hasError = true;
+                issues.push({
+                  type: IapCheckIssueType.titleTooLong,
+                  filePath: file,
+                  fileLabel: label,
+                  platformTag: tag,
+                  locale: code,
+                  reason: `title exceeds ${titleLimit} chars (${title.length})`,
+                  searchAnchor: this.fieldAnchor(titleKey, title),
+                });
               }
               if (loc.description && loc.description.length > descLimit) {
-                Toast.e(
-                  `[${tag}] ${label} - ${code}: description exceeds ${descLimit} chars (${loc.description.length})`
-                );
-                hasError = true;
+                issues.push({
+                  type: IapCheckIssueType.descriptionTooLong,
+                  filePath: file,
+                  fileLabel: label,
+                  platformTag: tag,
+                  locale: code,
+                  reason: `description exceeds ${descLimit} chars (${loc.description.length})`,
+                  searchAnchor: this.fieldAnchor("description", loc.description),
+                });
               }
             }
           }
@@ -444,10 +463,15 @@ export class IapService {
           if (withCustom.length > 0 && withoutCustom.length > 0) {
             const nullLocales = withoutCustom.map((l) => l.locale ?? "").join(", ");
             const valueLocales = withCustom.map((l) => l.locale ?? "").join(", ");
-            Toast.e(
-              `[iOS] ${label}: custom_app_name is inconsistent — null in [${nullLocales}], set in [${valueLocales}]`
-            );
-            hasError = true;
+            issues.push({
+              type: IapCheckIssueType.customAppNameInconsistent,
+              filePath: sgFile,
+              fileLabel: label,
+              platformTag: "iOS",
+              locale: "",
+              reason: `custom_app_name inconsistent — null in [${nullLocales}], set in [${valueLocales}]`,
+              searchAnchor: "",
+            });
           }
 
           for (const loc of group.localizations) {
@@ -456,20 +480,33 @@ export class IapService {
               loc.name &&
               loc.name.length > IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS.name
             ) {
-              Toast.e(
-                `[iOS] ${label} - ${code}: name exceeds ${IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS.name} chars (${loc.name.length})`
-              );
-              hasError = true;
+              issues.push({
+                type: IapCheckIssueType.groupNameTooLong,
+                filePath: sgFile,
+                fileLabel: label,
+                platformTag: "iOS",
+                locale: code,
+                reason: `name exceeds ${IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS.name} chars (${loc.name.length})`,
+                searchAnchor: this.fieldAnchor("name", loc.name),
+              });
             }
             if (
               loc.custom_app_name &&
               loc.custom_app_name.length >
                 IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS.custom_app_name
             ) {
-              Toast.e(
-                `[iOS] ${label} - ${code}: custom_app_name exceeds ${IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS.custom_app_name} chars (${loc.custom_app_name.length})`
-              );
-              hasError = true;
+              issues.push({
+                type: IapCheckIssueType.customAppNameTooLong,
+                filePath: sgFile,
+                fileLabel: label,
+                platformTag: "iOS",
+                locale: code,
+                reason: `custom_app_name exceeds ${IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS.custom_app_name} chars (${loc.custom_app_name.length})`,
+                searchAnchor: this.fieldAnchor(
+                  "custom_app_name",
+                  loc.custom_app_name
+                ),
+              });
             }
           }
         }
@@ -478,8 +515,6 @@ export class IapService {
       }
     }
 
-    if (!hasError) {
-      Toast.i("IAP Check Passed: All lengths are within limits.");
-    }
+    return issues;
   }
 }

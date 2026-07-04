@@ -90,6 +90,10 @@ export class McpBridge {
   private bridgeFilePath?: string;
   private sessions = new Map<string, Session>();
   private iapSessions = new Map<string, IapSession>();
+  // Identities of IAP field units already translated in the current loop, so
+  // iap_start_translation advances to the next field instead of always handing
+  // back units[0]. Cleared once every unit is consumed (loop finished).
+  private iapConsumed = new Set<string>();
 
   constructor({
     arbService,
@@ -784,13 +788,18 @@ export class McpBridge {
   // be translated into, plus its wording in the hand-maintained exclude locales
   // (e.g. Korean) as reference context.
   private async iap_start_translation(): Promise<unknown> {
+    const unitKey = (u: IapUnit) =>
+      `${u.platform}:${u.target}:${u.filePath}:${u.itemIndex}:${u.field}`;
     const units = this.enumerateIapUnits();
-    const totalRemaining = units.length;
+    const remaining = units.filter((u) => !this.iapConsumed.has(unitKey(u)));
+    const totalRemaining = remaining.length;
     if (totalRemaining === 0) {
+      // Whole loop done; reset so a subsequent run starts fresh.
+      this.iapConsumed.clear();
       return { totalRemaining: 0, item: null };
     }
 
-    const unit = units[0];
+    const unit = remaining[0];
     const sessionId = crypto.randomUUID();
     this.iapSessions.set(sessionId, {
       platform: unit.platform,
@@ -916,6 +925,10 @@ export class McpBridge {
     // be re-flagged as "missing translation" on the next round).
     const ok = failures.length === 0;
     if (ok) {
+      // Mark this field done so iap_start_translation advances to the next one.
+      this.iapConsumed.add(
+        `${platform}:${target}:${filePath}:${itemIndex}:${field}`,
+      );
       this.iapSessions.delete(sessionId);
     } else {
       session.targetLocales = failures.map((f) => f.locale);

@@ -195,6 +195,8 @@ export class McpBridge {
           request.sessionId,
           request.translations,
         );
+      case "iap_check":
+        return this.iap_check();
       default:
         return { error: `Unknown action: ${request.action}` };
     }
@@ -800,12 +802,12 @@ export class McpBridge {
     return {
       sessionId,
       totalRemaining,
-      maxLength: this.getFieldLimit(unit.platform, unit.target, unit.field),
       item: {
         platform: unit.platform,
         target: unit.target,
         fileName: unit.fileName,
         field: unit.field,
+        maxLength: this.getFieldLimit(unit.platform, unit.target, unit.field),
         source: unit.source,
         targetLocales: unit.targetLocales,
         ...(Object.keys(unit.reference).length > 0
@@ -907,10 +909,30 @@ export class McpBridge {
       }
     }
 
+    // Keep only the still-failing locales as the session's remaining work, so a
+    // follow-up call can resubmit just those (the ones already written must not
+    // be re-flagged as "missing translation" on the next round).
     const ok = failures.length === 0;
     if (ok) {
       this.iapSessions.delete(sessionId);
+    } else {
+      session.targetLocales = failures.map((f) => f.locale);
     }
     return { ok, written, failures };
+  }
+
+  // action: iap_check — re-run the extension's full IAP length/consistency
+  // check over the written files so Claude can verify its own translations.
+  // Returns the UI-independent fields of each issue; empty `issues` means every
+  // IAP string is within limits and consistent.
+  private async iap_check(): Promise<unknown> {
+    const issues = this.iapService.checkIapFiles().map((issue) => ({
+      type: issue.type,
+      platform: issue.platformTag,
+      file: issue.fileLabel,
+      locale: issue.locale,
+      reason: issue.reason,
+    }));
+    return { ok: issues.length === 0, issues };
   }
 }

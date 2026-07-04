@@ -178,11 +178,16 @@ async function main() {
       description:
         "List in-app purchase (App Store / Play Store product & subscription " +
         "listing) fields to translate, grouped by { platform (android|ios), " +
-        "target (plans|subscriptionGroups), count }. `count` is the number of " +
-        "(field × target locale) pairs. Every target locale is (re)translated " +
-        "from English each run — Korean/English are hand-maintained and not " +
-        "included. Call this first to see the IAP work, then loop " +
-        "start_iap_translation / finish_iap_translation like the ARB tools.",
+        "target (plans|subscriptionGroups), count }. `count` is the FULL " +
+        "re-translate workload — (field × target locale) pairs — NOT how many " +
+        "are currently missing: every target locale is (re)translated from " +
+        "English each run, so this number stays the same whether or not the " +
+        "locales are already translated. Korean/English are hand-maintained " +
+        "and not included. This is the entry point for the translation loop " +
+        "(then loop start_iap_translation / finish_iap_translation like the " +
+        "ARB tools); it is NOT a status or validation check. To verify already " +
+        "written IAP strings (e.g. store character-limit violations), use " +
+        "check_iap_translations instead.",
       inputSchema: {},
     },
     async () => asResult(await callBridge({ action: "iap_list" }))

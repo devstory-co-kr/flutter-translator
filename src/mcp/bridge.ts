@@ -760,8 +760,10 @@ export class McpBridge {
     ];
   }
 
-  // action: iap_list — count of untranslated (field × locale) pairs grouped by
-  // platform + target, so the caller can see what IAP work remains.
+  // action: iap_list — count of (field × locale) pairs grouped by platform +
+  // target, so the caller can see the IAP work. This is the full re-translate
+  // workload (every target locale is retranslated each run), not the count of
+  // currently-missing translations, so it does not reflect translation state.
   private async iap_list(): Promise<unknown> {
     const grouped = new Map<
       string,

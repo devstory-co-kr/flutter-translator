@@ -50,11 +50,15 @@ type IapSession = {
   targetLocales: string[];
 };
 
+// The hand-maintained English source locale for IAP. Other en-* locales
+// (en-GB, en-AU, …) are translation targets filled from this one.
+const IAP_ENGLISH_SOURCE_LOCALE = "en-US";
+
 // A single translatable IAP field occurrence and the locales it must be
 // (re)translated into — the IAP analogue of an untranslated ARB key. Unlike
 // ARB, every target locale is always (re)translated, not only missing ones;
-// Korean/English are the hand-maintained source/exclude locales and are not
-// in targetLocales.
+// the en-US source and the exclude locales (e.g. Korean) are hand-maintained
+// and are not in targetLocales.
 type IapUnit = {
   platform: MetadataPlatform;
   target: IapTranslateTarget;
@@ -516,43 +520,48 @@ export class McpBridge {
     return match?.name ?? locale;
   }
 
-  // The English source language actually present in the files (e.g. "en-US"),
-  // used as the translation source. undefined when no English localization
-  // exists — there is then nothing to translate from.
+  // The English source locale present in the files, used as the translation
+  // source. en-US is the hand-maintained source, so it is preferred; other en-*
+  // locales are translation targets and must not be picked as the source (that
+  // would overwrite them). Falls back to the first English locale when en-US is
+  // absent. undefined when no English localization exists — nothing to
+  // translate from.
   private findSourceLocale(
     platform: MetadataPlatform,
     presentLocales: Set<string>,
-  ): { locale: string; languageCode: string } | undefined {
+  ): { locale: string } | undefined {
     const languages = this.metadataService.getSupportMetadataLanguages(
       platform,
     );
-    for (const locale of presentLocales) {
-      const match = languages.find((l) => l.locale === locale);
-      if (match?.translateLanguage.languageCode === "en") {
-        return { locale, languageCode: match.translateLanguage.languageCode };
-      }
+    const englishLocales = [...presentLocales].filter(
+      (locale) =>
+        languages.find((l) => l.locale === locale)?.translateLanguage
+          .languageCode === "en",
+    );
+    if (englishLocales.length === 0) {
+      return undefined;
     }
-    return undefined;
+    const locale =
+      englishLocales.find((l) => l === IAP_ENGLISH_SOURCE_LOCALE) ??
+      englishLocales[0];
+    return { locale };
   }
 
   // The locales to translate INTO: the platform's configured metadata languages
   // (the locales the app actually ships store listings in — folders under
-  // fastlane metadata), minus the source language (all its variants, e.g. other
-  // en-* locales) and the hand-maintained exclude locales. This mirrors ARB
-  // using the configured target language list rather than whatever locales
-  // already happen to appear inside the IAP file.
+  // fastlane metadata), minus the source locale (en-US only, not other en-*
+  // variants like en-GB/en-AU which are themselves translated) and the
+  // hand-maintained exclude locales. This mirrors ARB using the configured
+  // target language list rather than whatever locales already happen to appear
+  // inside the IAP file.
   private getIapTargetLocales(
     platform: MetadataPlatform,
-    sourceLanguageCode: string,
+    sourceLocale: string,
   ): string[] {
     const excludeSet = this.getIapExcludeLocaleSet();
     return this.metadataService
       .getMetadataLanguagesInPlatform(platform)
-      .filter(
-        (l) =>
-          l.translateLanguage.languageCode !== sourceLanguageCode &&
-          !excludeSet.has(l.locale),
-      )
+      .filter((l) => l.locale !== sourceLocale && !excludeSet.has(l.locale))
       .map((l) => l.locale);
   }
 
@@ -656,10 +665,7 @@ export class McpBridge {
         continue;
       }
       const sourceLocale = sourceInfo.locale;
-      const targetLocales = this.getIapTargetLocales(
-        platform,
-        sourceInfo.languageCode,
-      );
+      const targetLocales = this.getIapTargetLocales(platform, sourceLocale);
 
       plans.forEach((plan, itemIndex) => {
         const locs = plan.localizations ?? [];
@@ -767,10 +773,7 @@ export class McpBridge {
         continue;
       }
       const sourceLocale = sourceInfo.locale;
-      const targetLocales = this.getIapTargetLocales(
-        platform,
-        sourceInfo.languageCode,
-      );
+      const targetLocales = this.getIapTargetLocales(platform, sourceLocale);
 
       groups.forEach((group, itemIndex) => {
         const locs = group.localizations ?? [];

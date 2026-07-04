@@ -9,6 +9,7 @@ import { ConfigService } from "../app/component/config/config";
 import {
   getIapLocale,
   getIapTitle,
+  IAP_PLAN_BENEFIT_LIMITS,
   IAP_PLAN_LENGTH_LIMITS,
   IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS,
   IapField,
@@ -43,6 +44,9 @@ type IapSession = {
   filePath: string;
   itemIndex: number;
   field: IapField;
+  // Array index within the field when it is a `benefits` element; undefined for
+  // scalar fields (title/description/name/custom_app_name).
+  fieldIndex?: number;
   targetLocales: string[];
 };
 
@@ -58,6 +62,9 @@ type IapUnit = {
   fileName: string;
   itemIndex: number;
   field: IapField;
+  // Array index within the field when it is a `benefits` element; undefined for
+  // scalar fields.
+  fieldIndex?: number;
   source: string;
   targetLocales: string[];
   reference: Record<string, string>;
@@ -553,10 +560,15 @@ export class McpBridge {
     platform: MetadataPlatform,
     loc: IapLocalization,
     field: IapField,
+    fieldIndex?: number,
   ): string | undefined {
-    return field === IapField.title
-      ? getIapTitle(platform, loc)
-      : loc.description;
+    if (field === IapField.title) {
+      return getIapTitle(platform, loc);
+    }
+    if (field === IapField.benefit) {
+      return loc.benefits?.[fieldIndex!];
+    }
+    return loc.description;
   }
 
   private setPlanFieldValue(
@@ -564,9 +576,15 @@ export class McpBridge {
     loc: IapLocalization,
     field: IapField,
     value: string,
+    fieldIndex?: number,
   ): void {
     if (field === IapField.title) {
       setIapTitle(platform, loc, value);
+    } else if (field === IapField.benefit) {
+      if (!loc.benefits) {
+        loc.benefits = [];
+      }
+      loc.benefits[fieldIndex!] = value;
     } else {
       loc.description = value;
     }
@@ -598,7 +616,13 @@ export class McpBridge {
   ): number {
     if (target === IapTranslateTarget.plans) {
       const limits = IAP_PLAN_LENGTH_LIMITS[platform];
-      return field === IapField.title ? limits.title : limits.description;
+      if (field === IapField.title) {
+        return limits.title;
+      }
+      if (field === IapField.benefit) {
+        return IAP_PLAN_BENEFIT_LIMITS.length;
+      }
+      return limits.description;
     }
     return field === IapField.name
       ? IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS.name
@@ -675,6 +699,40 @@ export class McpBridge {
             source,
             targetLocales,
             reference,
+          });
+        }
+
+        // benefits: Android-only array, one unit per element (each carrying its
+        // array index) so each is translated and length-validated on its own.
+        if (platform === MetadataPlatform.android && targetLocales.length > 0) {
+          const sourceBenefits = sourceLoc.benefits ?? [];
+          sourceBenefits.forEach((source, fieldIndex) => {
+            if (!source) {
+              return;
+            }
+            const reference: Record<string, string> = {};
+            for (const loc of locs) {
+              const code = getIapLocale(platform, loc);
+              if (!code || !excludeSet.has(code)) {
+                continue;
+              }
+              const value = loc.benefits?.[fieldIndex];
+              if (value) {
+                reference[this.getLocaleName(platform, code)] = value;
+              }
+            }
+            units.push({
+              platform,
+              target: IapTranslateTarget.plans,
+              filePath,
+              fileName,
+              itemIndex,
+              field: IapField.benefit,
+              fieldIndex,
+              source,
+              targetLocales,
+              reference,
+            });
           });
         }
       });
@@ -789,7 +847,7 @@ export class McpBridge {
   // (e.g. Korean) as reference context.
   private async iap_start_translation(): Promise<unknown> {
     const unitKey = (u: IapUnit) =>
-      `${u.platform}:${u.target}:${u.filePath}:${u.itemIndex}:${u.field}`;
+      `${u.platform}:${u.target}:${u.filePath}:${u.itemIndex}:${u.field}:${u.fieldIndex ?? ""}`;
     const units = this.enumerateIapUnits();
     const remaining = units.filter((u) => !this.iapConsumed.has(unitKey(u)));
     const totalRemaining = remaining.length;
@@ -807,6 +865,7 @@ export class McpBridge {
       filePath: unit.filePath,
       itemIndex: unit.itemIndex,
       field: unit.field,
+      fieldIndex: unit.fieldIndex,
       targetLocales: unit.targetLocales,
     });
 
@@ -842,7 +901,7 @@ export class McpBridge {
       return { error: "translations must be an object" };
     }
 
-    const { platform, target, filePath, itemIndex, field, targetLocales } =
+    const { platform, target, filePath, itemIndex, field, fieldIndex, targetLocales } =
       session;
     const limit = this.getFieldLimit(platform, target, field);
     const failures: {
@@ -899,7 +958,7 @@ export class McpBridge {
           setIapLocale(platform, targetLoc, locale);
           planLocs.push(targetLoc);
         }
-        this.setPlanFieldValue(platform, targetLoc, field, value);
+        this.setPlanFieldValue(platform, targetLoc, field, value, fieldIndex);
       } else {
         const groupLocs = locs as IapSubscriptionGroupLocalization[];
         let targetLoc = groupLocs.find((l) => l.locale === locale);
@@ -927,7 +986,7 @@ export class McpBridge {
     if (ok) {
       // Mark this field done so iap_start_translation advances to the next one.
       this.iapConsumed.add(
-        `${platform}:${target}:${filePath}:${itemIndex}:${field}`,
+        `${platform}:${target}:${filePath}:${itemIndex}:${field}:${fieldIndex ?? ""}`,
       );
       this.iapSessions.delete(sessionId);
     } else {

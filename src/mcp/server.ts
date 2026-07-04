@@ -201,8 +201,10 @@ async function main() {
         "Get ONE in-app purchase field together with every target locale to " +
         "translate it into. Returns a sessionId, totalRemaining (fields left " +
         "to process), and a single `item`: { platform, target, fileName, " +
-        "field (title|description|name|custom_app_name), maxLength (the " +
-        "store's hard character limit for this field), source (the English " +
+        "field (title|description|benefit|name|custom_app_name), maxLength (the " +
+        "store's hard character limit for this field; `benefit` is one element " +
+        "of an Android plan's benefits list, each handed to you separately), " +
+        "source (the English " +
         "wording), targetLocales: [locale1, locale2, ...], reference }. The " +
         "source is always English; every target locale is (re)translated. " +
         "Translate `source` into EVERY locale in `targetLocales` in one pass. " +

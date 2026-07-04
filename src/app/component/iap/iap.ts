@@ -8,6 +8,7 @@ export interface IapLocalization {
   // Android
   languageCode?: string;
   title?: string;
+  benefits?: string[];
   // iOS
   locale?: string;
   name?: string;
@@ -38,6 +39,9 @@ export enum IapTranslateTarget {
 export enum IapField {
   title = "title",
   description = "description",
+  // One element of the Android `benefits` array. Each element is translated as
+  // its own unit (carrying its array index); Android-only.
+  benefit = "benefit",
   name = "name",
   customAppName = "custom_app_name",
 }
@@ -58,11 +62,21 @@ export const IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS = {
   custom_app_name: 30,
 };
 
+// Android plan `benefits` array limits (Play Store). Benefits are Android-only:
+// each element is capped at `length` chars and a plan may list at most
+// `maxCount` of them.
+export const IAP_PLAN_BENEFIT_LIMITS = {
+  length: 40,
+  maxCount: 4,
+};
+
 // Categories of problems reported by IapService.checkIapFiles, used as the
 // section labels in the IAP check picker.
 export enum IapCheckIssueType {
   titleTooLong = "Title too long",
   descriptionTooLong = "Description too long",
+  benefitTooLong = "Benefit too long",
+  tooManyBenefits = "Too many benefits",
   groupNameTooLong = "Group name too long",
   customAppNameTooLong = "custom_app_name too long",
   customAppNameInconsistent = "custom_app_name inconsistent",

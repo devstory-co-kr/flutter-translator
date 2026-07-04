@@ -9,6 +9,7 @@ import { TranslationService } from "../translation/translation.service";
 import {
   getIapLocale,
   getIapTitle,
+  IAP_PLAN_BENEFIT_LIMITS,
   IAP_PLAN_LENGTH_LIMITS,
   IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS,
   IapCheckIssue,
@@ -229,6 +230,11 @@ export class IapService {
 
               const sourceTitle = getIapTitle(platform, sourceItem);
               const sourceDesc = sourceItem.description;
+              // benefits are an Android-only array; translated element-wise.
+              const sourceBenefits =
+                platform === MetadataPlatform.android
+                  ? sourceItem.benefits
+                  : undefined;
 
               for (const targetLang of targetLanguages) {
                 if (token.isCancellationRequested) {
@@ -242,7 +248,13 @@ export class IapService {
                   message: `Translating ${this.getIapRelativePath(platform, file)} to ${targetLang.locale} (${current}/${total})`,
                 });
 
-                if (!sourceTitle && !sourceDesc) {continue;}
+                if (
+                  !sourceTitle &&
+                  !sourceDesc &&
+                  !(sourceBenefits && sourceBenefits.length > 0)
+                ) {
+                  continue;
+                }
 
                 let targetItem = plan.localizations.find(
                   (l) => getIapLocale(platform, l) === targetLang.locale
@@ -271,6 +283,15 @@ export class IapService {
                     targetLang: targetLang.translateLanguage,
                   });
                   targetItem.description = descRes.data[0];
+                }
+
+                if (sourceBenefits && sourceBenefits.length > 0) {
+                  const benefitsRes = await this.translationService.translate({
+                    queries: sourceBenefits,
+                    sourceLang: sourceMetadataLang.translateLanguage,
+                    targetLang: targetLang.translateLanguage,
+                  });
+                  targetItem.benefits = benefitsRes.data;
                 }
 
                 isModified = true;
@@ -438,6 +459,33 @@ export class IapService {
                   reason: `description exceeds ${descLimit} chars (${loc.description.length})`,
                   searchAnchor: this.fieldAnchor("description", loc.description),
                 });
+              }
+              // benefits are an Android-only array; skip on iOS.
+              if (platform === MetadataPlatform.android && loc.benefits) {
+                if (loc.benefits.length > IAP_PLAN_BENEFIT_LIMITS.maxCount) {
+                  issues.push({
+                    type: IapCheckIssueType.tooManyBenefits,
+                    filePath: file,
+                    fileLabel: label,
+                    platformTag: tag,
+                    locale: code,
+                    reason: `benefits exceeds ${IAP_PLAN_BENEFIT_LIMITS.maxCount} items (${loc.benefits.length})`,
+                    searchAnchor: `"benefits"`,
+                  });
+                }
+                for (const benefit of loc.benefits) {
+                  if (benefit.length > IAP_PLAN_BENEFIT_LIMITS.length) {
+                    issues.push({
+                      type: IapCheckIssueType.benefitTooLong,
+                      filePath: file,
+                      fileLabel: label,
+                      platformTag: tag,
+                      locale: code,
+                      reason: `benefit exceeds ${IAP_PLAN_BENEFIT_LIMITS.length} chars (${benefit.length})`,
+                      searchAnchor: JSON.stringify(benefit),
+                    });
+                  }
+                }
               }
             }
           }

@@ -177,6 +177,8 @@ export class Registry {
     languageService: this.languageService,
     configService: this.configService,
     translationCacheRepository: this.translationCacheRepository,
+    iapService: this.iapService,
+    metadataService: this.metadataService,
   });
 
   /**

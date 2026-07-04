@@ -2,9 +2,10 @@ import * as fs from "fs";
 import * as http from "http";
 import * as path from "path";
 
-// Bundled stdio MCP server. It owns no ARB logic — every tool forwards to the
-// VS Code extension's localhost HTTP bridge, which reuses the extension's ARB
-// services (config, validation, cache). The bridge discovery file is written by
+// Bundled stdio MCP server. It owns no translation logic — every tool forwards
+// to the VS Code extension's localhost HTTP bridge, which reuses the
+// extension's ARB and IAP services (config, validation, cache). The bridge
+// discovery file is written by
 // the extension into <workspace>/.vscode/flutter-translator/mcp-bridge.json.
 const BRIDGE_FILE = path.join(
   ".vscode",
@@ -168,6 +169,86 @@ async function main() {
       translations: Record<string, string>;
     }) =>
       asResult(await callBridge({ action: "finish", sessionId, translations }))
+  );
+
+  server.registerTool(
+    "list_iap_targets",
+    {
+      title: "List IAP translation targets",
+      description:
+        "List in-app purchase (App Store / Play Store product & subscription " +
+        "listing) fields to translate, grouped by { platform (android|ios), " +
+        "target (plans|subscriptionGroups), count }. `count` is the number of " +
+        "(field × target locale) pairs. Every target locale is (re)translated " +
+        "from English each run — Korean/English are hand-maintained and not " +
+        "included. Call this first to see the IAP work, then loop " +
+        "start_iap_translation / finish_iap_translation like the ARB tools.",
+      inputSchema: {},
+    },
+    async () => asResult(await callBridge({ action: "iap_list" }))
+  );
+
+  server.registerTool(
+    "start_iap_translation",
+    {
+      title: "Start IAP translation for one field",
+      description:
+        "Get ONE in-app purchase field together with every target locale to " +
+        "translate it into. Returns a sessionId, totalRemaining (fields left " +
+        "to process), maxLength (the store's hard character limit for this " +
+        "field), and a single `item`: { platform, target, fileName, " +
+        "field (title|description|name|custom_app_name), source (the English " +
+        "wording), targetLocales: [locale1, locale2, ...], reference }. The " +
+        "source is always English; every target locale is (re)translated. " +
+        "Translate `source` into EVERY locale in `targetLocales` in one pass. " +
+        "`reference` maps language names to the same " +
+        "field's wording in the user's hand-maintained locales (e.g. Korean) " +
+        "— match its meaning and tone rather than translating literally. These " +
+        "are store listing strings, so keep them concise, natural, and at or " +
+        "under maxLength characters (translations over the limit are rejected). " +
+        "Then call finish_iap_translation with the translations for this " +
+        "field, then call start_iap_translation again. Repeat until " +
+        "totalRemaining is 0.",
+      inputSchema: {},
+    },
+    async () => asResult(await callBridge({ action: "iap_start" }))
+  );
+
+  server.registerTool(
+    "finish_iap_translation",
+    {
+      title: "Finish IAP translation for one field",
+      description:
+        "Submit the translations for the field returned by " +
+        "start_iap_translation. Pass `sessionId` and `translations` as SEPARATE " +
+        "structured arguments (do NOT serialize into one raw JSON string). " +
+        "`translations` maps each target locale to its translated string, e.g. " +
+        '{ "ja-JP": "…", "de-DE": "…" }. Write each value as literal Unicode ' +
+        "characters, not \\uXXXX escapes, on a single line. The extension " +
+        "validates each value against the store character limit, writes the " +
+        "passing ones into the IAP JSON immediately, and returns any failing " +
+        "items as { locale, field, reason } for re-translation (shorten and " +
+        "resubmit those). On success, call start_iap_translation again for the " +
+        "next field.",
+      inputSchema: {
+        sessionId: z.string().describe("sessionId from start_iap_translation"),
+        translations: z
+          .record(z.string(), z.string())
+          .describe(
+            "Object mapping each target locale to its translated string"
+          ),
+      },
+    },
+    async ({
+      sessionId,
+      translations,
+    }: {
+      sessionId: string;
+      translations: Record<string, string>;
+    }) =>
+      asResult(
+        await callBridge({ action: "iap_finish", sessionId, translations })
+      )
   );
 
   const transport = new StdioServerTransport();

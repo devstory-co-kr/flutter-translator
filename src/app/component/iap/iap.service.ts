@@ -9,6 +9,8 @@ import { TranslationService } from "../translation/translation.service";
 import {
   getIapLocale,
   getIapTitle,
+  IAP_PLAN_LENGTH_LIMITS,
+  IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS,
   IapPlan,
   IapSubscriptionGroup,
   IapTranslateTarget,
@@ -62,14 +64,30 @@ export class IapService {
     );
   }
 
-  private readPlans(file: string): IapPlan[] {
+  public readPlans(file: string): IapPlan[] {
     const content = fs.readFileSync(file, "utf8");
     return JSON.parse(content);
+  }
+
+  public writePlans(file: string, plans: IapPlan[]): void {
+    fs.writeFileSync(file, JSON.stringify(plans, null, 2), "utf8");
   }
 
   private readSubscriptionGroups(file: string): IapSubscriptionGroup[] {
     const content = fs.readFileSync(file, "utf8");
     return JSON.parse(content);
+  }
+
+  public readSubscriptionGroupsFile(): IapSubscriptionGroup[] {
+    return this.readSubscriptionGroups(this.getSubscriptionGroupsFilePath());
+  }
+
+  public writeSubscriptionGroupsFile(groups: IapSubscriptionGroup[]): void {
+    fs.writeFileSync(
+      this.getSubscriptionGroupsFilePath(),
+      JSON.stringify(groups, null, 2),
+      "utf8"
+    );
   }
 
   public getCommonLanguagesInIapFiles(
@@ -219,6 +237,8 @@ export class IapService {
                   plan.localizations.push(targetItem);
                 }
 
+                // Always re-translate target languages (Korean/English are the
+                // hand-maintained source/exclude locales and never reach here).
                 if (sourceTitle) {
                   const titleRes = await this.translationService.translate({
                     queries: [sourceTitle],
@@ -317,6 +337,8 @@ export class IapService {
               group.localizations.push(targetItem);
             }
 
+            // Always re-translate target languages (Korean/English are the
+            // hand-maintained source/exclude locales and never reach here).
             if (sourceName) {
               const nameRes = await this.translationService.translate({
                 queries: [sourceName],
@@ -351,17 +373,9 @@ export class IapService {
   public checkIapFiles() {
     let hasError = false;
 
-    const platformLimits: Record<
-      MetadataPlatform,
-      { title: number; description: number }
-    > = {
-      [MetadataPlatform.android]: { title: 55, description: 200 },
-      [MetadataPlatform.ios]: { title: 35, description: 55 },
-    };
-
     for (const platform of [MetadataPlatform.android, MetadataPlatform.ios]) {
       const { title: titleLimit, description: descLimit } =
-        platformLimits[platform];
+        IAP_PLAN_LENGTH_LIMITS[platform];
       const tag = platform === MetadataPlatform.android ? "Android" : "iOS";
       const files = this.getIapFiles(platform);
       for (const file of files) {
@@ -414,15 +428,22 @@ export class IapService {
 
           for (const loc of group.localizations) {
             const code = loc.locale ?? "";
-            if (loc.name && loc.name.length > 75) {
+            if (
+              loc.name &&
+              loc.name.length > IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS.name
+            ) {
               Toast.e(
-                `[iOS] ${SUBSCRIPTION_GROUPS_FILE_NAME} - ${code}: name exceeds 75 chars (${loc.name.length})`
+                `[iOS] ${SUBSCRIPTION_GROUPS_FILE_NAME} - ${code}: name exceeds ${IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS.name} chars (${loc.name.length})`
               );
               hasError = true;
             }
-            if (loc.custom_app_name && loc.custom_app_name.length > 30) {
+            if (
+              loc.custom_app_name &&
+              loc.custom_app_name.length >
+                IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS.custom_app_name
+            ) {
               Toast.e(
-                `[iOS] ${SUBSCRIPTION_GROUPS_FILE_NAME} - ${code}: custom_app_name exceeds 30 chars (${loc.custom_app_name.length})`
+                `[iOS] ${SUBSCRIPTION_GROUPS_FILE_NAME} - ${code}: custom_app_name exceeds ${IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS.custom_app_name} chars (${loc.custom_app_name.length})`
               );
               hasError = true;
             }

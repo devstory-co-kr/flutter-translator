@@ -2,6 +2,15 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
+## [2.6.2] - 26.07.05
+
+### Added
+
+- Add IAP translation through the bundled Claude Code MCP server (`list_iap_targets`, `start_iap_translation`, `finish_iap_translation`, `check_iap_translations` tools), reusing the extension's IAP services for config, validation, and file writing.
+- Add Android plan `benefits` translation and validation (each benefit up to 40 chars, up to 4 benefits per plan).
+- Add untranslated-locale detection to the `IAP - Check` command and to `check_iap_translations`.
+- Add support for IAP plan files placed in subfolders under `in_app_purchases`.
+
 ## [2.6.1] - 26.06.30
 
 ### Fixed

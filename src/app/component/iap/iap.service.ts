@@ -503,10 +503,10 @@ export class IapService {
           if (!group.localizations) {continue;}
 
           const withCustom = group.localizations.filter(
-            (l) => l.custom_app_name != null
+            (l) => l.custom_app_name !== null
           );
           const withoutCustom = group.localizations.filter(
-            (l) => "custom_app_name" in l && l.custom_app_name == null
+            (l) => "custom_app_name" in l && l.custom_app_name === null
           );
           if (withCustom.length > 0 && withoutCustom.length > 0) {
             const nullLocales = withoutCustom.map((l) => l.locale ?? "").join(", ");

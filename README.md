@@ -137,7 +137,7 @@ Translate and validate In-App Purchase plan files for Android (Google Play Billi
 1. Prepare the IAP plan JSON file(s) under the platform's `fastlane/in_app_purchases` directory. For iOS, optionally place `subscription_groups.json` in the same directory to translate and validate subscription group localizations.
 1. Run `Flutter Translator: IAP - Translate` to translate plan localizations (and iOS subscription group localizations) into selected target languages.
 1. Run `Flutter Translator: IAP - Check` to validate that each localization's fields are within the store-allowed length limits.
-   - Android limits: `title` 55 chars, `description` 200 chars.
+   - Android limits: `title` 55 chars, `description` 200 chars, each `benefit` 40 chars (up to 4 benefits per plan).
    - iOS plan limits: `name` 35 chars, `description` 55 chars.
    - iOS subscription group limits: `name` 75 chars, `custom_app_name` 30 chars.
 1. The expected folder structure is as follows. File names under `in_app_purchases` (except `subscription_groups.json`) are arbitrary (e.g. `plans.json`, or one JSON per product).
@@ -153,7 +153,7 @@ Translate and validate In-App Purchase plan files for Android (Google Play Billi
                └── subscription_groups.json
    ```
 1. Each `plans.json` contains an array of plans. Localization fields differ per platform.
-   - Android (`languageCode`, `title`, `description`)
+   - Android (`languageCode`, `title`, `description`, optional `benefits`)
      ```json
      [
        {
@@ -162,7 +162,8 @@ Translate and validate In-App Purchase plan files for Android (Google Play Billi
            {
              "languageCode": "en-US",
              "title": "Premium",
-             "description": "Unlock all premium features."
+             "description": "Unlock all premium features.",
+             "benefits": ["Ad-free", "Cloud sync"]
            }
          ]
        }
@@ -327,7 +328,7 @@ It is recommended to set the configuration in the project workspace(`.vscode/set
 
 ## Claude Code MCP
 
-Translate your ARB files with [Claude Code](https://docs.claude.com/en/docs/claude-code/overview) using your Claude subscription instead of the Google Translate API. The extension ships a built-in [MCP](https://modelcontextprotocol.io) server that exposes the same ARB logic (config, validation, cache) the extension uses, so Claude does the translating while the extension keeps writing the files.
+Translate your ARB and IAP (In-App Purchase) files with [Claude Code](https://docs.claude.com/en/docs/claude-code/overview) using your Claude subscription instead of the Google Translate API. The extension ships a built-in [MCP](https://modelcontextprotocol.io) server that exposes the same ARB and IAP logic (config, validation, cache) the extension uses, so Claude does the translating while the extension keeps writing the files.
 
 ### Setup
 
@@ -339,11 +340,22 @@ Translate your ARB files with [Claude Code](https://docs.claude.com/en/docs/clau
 
 While the project is open in VS Code, the extension runs a localhost bridge so the MCP server can reuse the extension's ARB services. Reference languages (the ones in `arbConfig.exclude`) are never translated automatically — they are only used as context. Claude Code uses these tools:
 
+**ARB tools**
+
 - `list_targets` : lists target languages that have untranslated strings, with the count for each.
 - `start_translation` : returns one untranslated key together with every target language it is still missing in, the source string, and the matching wording from your hand-maintained reference languages so Claude can match the intended meaning, tone, and length. Claude translates that single key into all of those languages at once.
 - `finish_translation` : validates placeholders, writes and caches the passing translations into each target ARB file (keeping the source key order), and returns any failing items for re-translation.
 
 Claude Code repeats the start/finish calls one key at a time until everything is translated.
+
+**IAP tools**
+
+The same flow works for [IAP](#iap) plan and iOS subscription group files. The English (`en-US`) locale is the source; every other target locale is translated, and store character limits are enforced automatically.
+
+- `list_iap_targets` : lists the fields to translate, grouped by `{ platform (android|ios), target (plans|subscriptionGroups), count }`.
+- `start_iap_translation` : returns one field (`title`, `description`, Android `benefit`, `name`, or `custom_app_name`) with every target locale to translate it into, the English source, the field's store character limit, and the matching wording from your hand-maintained reference locales.
+- `finish_iap_translation` : validates each value against the store character limit, writes the passing ones into the IAP JSON, and returns any failing items for re-translation.
+- `check_iap_translations` : verifies every written IAP string across all files, reporting untranslated locales, over-limit fields, and `custom_app_name` inconsistencies.
 
 > The MCP server only works while the project is open in VS Code with the Flutter Translator extension enabled, and Claude Code must be launched from inside that project folder.
 

@@ -9,6 +9,11 @@ import { TranslationService } from "../translation/translation.service";
 import {
   getIapLocale,
   getIapTitle,
+  IAP_PLAN_BENEFIT_LIMITS,
+  IAP_PLAN_LENGTH_LIMITS,
+  IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS,
+  IapCheckIssue,
+  IapCheckIssueType,
   IapPlan,
   IapSubscriptionGroup,
   IapTranslateTarget,
@@ -41,35 +46,66 @@ export class IapService {
     );
   }
 
-  public getIapFiles(platform: MetadataPlatform): string[] {
-    const dir = this.getIapDirectory(platform);
+  // Collect every *.json under `dir` recursively, so IAP files are found
+  // regardless of whether they sit directly in in_app_purchases/ (flat layout)
+  // or under flavor subfolders (e.g. dev/, prod/).
+  private collectJsonFiles(dir: string): string[] {
     if (!fs.existsSync(dir)) {
       return [];
     }
-    return fs
-      .readdirSync(dir)
-      .filter(
-        (file) =>
-          file.endsWith(".json") && file !== SUBSCRIPTION_GROUPS_FILE_NAME
-      )
-      .map((file) => path.join(dir, file));
+    const result: string[] = [];
+    for (const entry of fs.readdirSync(dir, { withFileTypes: true })) {
+      const full = path.join(dir, entry.name);
+      if (entry.isDirectory()) {
+        result.push(...this.collectJsonFiles(full));
+      } else if (entry.isFile() && entry.name.endsWith(".json")) {
+        result.push(full);
+      }
+    }
+    return result;
   }
 
-  public getSubscriptionGroupsFilePath(): string {
-    return path.join(
-      this.getIapDirectory(MetadataPlatform.ios),
-      SUBSCRIPTION_GROUPS_FILE_NAME
+  public getIapFiles(platform: MetadataPlatform): string[] {
+    return this.collectJsonFiles(this.getIapDirectory(platform)).filter(
+      (file) => path.basename(file) !== SUBSCRIPTION_GROUPS_FILE_NAME
     );
   }
 
-  private readPlans(file: string): IapPlan[] {
+  public getSubscriptionGroupsFiles(): string[] {
+    return this.collectJsonFiles(
+      this.getIapDirectory(MetadataPlatform.ios)
+    ).filter((file) => path.basename(file) === SUBSCRIPTION_GROUPS_FILE_NAME);
+  }
+
+  // Path relative to the platform's in_app_purchases dir, e.g. "dev/plans.json",
+  // so log/progress messages disambiguate same-named files across flavors.
+  private getIapRelativePath(platform: MetadataPlatform, file: string): string {
+    return path.relative(this.getIapDirectory(platform), file);
+  }
+
+  public readPlans(file: string): IapPlan[] {
     const content = fs.readFileSync(file, "utf8");
     return JSON.parse(content);
+  }
+
+  public writePlans(file: string, plans: IapPlan[]): void {
+    fs.writeFileSync(file, JSON.stringify(plans, null, 2), "utf8");
   }
 
   private readSubscriptionGroups(file: string): IapSubscriptionGroup[] {
     const content = fs.readFileSync(file, "utf8");
     return JSON.parse(content);
+  }
+
+  public readSubscriptionGroupsFile(file: string): IapSubscriptionGroup[] {
+    return this.readSubscriptionGroups(file);
+  }
+
+  public writeSubscriptionGroupsFile(
+    file: string,
+    groups: IapSubscriptionGroup[]
+  ): void {
+    fs.writeFileSync(file, JSON.stringify(groups, null, 2), "utf8");
   }
 
   public getCommonLanguagesInIapFiles(
@@ -99,8 +135,7 @@ export class IapService {
         }
       }
     } else {
-      const sgFile = this.getSubscriptionGroupsFilePath();
-      if (fs.existsSync(sgFile)) {
+      for (const sgFile of this.getSubscriptionGroupsFiles()) {
         try {
           const groups = this.readSubscriptionGroups(sgFile);
           for (const group of groups) {
@@ -195,6 +230,11 @@ export class IapService {
 
               const sourceTitle = getIapTitle(platform, sourceItem);
               const sourceDesc = sourceItem.description;
+              // benefits are an Android-only array; translated element-wise.
+              const sourceBenefits =
+                platform === MetadataPlatform.android
+                  ? sourceItem.benefits
+                  : undefined;
 
               for (const targetLang of targetLanguages) {
                 if (token.isCancellationRequested) {
@@ -205,10 +245,16 @@ export class IapService {
                 current++;
                 progress.report({
                   increment: 100 / total,
-                  message: `Translating ${path.basename(file)} to ${targetLang.locale} (${current}/${total})`,
+                  message: `Translating ${this.getIapRelativePath(platform, file)} to ${targetLang.locale} (${current}/${total})`,
                 });
 
-                if (!sourceTitle && !sourceDesc) {continue;}
+                if (
+                  !sourceTitle &&
+                  !sourceDesc &&
+                  !(sourceBenefits && sourceBenefits.length > 0)
+                ) {
+                  continue;
+                }
 
                 let targetItem = plan.localizations.find(
                   (l) => getIapLocale(platform, l) === targetLang.locale
@@ -219,6 +265,8 @@ export class IapService {
                   plan.localizations.push(targetItem);
                 }
 
+                // Always re-translate target languages (Korean/English are the
+                // hand-maintained source/exclude locales and never reach here).
                 if (sourceTitle) {
                   const titleRes = await this.translationService.translate({
                     queries: [sourceTitle],
@@ -235,6 +283,15 @@ export class IapService {
                     targetLang: targetLang.translateLanguage,
                   });
                   targetItem.description = descRes.data[0];
+                }
+
+                if (sourceBenefits && sourceBenefits.length > 0) {
+                  const benefitsRes = await this.translationService.translate({
+                    queries: sourceBenefits,
+                    sourceLang: sourceMetadataLang.translateLanguage,
+                    targetLang: targetLang.translateLanguage,
+                  });
+                  targetItem.benefits = benefitsRes.data;
                 }
 
                 isModified = true;
@@ -257,21 +314,26 @@ export class IapService {
     sourceMetadataLang: MetadataLanguage,
     targetLanguages: MetadataLanguage[]
   ) {
-    const sgFile = this.getSubscriptionGroupsFilePath();
-    if (!fs.existsSync(sgFile)) {
+    const files = this.getSubscriptionGroupsFiles();
+    if (files.length === 0) {
       Toast.e(`${SUBSCRIPTION_GROUPS_FILE_NAME} not found.`);
       return;
     }
 
-    let groups: IapSubscriptionGroup[];
-    try {
-      groups = this.readSubscriptionGroups(sgFile);
-    } catch (e) {
-      Toast.e(`Failed to parse ${SUBSCRIPTION_GROUPS_FILE_NAME}.`);
-      return;
+    const parsed: { file: string; groups: IapSubscriptionGroup[] }[] = [];
+    for (const file of files) {
+      try {
+        parsed.push({ file, groups: this.readSubscriptionGroups(file) });
+      } catch (e) {
+        Toast.e(
+          `Failed to parse ${this.getIapRelativePath(MetadataPlatform.ios, file)}.`
+        );
+      }
     }
 
-    const total = groups.length * targetLanguages.length;
+    const total =
+      parsed.reduce((sum, p) => sum + p.groups.length, 0) *
+      targetLanguages.length;
     let current = 0;
 
     await vscode.window.withProgress(
@@ -280,91 +342,95 @@ export class IapService {
         cancellable: true,
       },
       async (progress, token) => {
-        let isModified = false;
+        for (const { file, groups } of parsed) {
+          let isModified = false;
 
-        for (const group of groups) {
-          if (!group.localizations) {group.localizations = [];}
-          const sourceItem = group.localizations.find(
-            (l) => l.locale === sourceLocale
-          );
-          if (!sourceItem) {
-            current += targetLanguages.length;
-            continue;
-          }
-
-          const sourceName = sourceItem.name;
-          const sourceCustomAppName = sourceItem.custom_app_name;
-
-          for (const targetLang of targetLanguages) {
-            if (token.isCancellationRequested) {
-              Toast.i(`🟠 Canceled`);
-              return;
-            }
-
-            current++;
-            progress.report({
-              increment: 100 / total,
-              message: `Translating ${SUBSCRIPTION_GROUPS_FILE_NAME} to ${targetLang.locale} (${current}/${total})`,
-            });
-
-            if (!sourceName && sourceCustomAppName === undefined) {continue;}
-
-            let targetItem = group.localizations.find(
-              (l) => l.locale === targetLang.locale
+          for (const group of groups) {
+            if (!group.localizations) {group.localizations = [];}
+            const sourceItem = group.localizations.find(
+              (l) => l.locale === sourceLocale
             );
-            if (!targetItem) {
-              targetItem = { locale: targetLang.locale };
-              group.localizations.push(targetItem);
+            if (!sourceItem) {
+              current += targetLanguages.length;
+              continue;
             }
 
-            if (sourceName) {
-              const nameRes = await this.translationService.translate({
-                queries: [sourceName],
-                sourceLang: sourceMetadataLang.translateLanguage,
-                targetLang: targetLang.translateLanguage,
+            const sourceName = sourceItem.name;
+            const sourceCustomAppName = sourceItem.custom_app_name;
+
+            for (const targetLang of targetLanguages) {
+              if (token.isCancellationRequested) {
+                Toast.i(`🟠 Canceled`);
+                return;
+              }
+
+              current++;
+              progress.report({
+                increment: 100 / total,
+                message: `Translating ${this.getIapRelativePath(MetadataPlatform.ios, file)} to ${targetLang.locale} (${current}/${total})`,
               });
-              targetItem.name = nameRes.data[0];
-            }
 
-            if (sourceCustomAppName) {
-              const customRes = await this.translationService.translate({
-                queries: [sourceCustomAppName],
-                sourceLang: sourceMetadataLang.translateLanguage,
-                targetLang: targetLang.translateLanguage,
-              });
-              targetItem.custom_app_name = customRes.data[0];
-            } else {
-              targetItem.custom_app_name = null;
-            }
+              if (!sourceName && sourceCustomAppName === undefined) {continue;}
 
-            isModified = true;
+              let targetItem = group.localizations.find(
+                (l) => l.locale === targetLang.locale
+              );
+              if (!targetItem) {
+                targetItem = { locale: targetLang.locale };
+                group.localizations.push(targetItem);
+              }
+
+              // Always re-translate target languages (Korean/English are the
+              // hand-maintained source/exclude locales and never reach here).
+              if (sourceName) {
+                const nameRes = await this.translationService.translate({
+                  queries: [sourceName],
+                  sourceLang: sourceMetadataLang.translateLanguage,
+                  targetLang: targetLang.translateLanguage,
+                });
+                targetItem.name = nameRes.data[0];
+              }
+
+              if (sourceCustomAppName) {
+                const customRes = await this.translationService.translate({
+                  queries: [sourceCustomAppName],
+                  sourceLang: sourceMetadataLang.translateLanguage,
+                  targetLang: targetLang.translateLanguage,
+                });
+                targetItem.custom_app_name = customRes.data[0];
+              } else {
+                targetItem.custom_app_name = null;
+              }
+
+              isModified = true;
+            }
           }
-        }
 
-        if (isModified) {
-          fs.writeFileSync(sgFile, JSON.stringify(groups, null, 2), "utf8");
+          if (isModified) {
+            fs.writeFileSync(file, JSON.stringify(groups, null, 2), "utf8");
+          }
         }
       }
     );
   }
 
-  public checkIapFiles() {
-    let hasError = false;
+  // Anchor text to locate a "key": "value" pair in a 2-space-indented JSON file.
+  private fieldAnchor(jsonKey: string, value: string): string {
+    return `${JSON.stringify(jsonKey)}: ${JSON.stringify(value)}`;
+  }
 
-    const platformLimits: Record<
-      MetadataPlatform,
-      { title: number; description: number }
-    > = {
-      [MetadataPlatform.android]: { title: 55, description: 200 },
-      [MetadataPlatform.ios]: { title: 35, description: 55 },
-    };
+  // Scan every IAP file and return the length/consistency problems found, so the
+  // caller can list them for selection and navigation.
+  public checkIapFiles(): IapCheckIssue[] {
+    const issues: IapCheckIssue[] = [];
 
     for (const platform of [MetadataPlatform.android, MetadataPlatform.ios]) {
       const { title: titleLimit, description: descLimit } =
-        platformLimits[platform];
+        IAP_PLAN_LENGTH_LIMITS[platform];
       const tag = platform === MetadataPlatform.android ? "Android" : "iOS";
-      const files = this.getIapFiles(platform);
-      for (const file of files) {
+      const titleKey = platform === MetadataPlatform.android ? "title" : "name";
+      for (const file of this.getIapFiles(platform)) {
+        const label = this.getIapRelativePath(platform, file);
         try {
           const plans = this.readPlans(file);
           for (const plan of plans) {
@@ -373,66 +439,130 @@ export class IapService {
               const code = getIapLocale(platform, loc) ?? "";
               const title = getIapTitle(platform, loc);
               if (title && title.length > titleLimit) {
-                Toast.e(
-                  `[${tag}] ${path.basename(file)} - ${code}: title exceeds ${titleLimit} chars (${title.length})`
-                );
-                hasError = true;
+                issues.push({
+                  type: IapCheckIssueType.titleTooLong,
+                  filePath: file,
+                  fileLabel: label,
+                  platformTag: tag,
+                  locale: code,
+                  reason: `title exceeds ${titleLimit} chars (${title.length})`,
+                  searchAnchor: this.fieldAnchor(titleKey, title),
+                });
               }
               if (loc.description && loc.description.length > descLimit) {
-                Toast.e(
-                  `[${tag}] ${path.basename(file)} - ${code}: description exceeds ${descLimit} chars (${loc.description.length})`
-                );
-                hasError = true;
+                issues.push({
+                  type: IapCheckIssueType.descriptionTooLong,
+                  filePath: file,
+                  fileLabel: label,
+                  platformTag: tag,
+                  locale: code,
+                  reason: `description exceeds ${descLimit} chars (${loc.description.length})`,
+                  searchAnchor: this.fieldAnchor("description", loc.description),
+                });
+              }
+              // benefits are an Android-only array; skip on iOS.
+              if (platform === MetadataPlatform.android && loc.benefits) {
+                if (loc.benefits.length > IAP_PLAN_BENEFIT_LIMITS.maxCount) {
+                  issues.push({
+                    type: IapCheckIssueType.tooManyBenefits,
+                    filePath: file,
+                    fileLabel: label,
+                    platformTag: tag,
+                    locale: code,
+                    reason: `benefits exceeds ${IAP_PLAN_BENEFIT_LIMITS.maxCount} items (${loc.benefits.length})`,
+                    searchAnchor: `"benefits"`,
+                  });
+                }
+                for (const benefit of loc.benefits) {
+                  if (benefit.length > IAP_PLAN_BENEFIT_LIMITS.length) {
+                    issues.push({
+                      type: IapCheckIssueType.benefitTooLong,
+                      filePath: file,
+                      fileLabel: label,
+                      platformTag: tag,
+                      locale: code,
+                      reason: `benefit exceeds ${IAP_PLAN_BENEFIT_LIMITS.length} chars (${benefit.length})`,
+                      searchAnchor: JSON.stringify(benefit),
+                    });
+                  }
+                }
               }
             }
           }
-        } catch (e) {}
+        } catch (e) {
+          console.error(`Failed to parse ${label}:`, e);
+        }
       }
     }
 
-    const sgFile = this.getSubscriptionGroupsFilePath();
-    if (fs.existsSync(sgFile)) {
+    for (const sgFile of this.getSubscriptionGroupsFiles()) {
+      const label = this.getIapRelativePath(MetadataPlatform.ios, sgFile);
       try {
         const groups = this.readSubscriptionGroups(sgFile);
         for (const group of groups) {
           if (!group.localizations) {continue;}
 
           const withCustom = group.localizations.filter(
-            (l) => l.custom_app_name != null
+            (l) => l.custom_app_name !== null
           );
           const withoutCustom = group.localizations.filter(
-            (l) => "custom_app_name" in l && l.custom_app_name == null
+            (l) => "custom_app_name" in l && l.custom_app_name === null
           );
           if (withCustom.length > 0 && withoutCustom.length > 0) {
             const nullLocales = withoutCustom.map((l) => l.locale ?? "").join(", ");
             const valueLocales = withCustom.map((l) => l.locale ?? "").join(", ");
-            Toast.e(
-              `[iOS] ${SUBSCRIPTION_GROUPS_FILE_NAME}: custom_app_name is inconsistent — null in [${nullLocales}], set in [${valueLocales}]`
-            );
-            hasError = true;
+            issues.push({
+              type: IapCheckIssueType.customAppNameInconsistent,
+              filePath: sgFile,
+              fileLabel: label,
+              platformTag: "iOS",
+              locale: "",
+              reason: `custom_app_name inconsistent — null in [${nullLocales}], set in [${valueLocales}]`,
+              searchAnchor: "",
+            });
           }
 
           for (const loc of group.localizations) {
             const code = loc.locale ?? "";
-            if (loc.name && loc.name.length > 75) {
-              Toast.e(
-                `[iOS] ${SUBSCRIPTION_GROUPS_FILE_NAME} - ${code}: name exceeds 75 chars (${loc.name.length})`
-              );
-              hasError = true;
+            if (
+              loc.name &&
+              loc.name.length > IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS.name
+            ) {
+              issues.push({
+                type: IapCheckIssueType.groupNameTooLong,
+                filePath: sgFile,
+                fileLabel: label,
+                platformTag: "iOS",
+                locale: code,
+                reason: `name exceeds ${IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS.name} chars (${loc.name.length})`,
+                searchAnchor: this.fieldAnchor("name", loc.name),
+              });
             }
-            if (loc.custom_app_name && loc.custom_app_name.length > 30) {
-              Toast.e(
-                `[iOS] ${SUBSCRIPTION_GROUPS_FILE_NAME} - ${code}: custom_app_name exceeds 30 chars (${loc.custom_app_name.length})`
-              );
-              hasError = true;
+            if (
+              loc.custom_app_name &&
+              loc.custom_app_name.length >
+                IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS.custom_app_name
+            ) {
+              issues.push({
+                type: IapCheckIssueType.customAppNameTooLong,
+                filePath: sgFile,
+                fileLabel: label,
+                platformTag: "iOS",
+                locale: code,
+                reason: `custom_app_name exceeds ${IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS.custom_app_name} chars (${loc.custom_app_name.length})`,
+                searchAnchor: this.fieldAnchor(
+                  "custom_app_name",
+                  loc.custom_app_name
+                ),
+              });
             }
           }
         }
-      } catch (e) {}
+      } catch (e) {
+        console.error(`Failed to parse ${label}:`, e);
+      }
     }
 
-    if (!hasError) {
-      Toast.i("IAP Check Passed: All lengths are within limits.");
-    }
+    return issues;
   }
 }

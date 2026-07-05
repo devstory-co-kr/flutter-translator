@@ -6,7 +6,24 @@ import * as vscode from "vscode";
 import { ARB, ARBService } from "../app/component/arb/arb";
 import { ARBValidationRepository } from "../app/component/arb/validation/arb_validation.repository";
 import { ConfigService } from "../app/component/config/config";
+import {
+  getIapLocale,
+  getIapTitle,
+  IAP_PLAN_BENEFIT_LIMITS,
+  IAP_PLAN_LENGTH_LIMITS,
+  IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS,
+  IapCheckIssueType,
+  IapField,
+  IapLocalization,
+  IapSubscriptionGroupLocalization,
+  IapTranslateTarget,
+  setIapLocale,
+  setIapTitle,
+} from "../app/component/iap/iap";
+import { IapService } from "../app/component/iap/iap.service";
 import { LanguageService } from "../app/component/language/language.service";
+import { MetadataPlatform } from "../app/component/metadata/metadata";
+import { MetadataService } from "../app/component/metadata/metadata.service";
 import { TranslationCacheKey } from "../app/component/translation/cache/translation_cache";
 import { TranslationCacheRepository } from "../app/component/translation/cache/translation_cache.repository";
 import { Logger } from "../app/util/logger";
@@ -19,12 +36,53 @@ type Session = {
   missingIn: string[];
 };
 
+// Per-field IAP translation session. Mirrors the ARB `Session`: one logical
+// field of one plan/group (identified by file path + array index) translated
+// into all its target locales.
+type IapSession = {
+  platform: MetadataPlatform;
+  target: IapTranslateTarget;
+  filePath: string;
+  itemIndex: number;
+  field: IapField;
+  // Array index within the field when it is a `benefits` element; undefined for
+  // scalar fields (title/description/name/custom_app_name).
+  fieldIndex?: number;
+  targetLocales: string[];
+};
+
+// The hand-maintained English source locale for IAP. Other en-* locales
+// (en-GB, en-AU, …) are translation targets filled from this one.
+const IAP_ENGLISH_SOURCE_LOCALE = "en-US";
+
+// A single translatable IAP field occurrence and the locales it must be
+// (re)translated into — the IAP analogue of an untranslated ARB key. Unlike
+// ARB, every target locale is always (re)translated, not only missing ones;
+// the en-US source and the exclude locales (e.g. Korean) are hand-maintained
+// and are not in targetLocales.
+type IapUnit = {
+  platform: MetadataPlatform;
+  target: IapTranslateTarget;
+  filePath: string;
+  fileName: string;
+  itemIndex: number;
+  field: IapField;
+  // Array index within the field when it is a `benefits` element; undefined for
+  // scalar fields.
+  fieldIndex?: number;
+  source: string;
+  targetLocales: string[];
+  reference: Record<string, string>;
+};
+
 interface InitParams {
   arbService: ARBService;
   arbValidationRepository: ARBValidationRepository;
   languageService: LanguageService;
   configService: ConfigService;
   translationCacheRepository: TranslationCacheRepository;
+  iapService: IapService;
+  metadataService: MetadataService;
 }
 
 // localhost HTTP bridge that lets the bundled MCP server reuse the extension's
@@ -36,11 +94,18 @@ export class McpBridge {
   private languageService: LanguageService;
   private configService: ConfigService;
   private translationCacheRepository: TranslationCacheRepository;
+  private iapService: IapService;
+  private metadataService: MetadataService;
 
   private server?: http.Server;
   private token?: string;
   private bridgeFilePath?: string;
   private sessions = new Map<string, Session>();
+  private iapSessions = new Map<string, IapSession>();
+  // Identities of IAP field units already translated in the current loop, so
+  // iap_start_translation advances to the next field instead of always handing
+  // back units[0]. Cleared once every unit is consumed (loop finished).
+  private iapConsumed = new Set<string>();
 
   constructor({
     arbService,
@@ -48,12 +113,16 @@ export class McpBridge {
     languageService,
     configService,
     translationCacheRepository,
+    iapService,
+    metadataService,
   }: InitParams) {
     this.arbService = arbService;
     this.arbValidationRepository = arbValidationRepository;
     this.languageService = languageService;
     this.configService = configService;
     this.translationCacheRepository = translationCacheRepository;
+    this.iapService = iapService;
+    this.metadataService = metadataService;
   }
 
   public async start(): Promise<void> {
@@ -133,6 +202,17 @@ export class McpBridge {
           request.sessionId,
           request.translations,
         );
+      case "iap_list":
+        return this.iap_list();
+      case "iap_start":
+        return this.iap_start_translation();
+      case "iap_finish":
+        return this.iap_finish_translation(
+          request.sessionId,
+          request.translations,
+        );
+      case "iap_check":
+        return this.iap_check();
       default:
         return { error: `Unknown action: ${request.action}` };
     }
@@ -417,5 +497,709 @@ export class McpBridge {
       this.sessions.delete(sessionId);
     }
     return { ok, written, failures };
+  }
+
+  // ===========================================================================
+  // IAP (in-app purchase store listings) — same list/start/finish shape as ARB,
+  // but the translation unit is one logical field (title/description of a plan,
+  // or name/custom_app_name of a subscription group) instead of an ARB key.
+  // The source language is English; the metadata exclude locales (the same role
+  // arbConfig.exclude plays for ARB, e.g. Korean) are hand-maintained: they are
+  // never translation targets and are surfaced as `reference` context instead.
+  // ===========================================================================
+
+  private getIapExcludeLocaleSet(): Set<string> {
+    return new Set(this.configService.getMetadataExcludeLocaleList());
+  }
+
+  // Human-readable name for a locale, for the `reference` map. Falls back to
+  // the raw locale when the platform has no matching support language.
+  private getLocaleName(platform: MetadataPlatform, locale: string): string {
+    const match = this.metadataService
+      .getSupportMetadataLanguages(platform)
+      .find((l) => l.locale === locale);
+    return match?.name ?? locale;
+  }
+
+  // The English source locale present in the files, used as the translation
+  // source. en-US is the hand-maintained source, so it is preferred; other en-*
+  // locales are translation targets and must not be picked as the source (that
+  // would overwrite them). Falls back to the first English locale when en-US is
+  // absent. undefined when no English localization exists — nothing to
+  // translate from.
+  private findSourceLocale(
+    platform: MetadataPlatform,
+    presentLocales: Set<string>,
+  ): { locale: string } | undefined {
+    const languages = this.metadataService.getSupportMetadataLanguages(
+      platform,
+    );
+    const englishLocales = [...presentLocales].filter(
+      (locale) =>
+        languages.find((l) => l.locale === locale)?.translateLanguage
+          .languageCode === "en",
+    );
+    if (englishLocales.length === 0) {
+      return undefined;
+    }
+    const locale =
+      englishLocales.find((l) => l === IAP_ENGLISH_SOURCE_LOCALE) ??
+      englishLocales[0];
+    return { locale };
+  }
+
+  // The locales to translate INTO: the platform's configured metadata languages
+  // (the locales the app actually ships store listings in — folders under
+  // fastlane metadata), minus the source locale (en-US only, not other en-*
+  // variants like en-GB/en-AU which are themselves translated) and the
+  // hand-maintained exclude locales. This mirrors ARB using the configured
+  // target language list rather than whatever locales already happen to appear
+  // inside the IAP file.
+  private getIapTargetLocales(
+    platform: MetadataPlatform,
+    sourceLocale: string,
+  ): string[] {
+    const excludeSet = this.getIapExcludeLocaleSet();
+    return this.metadataService
+      .getMetadataLanguagesInPlatform(platform)
+      .filter((l) => l.locale !== sourceLocale && !excludeSet.has(l.locale))
+      .map((l) => l.locale);
+  }
+
+  private getPlanFieldValue(
+    platform: MetadataPlatform,
+    loc: IapLocalization,
+    field: IapField,
+    fieldIndex?: number,
+  ): string | undefined {
+    if (field === IapField.title) {
+      return getIapTitle(platform, loc);
+    }
+    if (field === IapField.benefit) {
+      return loc.benefits?.[fieldIndex!];
+    }
+    return loc.description;
+  }
+
+  private setPlanFieldValue(
+    platform: MetadataPlatform,
+    loc: IapLocalization,
+    field: IapField,
+    value: string,
+    fieldIndex?: number,
+  ): void {
+    if (field === IapField.title) {
+      setIapTitle(platform, loc, value);
+    } else if (field === IapField.benefit) {
+      if (!loc.benefits) {
+        loc.benefits = [];
+      }
+      loc.benefits[fieldIndex!] = value;
+    } else {
+      loc.description = value;
+    }
+  }
+
+  private getGroupFieldValue(
+    loc: IapSubscriptionGroupLocalization,
+    field: IapField,
+  ): string | undefined {
+    return field === IapField.name ? loc.name : loc.custom_app_name ?? undefined;
+  }
+
+  private setGroupFieldValue(
+    loc: IapSubscriptionGroupLocalization,
+    field: IapField,
+    value: string,
+  ): void {
+    if (field === IapField.name) {
+      loc.name = value;
+    } else {
+      loc.custom_app_name = value;
+    }
+  }
+
+  private getFieldLimit(
+    platform: MetadataPlatform,
+    target: IapTranslateTarget,
+    field: IapField,
+  ): number {
+    if (target === IapTranslateTarget.plans) {
+      const limits = IAP_PLAN_LENGTH_LIMITS[platform];
+      if (field === IapField.title) {
+        return limits.title;
+      }
+      if (field === IapField.benefit) {
+        return IAP_PLAN_BENEFIT_LIMITS.length;
+      }
+      return limits.description;
+    }
+    return field === IapField.name
+      ? IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS.name
+      : IAP_SUBSCRIPTION_GROUP_LENGTH_LIMITS.custom_app_name;
+  }
+
+  // Untranslated field units for every plan file of a platform.
+  private enumeratePlanUnits(platform: MetadataPlatform): IapUnit[] {
+    const excludeSet = this.getIapExcludeLocaleSet();
+    const units: IapUnit[] = [];
+    for (const filePath of this.iapService.getIapFiles(platform)) {
+      let plans;
+      try {
+        plans = this.iapService.readPlans(filePath);
+      } catch {
+        continue;
+      }
+      const fileName = path.basename(filePath);
+      // The English source must actually exist in the file to translate from.
+      const present = new Set<string>();
+      for (const plan of plans) {
+        for (const loc of plan.localizations ?? []) {
+          const code = getIapLocale(platform, loc);
+          if (code) {
+            present.add(code);
+          }
+        }
+      }
+      const sourceInfo = this.findSourceLocale(platform, present);
+      if (!sourceInfo) {
+        continue;
+      }
+      const sourceLocale = sourceInfo.locale;
+      const targetLocales = this.getIapTargetLocales(platform, sourceLocale);
+
+      plans.forEach((plan, itemIndex) => {
+        const locs = plan.localizations ?? [];
+        const sourceLoc = locs.find(
+          (l) => getIapLocale(platform, l) === sourceLocale,
+        );
+        if (!sourceLoc) {
+          return;
+        }
+        for (const field of [IapField.title, IapField.description]) {
+          const source = this.getPlanFieldValue(platform, sourceLoc, field);
+          if (!source) {
+            continue;
+          }
+          // Re-translate all target locales, not only the missing ones.
+          if (targetLocales.length === 0) {
+            continue;
+          }
+          const reference: Record<string, string> = {};
+          for (const loc of locs) {
+            const code = getIapLocale(platform, loc);
+            if (!code || !excludeSet.has(code)) {
+              continue;
+            }
+            const value = this.getPlanFieldValue(platform, loc, field);
+            if (value) {
+              reference[this.getLocaleName(platform, code)] = value;
+            }
+          }
+          units.push({
+            platform,
+            target: IapTranslateTarget.plans,
+            filePath,
+            fileName,
+            itemIndex,
+            field,
+            source,
+            targetLocales,
+            reference,
+          });
+        }
+
+        // benefits: Android-only array, one unit per element (each carrying its
+        // array index) so each is translated and length-validated on its own.
+        if (platform === MetadataPlatform.android && targetLocales.length > 0) {
+          const sourceBenefits = sourceLoc.benefits ?? [];
+          sourceBenefits.forEach((source, fieldIndex) => {
+            if (!source) {
+              return;
+            }
+            const reference: Record<string, string> = {};
+            for (const loc of locs) {
+              const code = getIapLocale(platform, loc);
+              if (!code || !excludeSet.has(code)) {
+                continue;
+              }
+              const value = loc.benefits?.[fieldIndex];
+              if (value) {
+                reference[this.getLocaleName(platform, code)] = value;
+              }
+            }
+            units.push({
+              platform,
+              target: IapTranslateTarget.plans,
+              filePath,
+              fileName,
+              itemIndex,
+              field: IapField.benefit,
+              fieldIndex,
+              source,
+              targetLocales,
+              reference,
+            });
+          });
+        }
+      });
+    }
+    return units;
+  }
+
+  // Untranslated field units for every iOS subscription_groups.json file
+  // (one per flavor when flavor subfolders are used).
+  private enumerateSubscriptionGroupUnits(): IapUnit[] {
+    const platform = MetadataPlatform.ios;
+    const excludeSet = this.getIapExcludeLocaleSet();
+    const units: IapUnit[] = [];
+    for (const filePath of this.iapService.getSubscriptionGroupsFiles()) {
+      let groups;
+      try {
+        groups = this.iapService.readSubscriptionGroupsFile(filePath);
+      } catch {
+        continue;
+      }
+      const fileName = path.basename(filePath);
+      const present = new Set<string>();
+      for (const group of groups) {
+        for (const loc of group.localizations ?? []) {
+          if (loc.locale) {
+            present.add(loc.locale);
+          }
+        }
+      }
+      const sourceInfo = this.findSourceLocale(platform, present);
+      if (!sourceInfo) {
+        continue;
+      }
+      const sourceLocale = sourceInfo.locale;
+      const targetLocales = this.getIapTargetLocales(platform, sourceLocale);
+
+      groups.forEach((group, itemIndex) => {
+        const locs = group.localizations ?? [];
+        const sourceLoc = locs.find((l) => l.locale === sourceLocale);
+        if (!sourceLoc) {
+          return;
+        }
+        for (const field of [IapField.name, IapField.customAppName]) {
+          const source = this.getGroupFieldValue(sourceLoc, field);
+          if (!source) {
+            continue;
+          }
+          // Re-translate all target locales, not only the missing ones.
+          if (targetLocales.length === 0) {
+            continue;
+          }
+          const reference: Record<string, string> = {};
+          for (const loc of locs) {
+            if (!loc.locale || !excludeSet.has(loc.locale)) {
+              continue;
+            }
+            const value = this.getGroupFieldValue(loc, field);
+            if (value) {
+              reference[this.getLocaleName(platform, loc.locale)] = value;
+            }
+          }
+          units.push({
+            platform,
+            target: IapTranslateTarget.subscriptionGroups,
+            filePath,
+            fileName,
+            itemIndex,
+            field,
+            source,
+            targetLocales,
+            reference,
+          });
+        }
+      });
+    }
+    return units;
+  }
+
+  private enumerateIapUnits(): IapUnit[] {
+    return [
+      ...this.enumeratePlanUnits(MetadataPlatform.android),
+      ...this.enumeratePlanUnits(MetadataPlatform.ios),
+      ...this.enumerateSubscriptionGroupUnits(),
+    ];
+  }
+
+  // action: iap_list — count of (field × locale) pairs grouped by platform +
+  // target, so the caller can see the IAP work. This is the full re-translate
+  // workload (every target locale is retranslated each run), not the count of
+  // currently-missing translations, so it does not reflect translation state.
+  private async iap_list(): Promise<unknown> {
+    const grouped = new Map<
+      string,
+      { platform: MetadataPlatform; target: IapTranslateTarget; count: number }
+    >();
+    for (const unit of this.enumerateIapUnits()) {
+      const key = `${unit.platform}:${unit.target}`;
+      const entry =
+        grouped.get(key) ??
+        { platform: unit.platform, target: unit.target, count: 0 };
+      entry.count += unit.targetLocales.length;
+      grouped.set(key, entry);
+    }
+    return { targets: [...grouped.values()] };
+  }
+
+  // action: iap_start — one IAP field together with every target locale it must
+  // be translated into, plus its wording in the hand-maintained exclude locales
+  // (e.g. Korean) as reference context.
+  private async iap_start_translation(): Promise<unknown> {
+    const unitKey = (u: IapUnit) =>
+      `${u.platform}:${u.target}:${u.filePath}:${u.itemIndex}:${u.field}:${u.fieldIndex ?? ""}`;
+    const units = this.enumerateIapUnits();
+    const remaining = units.filter((u) => !this.iapConsumed.has(unitKey(u)));
+    const totalRemaining = remaining.length;
+    if (totalRemaining === 0) {
+      // Whole loop done; reset so a subsequent run starts fresh.
+      this.iapConsumed.clear();
+      return { totalRemaining: 0, item: null };
+    }
+
+    const unit = remaining[0];
+    const sessionId = crypto.randomUUID();
+    this.iapSessions.set(sessionId, {
+      platform: unit.platform,
+      target: unit.target,
+      filePath: unit.filePath,
+      itemIndex: unit.itemIndex,
+      field: unit.field,
+      fieldIndex: unit.fieldIndex,
+      targetLocales: unit.targetLocales,
+    });
+
+    return {
+      sessionId,
+      totalRemaining,
+      item: {
+        platform: unit.platform,
+        target: unit.target,
+        fileName: unit.fileName,
+        field: unit.field,
+        maxLength: this.getFieldLimit(unit.platform, unit.target, unit.field),
+        source: unit.source,
+        targetLocales: unit.targetLocales,
+        ...(Object.keys(unit.reference).length > 0
+          ? { reference: unit.reference }
+          : {}),
+      },
+    };
+  }
+
+  // action: iap_finish — validate length, then write one field's translation in
+  // each target locale, returning any failing { locale } for re-translation.
+  private async iap_finish_translation(
+    sessionId: string,
+    translations: Record<string, string>,
+  ): Promise<unknown> {
+    const session = this.iapSessions.get(sessionId);
+    if (!session) {
+      return { error: `Unknown sessionId: ${sessionId}` };
+    }
+    if (!translations || typeof translations !== "object") {
+      return { error: "translations must be an object" };
+    }
+
+    const { platform, target, filePath, itemIndex, field, fieldIndex, targetLocales } =
+      session;
+    const limit = this.getFieldLimit(platform, target, field);
+    const failures: {
+      locale: string;
+      field: IapField;
+      reason: string;
+    }[] = [];
+
+    const isPlans = target === IapTranslateTarget.plans;
+    let plans: ReturnType<IapService["readPlans"]> | undefined;
+    let groups: ReturnType<IapService["readSubscriptionGroupsFile"]> | undefined;
+    try {
+      if (isPlans) {
+        plans = this.iapService.readPlans(filePath);
+      } else {
+        groups = this.iapService.readSubscriptionGroupsFile(filePath);
+      }
+    } catch (e: any) {
+      return { error: `Failed to read ${filePath}: ${e?.message ?? e}` };
+    }
+
+    const item = isPlans ? plans![itemIndex] : groups![itemIndex];
+    if (!item) {
+      return { error: `Item index ${itemIndex} no longer exists in ${filePath}` };
+    }
+    if (!item.localizations) {
+      item.localizations = [];
+    }
+    const locs = item.localizations;
+
+    let written = 0;
+    for (const locale of targetLocales) {
+      const value = translations[locale];
+      if (value === undefined || value === "") {
+        failures.push({ locale, field, reason: "missing translation" });
+        continue;
+      }
+      if (value.length > limit) {
+        failures.push({
+          locale,
+          field,
+          reason: `exceeds ${limit} chars (${value.length})`,
+        });
+        continue;
+      }
+
+      if (isPlans) {
+        const planLocs = locs as IapLocalization[];
+        let targetLoc = planLocs.find(
+          (l) => getIapLocale(platform, l) === locale,
+        );
+        if (!targetLoc) {
+          targetLoc = {};
+          setIapLocale(platform, targetLoc, locale);
+          planLocs.push(targetLoc);
+        }
+        this.setPlanFieldValue(platform, targetLoc, field, value, fieldIndex);
+      } else {
+        const groupLocs = locs as IapSubscriptionGroupLocalization[];
+        let targetLoc = groupLocs.find((l) => l.locale === locale);
+        if (!targetLoc) {
+          targetLoc = { locale };
+          groupLocs.push(targetLoc);
+        }
+        this.setGroupFieldValue(targetLoc, field, value);
+      }
+      written++;
+    }
+
+    if (written > 0) {
+      if (isPlans) {
+        this.iapService.writePlans(filePath, plans!);
+      } else {
+        this.iapService.writeSubscriptionGroupsFile(filePath, groups!);
+      }
+    }
+
+    // Keep only the still-failing locales as the session's remaining work, so a
+    // follow-up call can resubmit just those (the ones already written must not
+    // be re-flagged as "missing translation" on the next round).
+    const ok = failures.length === 0;
+    if (ok) {
+      // Mark this field done so iap_start_translation advances to the next one.
+      this.iapConsumed.add(
+        `${platform}:${target}:${filePath}:${itemIndex}:${field}:${fieldIndex ?? ""}`,
+      );
+      this.iapSessions.delete(sessionId);
+    } else {
+      session.targetLocales = failures.map((f) => f.locale);
+    }
+    return { ok, written, failures };
+  }
+
+  // action: iap_check — re-run the extension's full IAP length/consistency
+  // check over the written files so Claude can verify its own translations.
+  // Returns the UI-independent fields of each issue; empty `issues` means every
+  // IAP string is within limits and consistent.
+  // Expected target locales whose IAP field is missing or empty while the
+  // en-US source has a value — the "untranslated" state. checkIapFiles only
+  // validates length/consistency and never flags a wholly missing locale, so
+  // this fills that gap using the same source/target logic as translation.
+  private collectUntranslatedIapIssues(): Array<{
+    type: IapCheckIssueType;
+    platform: string;
+    file: string;
+    locale: string;
+    reason: string;
+  }> {
+    const issues: Array<{
+      type: IapCheckIssueType;
+      platform: string;
+      file: string;
+      locale: string;
+      reason: string;
+    }> = [];
+
+    const push = (
+      platform: MetadataPlatform,
+      filePath: string,
+      locale: string,
+      reason: string,
+    ) => {
+      issues.push({
+        type: IapCheckIssueType.untranslated,
+        platform: platform === MetadataPlatform.android ? "Android" : "iOS",
+        file: path.relative(
+          this.iapService.getIapDirectory(platform),
+          filePath,
+        ),
+        locale,
+        reason,
+      });
+    };
+
+    // Plans (both platforms).
+    for (const platform of [MetadataPlatform.android, MetadataPlatform.ios]) {
+      for (const filePath of this.iapService.getIapFiles(platform)) {
+        let plans;
+        try {
+          plans = this.iapService.readPlans(filePath);
+        } catch {
+          continue;
+        }
+        const present = new Set<string>();
+        for (const plan of plans) {
+          for (const loc of plan.localizations ?? []) {
+            const code = getIapLocale(platform, loc);
+            if (code) {
+              present.add(code);
+            }
+          }
+        }
+        const sourceInfo = this.findSourceLocale(platform, present);
+        if (!sourceInfo) {
+          continue;
+        }
+        const targetLocales = this.getIapTargetLocales(
+          platform,
+          sourceInfo.locale,
+        );
+        if (targetLocales.length === 0) {
+          continue;
+        }
+
+        for (const plan of plans) {
+          const locs = plan.localizations ?? [];
+          const sourceLoc = locs.find(
+            (l) => getIapLocale(platform, l) === sourceInfo.locale,
+          );
+          if (!sourceLoc) {
+            continue;
+          }
+          const byLocale = new Map<string, IapLocalization>();
+          for (const loc of locs) {
+            const code = getIapLocale(platform, loc);
+            if (code) {
+              byLocale.set(code, loc);
+            }
+          }
+
+          for (const field of [IapField.title, IapField.description]) {
+            if (!this.getPlanFieldValue(platform, sourceLoc, field)) {
+              continue;
+            }
+            for (const locale of targetLocales) {
+              const target = byLocale.get(locale);
+              const value = target
+                ? this.getPlanFieldValue(platform, target, field)
+                : undefined;
+              if (!value) {
+                push(platform, filePath, locale, `${field} not translated`);
+              }
+            }
+          }
+
+          // benefits: Android-only array, checked element-wise.
+          if (platform === MetadataPlatform.android) {
+            (sourceLoc.benefits ?? []).forEach((source, idx) => {
+              if (!source) {
+                return;
+              }
+              for (const locale of targetLocales) {
+                const value = byLocale.get(locale)?.benefits?.[idx];
+                if (!value) {
+                  push(
+                    platform,
+                    filePath,
+                    locale,
+                    `benefit[${idx}] not translated`,
+                  );
+                }
+              }
+            });
+          }
+        }
+      }
+    }
+
+    // Subscription groups (iOS).
+    for (const filePath of this.iapService.getSubscriptionGroupsFiles()) {
+      let groups;
+      try {
+        groups = this.iapService.readSubscriptionGroupsFile(filePath);
+      } catch {
+        continue;
+      }
+      const present = new Set<string>();
+      for (const group of groups) {
+        for (const loc of group.localizations ?? []) {
+          if (loc.locale) {
+            present.add(loc.locale);
+          }
+        }
+      }
+      const sourceInfo = this.findSourceLocale(MetadataPlatform.ios, present);
+      if (!sourceInfo) {
+        continue;
+      }
+      const targetLocales = this.getIapTargetLocales(
+        MetadataPlatform.ios,
+        sourceInfo.locale,
+      );
+      if (targetLocales.length === 0) {
+        continue;
+      }
+
+      for (const group of groups) {
+        const locs = group.localizations ?? [];
+        const sourceLoc = locs.find((l) => l.locale === sourceInfo.locale);
+        if (!sourceLoc) {
+          continue;
+        }
+        const byLocale = new Map<string, IapSubscriptionGroupLocalization>();
+        for (const loc of locs) {
+          if (loc.locale) {
+            byLocale.set(loc.locale, loc);
+          }
+        }
+        for (const field of [IapField.name, IapField.customAppName]) {
+          if (!this.getGroupFieldValue(sourceLoc, field)) {
+            continue;
+          }
+          for (const locale of targetLocales) {
+            const target = byLocale.get(locale);
+            const value = target
+              ? this.getGroupFieldValue(target, field)
+              : undefined;
+            if (!value) {
+              push(
+                MetadataPlatform.ios,
+                filePath,
+                locale,
+                `${field} not translated`,
+              );
+            }
+          }
+        }
+      }
+    }
+
+    return issues;
+  }
+
+  private async iap_check(): Promise<unknown> {
+    const lengthIssues = this.iapService.checkIapFiles().map((issue) => ({
+      type: issue.type,
+      platform: issue.platformTag,
+      file: issue.fileLabel,
+      locale: issue.locale,
+      reason: issue.reason,
+    }));
+    // Surface missing translations first — they are the actionable "not yet
+    // translated" items, ahead of length/consistency warnings.
+    const issues = [...this.collectUntranslatedIapIssues(), ...lengthIssues];
+    return { ok: issues.length === 0, issues };
   }
 }

@@ -17,14 +17,10 @@ export class HistoryRepository extends BaseInitRequired {
   private history: History = this.defaultHistory;
 
   public async init(): Promise<void> {
-    if (!fs.existsSync(this.historyFilePath)) {
-      Workspace.createPath(this.historyFilePath);
-      fs.writeFileSync(
-        this.historyFilePath,
-        JSON.stringify({}, null, 2),
-        "utf-8"
-      );
-    } else {
+    // Do not create the file here: init runs on every extension startup, and
+    // an eager write would litter workspaces that never record any history.
+    // The file is created lazily by set().
+    if (fs.existsSync(this.historyFilePath)) {
       const result = await JsonParser.parse<Record<string, any>>(
         this.historyFilePath,
         { data: {} }
@@ -49,6 +45,7 @@ export class HistoryRepository extends BaseInitRequired {
 
   public set(data: Record<string, string>) {
     super.checkInit();
+    Workspace.createPath(this.historyFilePath);
     fs.writeFileSync(
       this.historyFilePath,
       JSON.stringify(

@@ -5,6 +5,7 @@ import * as path from "path";
 import * as vscode from "vscode";
 import { ARB, ARBService } from "../app/component/arb/arb";
 import { ARBValidationRepository } from "../app/component/arb/validation/arb_validation.repository";
+import { ChangelogService } from "../app/component/changelog/changelog.service";
 import { ConfigService } from "../app/component/config/config";
 import {
   getIapLocale,
@@ -55,6 +56,25 @@ type IapSession = {
 // (en-GB, en-AU, …) are translation targets filled from this one.
 const IAP_ENGLISH_SOURCE_LOCALE = "en-US";
 
+// One changelog file to write: a (platform, locale) pair plus the translate
+// language it belongs to and that platform's store length limit. Translations
+// are keyed by languageCode, so one translated text fans out to every target
+// sharing that language.
+type ChangelogTarget = {
+  platform: MetadataPlatform;
+  locale: string;
+  languageCode: string;
+  maxLength: number;
+};
+
+// Changelog translation session: the whole build-number changelog translated
+// into every target language in one round, unlike the per-key ARB and
+// per-field IAP sessions.
+type ChangelogSession = {
+  buildNumber: string;
+  targets: ChangelogTarget[];
+};
+
 // A single translatable IAP field occurrence and the locales it must be
 // (re)translated into — the IAP analogue of an untranslated ARB key. Unlike
 // ARB, every target locale is always (re)translated, not only missing ones;
@@ -83,6 +103,7 @@ interface InitParams {
   translationCacheRepository: TranslationCacheRepository;
   iapService: IapService;
   metadataService: MetadataService;
+  changelogService: ChangelogService;
 }
 
 // localhost HTTP bridge that lets the bundled MCP server reuse the extension's
@@ -96,12 +117,14 @@ export class McpBridge {
   private translationCacheRepository: TranslationCacheRepository;
   private iapService: IapService;
   private metadataService: MetadataService;
+  private changelogService: ChangelogService;
 
   private server?: http.Server;
   private token?: string;
   private bridgeFilePath?: string;
   private sessions = new Map<string, Session>();
   private iapSessions = new Map<string, IapSession>();
+  private changelogSessions = new Map<string, ChangelogSession>();
   // Identities of IAP field units already translated in the current loop, so
   // iap_start_translation advances to the next field instead of always handing
   // back units[0]. Cleared once every unit is consumed (loop finished).
@@ -115,6 +138,7 @@ export class McpBridge {
     translationCacheRepository,
     iapService,
     metadataService,
+    changelogService,
   }: InitParams) {
     this.arbService = arbService;
     this.arbValidationRepository = arbValidationRepository;
@@ -123,6 +147,7 @@ export class McpBridge {
     this.translationCacheRepository = translationCacheRepository;
     this.iapService = iapService;
     this.metadataService = metadataService;
+    this.changelogService = changelogService;
   }
 
   public async start(): Promise<void> {
@@ -150,6 +175,14 @@ export class McpBridge {
       "flutter-translator",
     );
     fs.mkdirSync(dir, { recursive: true });
+    // The bridge file holds a per-session port and token, so it must never be
+    // committed; a nested .gitignore keeps it out without touching the
+    // project's own .gitignore.
+    fs.writeFileSync(
+      path.join(dir, ".gitignore"),
+      "mcp-bridge.json\n",
+      "utf-8",
+    );
     this.bridgeFilePath = path.join(dir, "mcp-bridge.json");
     fs.writeFileSync(
       this.bridgeFilePath,
@@ -213,6 +246,12 @@ export class McpBridge {
         );
       case "iap_check":
         return this.iap_check();
+      case "changelog_start":
+        return this.changelog_start(request.sourceLocale);
+      case "changelog_finish":
+        return this.changelog_finish(request.sessionId, request.translations);
+      case "changelog_check":
+        return this.changelog_check();
       default:
         return { error: `Unknown action: ${request.action}` };
     }
@@ -1200,6 +1239,241 @@ export class McpBridge {
     // Surface missing translations first — they are the actionable "not yet
     // translated" items, ahead of length/consistency warnings.
     const issues = [...this.collectUntranslatedIapIssues(), ...lengthIssues];
+    return { ok: issues.length === 0, issues };
+  }
+
+  // ===========================================================================
+  // Changelog (store release notes) — one session translates the current build
+  // number's changelog into every target language. The source is picked by the
+  // user in conversation: calling changelog_start without a sourceLocale
+  // returns the candidate source locales, and the caller asks the user which
+  // one to translate from before calling again with it.
+  // ===========================================================================
+
+  // Android is the source platform, mirroring ChangelogTranslateCmd: the iOS
+  // release_notes.txt has no build number, so the Android changelog of the
+  // current build is the authoritative source text.
+  private getChangelogSourceCandidates(
+    buildNumber: string,
+  ): { locale: string; name: string }[] {
+    const candidates: { locale: string; name: string }[] = [];
+    for (const language of this.metadataService.getMetadataLanguagesInPlatform(
+      MetadataPlatform.android,
+    )) {
+      const changelog = this.changelogService.getChangelog({
+        platform: MetadataPlatform.android,
+        language,
+        buildNumber,
+      });
+      if (changelog.file.text.length > 0) {
+        candidates.push({ locale: language.locale, name: language.name });
+      }
+    }
+    return candidates;
+  }
+
+  // action: changelog_start — without sourceLocale: the candidate source
+  // locales (for the user to choose from in conversation). With sourceLocale:
+  // the source text plus every target language to translate it into; targets
+  // in the SAME language as the source are copied directly here (the command
+  // flow's "paste"), so Claude only translates actual foreign languages.
+  private async changelog_start(sourceLocale?: string): Promise<unknown> {
+    const buildNumber = this.changelogService.getBuildBumber();
+    const candidates = this.getChangelogSourceCandidates(buildNumber);
+
+    if (!sourceLocale) {
+      return { buildNumber, candidates };
+    }
+    if (!candidates.some((c) => c.locale === sourceLocale)) {
+      return {
+        error:
+          `No non-empty android changelog for locale "${sourceLocale}" and ` +
+          `build number ${buildNumber}. Candidates: ` +
+          (candidates.map((c) => c.locale).join(", ") || "(none)"),
+      };
+    }
+
+    const sourcePlatform = MetadataPlatform.android;
+    const sourceLanguage = this.metadataService
+      .getMetadataLanguagesInPlatform(sourcePlatform)
+      .find((l) => l.locale === sourceLocale)!;
+    const sourceChangelog = this.changelogService.getChangelog({
+      platform: sourcePlatform,
+      language: sourceLanguage,
+      buildNumber,
+    });
+    const sourceLanguageCode = sourceLanguage.translateLanguage.languageCode;
+    const excludeSet = new Set(
+      this.configService.getChangelogExcludeLocaleList(),
+    );
+
+    const targets: ChangelogTarget[] = [];
+    // languageCode -> group; one translation per language, fanned out to all
+    // of that language's platform locales, bounded by the strictest limit.
+    const grouped = new Map<
+      string,
+      { languageCode: string; name: string; maxLength: number; locales: string[] }
+    >();
+    let pasted = 0;
+    for (const platform of Object.values(MetadataPlatform)) {
+      for (const language of this.metadataService.getMetadataLanguagesInPlatform(
+        platform,
+      )) {
+        if (excludeSet.has(language.locale)) {
+          continue;
+        }
+        if (platform === sourcePlatform && language.locale === sourceLocale) {
+          continue;
+        }
+        const changelog = this.changelogService.getChangelog({
+          platform,
+          language,
+          buildNumber,
+        });
+        const languageCode = language.translateLanguage.languageCode;
+        if (languageCode === sourceLanguageCode) {
+          // Same language on another platform/locale: copy, don't translate.
+          changelog.file.text = sourceChangelog.file.text;
+          this.changelogService.updateChangelog(changelog);
+          pasted++;
+          continue;
+        }
+        targets.push({
+          platform,
+          locale: language.locale,
+          languageCode,
+          maxLength: changelog.file.maxLength,
+        });
+        const entry = grouped.get(languageCode) ?? {
+          languageCode,
+          name: language.translateLanguage.name,
+          maxLength: changelog.file.maxLength,
+          locales: [],
+        };
+        entry.maxLength = Math.min(entry.maxLength, changelog.file.maxLength);
+        entry.locales.push(`${platform}/${language.locale}`);
+        grouped.set(languageCode, entry);
+      }
+    }
+
+    if (targets.length === 0) {
+      return { buildNumber, pasted, item: null };
+    }
+
+    // Hand-maintained wording (changelogExclude locales) as reference context.
+    const reference: Record<string, string> = {};
+    for (const platform of Object.values(MetadataPlatform)) {
+      for (const language of this.metadataService.getMetadataLanguagesInPlatform(
+        platform,
+      )) {
+        if (!excludeSet.has(language.locale) || reference[language.name]) {
+          continue;
+        }
+        const changelog = this.changelogService.getChangelog({
+          platform,
+          language,
+          buildNumber,
+        });
+        if (changelog.file.text.length > 0) {
+          reference[language.name] = changelog.file.text;
+        }
+      }
+    }
+
+    const sessionId = crypto.randomUUID();
+    this.changelogSessions.set(sessionId, { buildNumber, targets });
+
+    return {
+      sessionId,
+      buildNumber,
+      sourceLanguageName: sourceLanguage.name,
+      pasted,
+      item: {
+        source: sourceChangelog.file.text,
+        targetLanguages: [...grouped.values()],
+        ...(Object.keys(reference).length > 0 ? { reference } : {}),
+      },
+    };
+  }
+
+  // action: changelog_finish — validate each language's text against the store
+  // length limit, write it to every (platform, locale) file of that language,
+  // and return the failing targets for re-translation.
+  private async changelog_finish(
+    sessionId: string,
+    translations: Record<string, string>,
+  ): Promise<unknown> {
+    const session = this.changelogSessions.get(sessionId);
+    if (!session) {
+      return { error: `Unknown sessionId: ${sessionId}` };
+    }
+    if (!translations || typeof translations !== "object") {
+      return { error: "translations must be an object" };
+    }
+
+    let written = 0;
+    const failures: {
+      platform: MetadataPlatform;
+      locale: string;
+      languageCode: string;
+      maxLength: number;
+      reason: string;
+    }[] = [];
+    const remaining: ChangelogTarget[] = [];
+
+    for (const target of session.targets) {
+      const value = translations[target.languageCode]?.trim();
+      if (!value) {
+        failures.push({ ...target, reason: "missing translation" });
+        remaining.push(target);
+        continue;
+      }
+      if (value.length > target.maxLength) {
+        failures.push({
+          ...target,
+          reason: `exceeds ${target.maxLength} chars (${value.length})`,
+        });
+        remaining.push(target);
+        continue;
+      }
+      const language = this.metadataService
+        .getMetadataLanguagesInPlatform(target.platform)
+        .find((l) => l.locale === target.locale);
+      if (!language) {
+        failures.push({ ...target, reason: "locale no longer configured" });
+        continue;
+      }
+      const changelog = this.changelogService.createChangelog({
+        platform: target.platform,
+        language,
+        buildNumber: session.buildNumber,
+      });
+      changelog.file.text = value;
+      this.changelogService.updateChangelog(changelog);
+      written++;
+    }
+
+    // Keep only the still-failing targets so a follow-up call resubmits just
+    // those languages.
+    const ok = failures.length === 0;
+    if (ok) {
+      this.changelogSessions.delete(sessionId);
+    } else {
+      session.targets = remaining;
+    }
+    return { ok, written, failures };
+  }
+
+  // action: changelog_check — the extension's changelog check over every
+  // platform locale of the current build number (including the source and
+  // hand-maintained locales, which the user fixes by hand).
+  private async changelog_check(): Promise<unknown> {
+    const issues = this.changelogService.getInvalidList().map((validation) => ({
+      type: validation.validationType,
+      platform: validation.changelog.platform,
+      locale: validation.changelog.language.locale,
+      filePath: validation.changelog.filePath,
+    }));
     return { ok: issues.length === 0, issues };
   }
 }

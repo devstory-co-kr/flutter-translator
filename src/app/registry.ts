@@ -179,6 +179,7 @@ export class Registry {
     translationCacheRepository: this.translationCacheRepository,
     iapService: this.iapService,
     metadataService: this.metadataService,
+    changelogService: this.changelogService,
   });
 
   /**

@@ -48,11 +48,21 @@ async function registerClaudeCodeMcp(context: vscode.ExtensionContext): Promise<
 
 // Infrastructure command: registers the bundled MCP server with Claude Code.
 // Kept out of the registry pipeline since it needs no workspace and depends
-// on context.extensionPath.
-export function registerMcpCommands(context: vscode.ExtensionContext) {
+// on context.extensionPath. `startBridge` force-starts the localhost bridge
+// so the first registration in a workspace works without a window reload
+// (activation only auto-starts the bridge in workspaces already using the
+// extension).
+export function registerMcpCommands(
+  context: vscode.ExtensionContext,
+  startBridge: () => Promise<void>
+) {
   context.subscriptions.push(
-    vscode.commands.registerCommand("flutter-translator.mcp.register", () =>
-      registerClaudeCodeMcp(context)
+    vscode.commands.registerCommand(
+      "flutter-translator.mcp.register",
+      async () => {
+        await registerClaudeCodeMcp(context);
+        await startBridge();
+      }
     )
   );
 }

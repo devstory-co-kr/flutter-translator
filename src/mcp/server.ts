@@ -280,6 +280,106 @@ async function main() {
     async () => asResult(await callBridge({ action: "iap_check" }))
   );
 
+  server.registerTool(
+    "start_changelog_translation",
+    {
+      title: "Start changelog translation",
+      description:
+        "Translate the app store changelog (release notes) of the CURRENT " +
+        "build number (from pubspec.yaml) into every store locale. Call this " +
+        "WITHOUT sourceLocale first: it returns { buildNumber, candidates } — " +
+        "the Android locales whose changelog for this build exists and is " +
+        "non-empty. ASK THE USER in conversation which candidate to use as " +
+        "the translation source (if there is exactly one, you may proceed " +
+        "with it and just tell the user; if there are none, ask the user to " +
+        "write the changelog first). Then call again WITH that sourceLocale. " +
+        "That call returns { sessionId, buildNumber, sourceLanguageName, " +
+        "pasted (same-language locales the extension already copied the " +
+        "source text into), item: { source, targetLanguages: [{ languageCode, " +
+        "name, maxLength, locales }], reference } }. Translate `source` into " +
+        "EVERY languageCode listed — ONE translation per language, which the " +
+        "extension writes to all of that language's platform locales. Keep " +
+        "each translation at or under its maxLength characters (the " +
+        "strictest store limit across its locales; Android caps changelogs " +
+        "at 500). `reference` maps language names to the user's " +
+        "hand-maintained changelog wording (e.g. Korean) — match its meaning " +
+        "and tone rather than translating the source literally. These are " +
+        "user-facing release notes, so keep them natural. Then call " +
+        "finish_changelog_translation with the translations, and finally " +
+        "check_changelog_translations to verify.",
+      inputSchema: {
+        sourceLocale: z
+          .string()
+          .optional()
+          .describe(
+            "Android locale of the source changelog, chosen by the user " +
+              "from `candidates`. Omit on the first call to get the candidates."
+          ),
+      },
+    },
+    async ({ sourceLocale }: { sourceLocale?: string }) =>
+      asResult(await callBridge({ action: "changelog_start", sourceLocale }))
+  );
+
+  server.registerTool(
+    "finish_changelog_translation",
+    {
+      title: "Finish changelog translation",
+      description:
+        "Submit the changelog translations for the session returned by " +
+        "start_changelog_translation. Pass `sessionId` and `translations` as " +
+        "SEPARATE structured arguments (do NOT serialize into one raw JSON " +
+        "string). `translations` maps each languageCode (NOT locale) to its " +
+        'translated changelog text, e.g. { "fr": "…", "ja": "…" }. Multi-line ' +
+        "text is fine; write literal Unicode characters, not \\uXXXX escapes. " +
+        "The extension validates each text against the store length limit, " +
+        "writes the passing ones to every matching platform locale file " +
+        "immediately, and returns any failing targets as { platform, locale, " +
+        "languageCode, maxLength, reason } — shorten those languages and " +
+        "resubmit them with the SAME sessionId. When `ok` is true, run " +
+        "check_changelog_translations to verify the final state.",
+      inputSchema: {
+        sessionId: z
+          .string()
+          .describe("sessionId from start_changelog_translation"),
+        translations: z
+          .record(z.string(), z.string())
+          .describe(
+            "Object mapping each languageCode to its translated changelog text"
+          ),
+      },
+    },
+    async ({
+      sessionId,
+      translations,
+    }: {
+      sessionId: string;
+      translations: Record<string, string>;
+    }) =>
+      asResult(
+        await callBridge({ action: "changelog_finish", sessionId, translations })
+      )
+  );
+
+  server.registerTool(
+    "check_changelog_translations",
+    {
+      title: "Check all changelogs",
+      description:
+        "Check every changelog of the current build number across Android " +
+        "and iOS: missing files, empty files, and texts over the store " +
+        "length limit. Returns { ok, issues } where each issue is { type " +
+        '("Not Exist"|"Empty"|"Overflow"), platform, locale, filePath }. ' +
+        "Issues in the source or hand-maintained (changelogExclude) locales " +
+        "must be fixed by the user by hand; for other locales run the " +
+        "start_changelog_translation / finish_changelog_translation loop " +
+        "(or shorten an Overflow text), then call this again until `ok` is " +
+        "true and `issues` is empty.",
+      inputSchema: {},
+    },
+    async () => asResult(await callBridge({ action: "changelog_check" }))
+  );
+
   const transport = new StdioServerTransport();
   await server.connect(transport);
 }

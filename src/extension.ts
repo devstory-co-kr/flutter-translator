@@ -21,10 +21,14 @@ export function activate(context: vscode.ExtensionContext) {
     context.subscriptions.push(disposable);
   }
 
-  // register MCP
-  registerMcpCommands(context);
+  // register MCP; the register command force-starts the bridge so a first-time
+  // workspace works without a reload
+  registerMcpCommands(context, () =>
+    app.startMcpBridge(true).catch((e) => app.onException(e))
+  );
 
   // start the localhost bridge so the MCP server can reuse extension services
+  // (auto-starts only in workspaces already using this extension)
   app.startMcpBridge().catch((e) => app.onException(e));
 }
 

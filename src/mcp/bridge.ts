@@ -175,6 +175,14 @@ export class McpBridge {
       "flutter-translator",
     );
     fs.mkdirSync(dir, { recursive: true });
+    // The bridge file holds a per-session port and token, so it must never be
+    // committed; a nested .gitignore keeps it out without touching the
+    // project's own .gitignore.
+    fs.writeFileSync(
+      path.join(dir, ".gitignore"),
+      "mcp-bridge.json\n",
+      "utf-8",
+    );
     this.bridgeFilePath = path.join(dir, "mcp-bridge.json");
     fs.writeFileSync(
       this.bridgeFilePath,

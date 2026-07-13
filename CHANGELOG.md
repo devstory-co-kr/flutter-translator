@@ -2,6 +2,17 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
+## [2.6.3] - 26.07.13
+
+### Added
+
+- Add changelog (store release notes) translation through the bundled Claude Code MCP server (`start_changelog_translation`, `finish_changelog_translation`, `check_changelog_translations` tools), translating the current build number's changelog into every store locale with store length limits enforced.
+
+### Fixed
+
+- Fix the extension creating `.vscode/flutter-translator` files in workspaces that never use it: the MCP bridge now auto-starts only in workspaces already using the extension, and the history file is created lazily on first write. The `Register Claude Code MCP` command still starts the bridge for first-time workspaces without a reload.
+- Add a nested `.gitignore` so the per-session `mcp-bridge.json` (port and token) is never committed.
+
 ## [2.6.2] - 26.07.05
 
 ### Added

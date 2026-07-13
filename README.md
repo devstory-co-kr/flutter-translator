@@ -45,7 +45,7 @@ This is a extension created based on an environment using **Flutter** and **Fast
 - [Changelog](#changelog) files translation and management.
 - [IAP](#iap) (In-App Purchases) plan files translation and validation.
 - [Xcode Strings](#xcode_strings) files translation.
-- [Claude Code MCP](#claude_code_mcp): translate ARB files with Claude Code using your Claude subscription.
+- [Claude Code MCP](#claude_code_mcp): translate ARB, IAP, and changelog files with Claude Code using your Claude subscription.
 
 ## Usage
 
@@ -328,7 +328,7 @@ It is recommended to set the configuration in the project workspace(`.vscode/set
 
 ## Claude Code MCP
 
-Translate your ARB and IAP (In-App Purchase) files with [Claude Code](https://docs.claude.com/en/docs/claude-code/overview) using your Claude subscription instead of the Google Translate API. The extension ships a built-in [MCP](https://modelcontextprotocol.io) server that exposes the same ARB and IAP logic (config, validation, cache) the extension uses, so Claude does the translating while the extension keeps writing the files.
+Translate your ARB, IAP (In-App Purchase), and changelog files with [Claude Code](https://docs.claude.com/en/docs/claude-code/overview) using your Claude subscription instead of the Google Translate API. The extension ships a built-in [MCP](https://modelcontextprotocol.io) server that exposes the same ARB, IAP, and changelog logic (config, validation, cache) the extension uses, so Claude does the translating while the extension keeps writing the files.
 
 ### Setup
 
@@ -356,6 +356,14 @@ The same flow works for [IAP](#iap) plan and iOS subscription group files. The E
 - `start_iap_translation` : returns one field (`title`, `description`, Android `benefit`, `name`, or `custom_app_name`) with every target locale to translate it into, the English source, the field's store character limit, and the matching wording from your hand-maintained reference locales.
 - `finish_iap_translation` : validates each value against the store character limit, writes the passing ones into the IAP JSON, and returns any failing items for re-translation.
 - `check_iap_translations` : verifies every written IAP string across all files, reporting untranslated locales, over-limit fields, and `custom_app_name` inconsistencies.
+
+**Changelog tools**
+
+The same flow also works for the store [changelog](#changelog) (release notes) of the current build number (from `pubspec.yaml`). You pick the source locale in conversation; the hand-maintained locales (`changelogConfig.exclude`) are used as reference wording, and store character limits (e.g. Android's 500) are enforced automatically.
+
+- `start_changelog_translation` : called without a source locale it returns the Android locales whose changelog for this build exists, so Claude can ask you which one to translate from. Called with the chosen locale it returns the source text, every target language with its length limit, and the matching wording from your reference locales.
+- `finish_changelog_translation` : validates each translation against the store length limit, writes the passing ones into every matching platform locale file, and returns any failing items for re-translation.
+- `check_changelog_translations` : checks every changelog of the current build number across Android and iOS, reporting missing files, empty files, and over-limit texts.
 
 > The MCP server only works while the project is open in VS Code with the Flutter Translator extension enabled, and Claude Code must be launched from inside that project folder.
 

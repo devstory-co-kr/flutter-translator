@@ -3,6 +3,7 @@ import * as fs from "fs";
 import * as http from "http";
 import * as path from "path";
 import * as vscode from "vscode";
+import { BRIDGE_DIR, bridgeFilePath } from "./discovery";
 import { ARB, ARBService } from "../app/component/arb/arb";
 import { ARBValidationRepository } from "../app/component/arb/validation/arb_validation.repository";
 import { ChangelogService } from "../app/component/changelog/changelog.service";
@@ -166,30 +167,48 @@ export class McpBridge {
     const address = this.server.address();
     const port = typeof address === "object" && address ? address.port : 0;
 
-    // Each window writes its own bridge file under its own workspace, so
-    // multiple windows never collide and the MCP server discovers the right
-    // one by walking up from its cwd.
-    const dir = path.join(
-      workspaceFolder.uri.fsPath,
-      ".vscode",
-      "flutter-translator",
-    );
-    fs.mkdirSync(dir, { recursive: true });
-    // The bridge file holds a per-session port and token, so it must never be
-    // committed; a nested .gitignore keeps it out without touching the
-    // project's own .gitignore.
-    fs.writeFileSync(
-      path.join(dir, ".gitignore"),
-      "mcp-bridge.json\n",
-      "utf-8",
-    );
-    this.bridgeFilePath = path.join(dir, "mcp-bridge.json");
+    // Each window writes its own bridge file, named after its workspace path
+    // hash, into the per-user tmp dir — never into the workspace itself. The
+    // MCP server discovers it by hashing its cwd ancestors (see discovery.ts).
+    fs.mkdirSync(BRIDGE_DIR, { recursive: true });
+    this.bridgeFilePath = bridgeFilePath(workspaceFolder.uri.fsPath);
     fs.writeFileSync(
       this.bridgeFilePath,
       JSON.stringify({ port, token: this.token }, null, 2),
       "utf-8",
     );
+    this.cleanupLegacyBridgeFiles(workspaceFolder.uri.fsPath);
     Logger.i(`MCP bridge listening on 127.0.0.1:${port}`);
+  }
+
+  // Older versions wrote the bridge file (plus a .gitignore for it) into
+  // <workspace>/.vscode/flutter-translator/, littering projects on every
+  // activation. Remove those leftovers, and the directory too when nothing
+  // else (history.json, cache.json, …) lives there.
+  private cleanupLegacyBridgeFiles(workspacePath: string): void {
+    try {
+      const legacyDir = path.join(
+        workspacePath,
+        ".vscode",
+        "flutter-translator",
+      );
+      const legacyBridge = path.join(legacyDir, "mcp-bridge.json");
+      if (fs.existsSync(legacyBridge)) {
+        fs.rmSync(legacyBridge);
+      }
+      const legacyGitignore = path.join(legacyDir, ".gitignore");
+      if (
+        fs.existsSync(legacyGitignore) &&
+        fs.readFileSync(legacyGitignore, "utf-8") === "mcp-bridge.json\n"
+      ) {
+        fs.rmSync(legacyGitignore);
+      }
+      if (fs.existsSync(legacyDir) && fs.readdirSync(legacyDir).length === 0) {
+        fs.rmdirSync(legacyDir);
+      }
+    } catch (e: any) {
+      Logger.e(e);
+    }
   }
 
   public stop(): void {

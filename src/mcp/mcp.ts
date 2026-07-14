@@ -48,10 +48,8 @@ async function registerClaudeCodeMcp(context: vscode.ExtensionContext): Promise<
 
 // Infrastructure command: registers the bundled MCP server with Claude Code.
 // Kept out of the registry pipeline since it needs no workspace and depends
-// on context.extensionPath. `startBridge` force-starts the localhost bridge
-// so the first registration in a workspace works without a window reload
-// (activation only auto-starts the bridge in workspaces already using the
-// extension).
+// on context.extensionPath. `startBridge` starts the localhost bridge so the
+// first registration works without a window reload.
 export function registerMcpCommands(
   context: vscode.ExtensionContext,
   startBridge: () => Promise<void>

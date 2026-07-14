@@ -1,17 +1,13 @@
 import * as fs from "fs";
 import * as http from "http";
 import * as path from "path";
+import { bridgeFilePath } from "./discovery";
 
 // Bundled stdio MCP server. It owns no translation logic — every tool forwards
 // to the VS Code extension's localhost HTTP bridge, which reuses the
 // extension's ARB and IAP services (config, validation, cache). The bridge
-// discovery file is written by
-// the extension into <workspace>/.vscode/flutter-translator/mcp-bridge.json.
-const BRIDGE_FILE = path.join(
-  ".vscode",
-  "flutter-translator",
-  "mcp-bridge.json"
-);
+// discovery file is written by the extension into the per-user tmp dir, named
+// after the workspace path hash (see discovery.ts) — never into the workspace.
 
 const BRIDGE_HELP =
   "Could not reach the Flutter Translator extension. Open the project in VS " +
@@ -20,12 +16,12 @@ const BRIDGE_HELP =
 
 type Bridge = { port: number; token: string };
 
-// Walk up from the MCP process cwd to find the bridge file written by the
-// extension for the workspace this `claude` was launched in.
+// Walk up from the MCP process cwd, hashing each ancestor, to find the bridge
+// file the extension wrote for the workspace this `claude` was launched in.
 function findBridge(): Bridge {
   let dir = process.cwd();
   while (true) {
-    const candidate = path.join(dir, BRIDGE_FILE);
+    const candidate = bridgeFilePath(dir);
     if (fs.existsSync(candidate)) {
       return JSON.parse(fs.readFileSync(candidate, "utf-8")) as Bridge;
     }

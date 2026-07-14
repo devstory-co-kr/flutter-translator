@@ -1,4 +1,3 @@
-import * as fs from "fs";
 import * as vscode from "vscode";
 import { ARBCacheUpdateCmdArgs } from "./cmd/arb/cache/arb.cache_update.cmd";
 import { ARBTranslateCmdArgs } from "./cmd/arb/translate/arb.translate.cmd";
@@ -20,14 +19,13 @@ import {
 } from "./util/exceptions";
 import { Logger } from "./util/logger";
 import { Toast } from "./util/toast";
-import { Workspace } from "./util/workspace";
 
 export interface App {
   name: string;
   commands: Record<Cmd, (args: any) => Promise<void>>;
   init: () => any;
   migrate: (context: vscode.ExtensionContext) => Promise<void>;
-  startMcpBridge: (force?: boolean) => Promise<void>;
+  startMcpBridge: () => Promise<void>;
   disposed: () => void;
   onException: (e: any) => void;
 }
@@ -165,15 +163,11 @@ export class FlutterTranslator implements App {
     }
   };
 
-  public startMcpBridge = async (force: boolean = false) => {
+  // The bridge writes its discovery file to the per-user tmp dir (see
+  // mcp/discovery.ts), never into the workspace, so starting it on every
+  // activation leaves user projects untouched.
+  public startMcpBridge = async () => {
     if (!vscode.workspace.workspaceFolders) {
-      return;
-    }
-    // Auto-start (extension activation) only in workspaces that already use
-    // this extension — i.e. its app directory exists. Otherwise every VS Code
-    // window would get .vscode/flutter-translator files it never asked for.
-    // `force` (the MCP register command) starts the bridge unconditionally.
-    if (!force && !fs.existsSync(Workspace.getWorkspaceAppPath())) {
       return;
     }
     await this.registry.init();

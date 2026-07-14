@@ -2,6 +2,12 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
+## [2.6.4] - 26.07.14
+
+### Fixed
+
+- Fix the MCP bridge discovery file being written into `<workspace>/.vscode/flutter-translator/`: it now lives in the per-user tmp dir, named after a hash of the workspace path, so the extension never creates files inside user projects. Leftover files from older versions are cleaned up automatically.
+
 ## [2.6.3] - 26.07.13
 
 ### Added

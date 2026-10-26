@@ -98,7 +98,8 @@ async function main() {
     {
       title: "List ARB translation targets",
       description:
-        "List target languages that have untranslated strings, with the " +
+        "List target languages that have untranslated strings (missing, or " +
+        "whose source value changed since the last translation), with the " +
         "count for each. Call this first to see what needs translating.",
       inputSchema: {},
     },
@@ -111,8 +112,10 @@ async function main() {
       title: "Start ARB translation for one key",
       description:
         "Get ONE untranslated key together with every target language it is " +
-        "still missing in. Returns a sessionId, totalRemaining (the number of " +
-        "keys still missing somewhere across the project), and a single " +
+        "still missing in (a key whose source value changed since the last " +
+        "translation counts as missing in every target language). Returns " +
+        "a sessionId, totalRemaining (the number of keys still missing " +
+        "somewhere across the project), and a single " +
         "`item`: { key, source, missingIn: [lang1, lang2, ...], reference }. " +
         "Translate the `source` string into EVERY language code listed in " +
         "`missingIn` in one pass. `reference` maps language names to the same " +

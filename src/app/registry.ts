@@ -173,6 +173,7 @@ export class Registry {
   });
   public mcpBridge: McpBridge = new McpBridge({
     arbService: this.arbService,
+    historyService: this.historyService,
     arbValidationRepository: this.arbValidationRepository,
     languageService: this.languageService,
     configService: this.configService,

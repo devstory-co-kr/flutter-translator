@@ -8,6 +8,7 @@ import { ARB, ARBService } from "../app/component/arb/arb";
 import { ARBValidationRepository } from "../app/component/arb/validation/arb_validation.repository";
 import { ChangelogService } from "../app/component/changelog/changelog.service";
 import { ConfigService } from "../app/component/config/config";
+import { HistoryService } from "../app/component/history/history.service";
 import {
   getIapLocale,
   getIapTitle,
@@ -98,6 +99,7 @@ type IapUnit = {
 
 interface InitParams {
   arbService: ARBService;
+  historyService: HistoryService;
   arbValidationRepository: ARBValidationRepository;
   languageService: LanguageService;
   configService: ConfigService;
@@ -112,6 +114,7 @@ interface InitParams {
 // API and therefore cannot run inside the standalone MCP process.
 export class McpBridge {
   private arbService: ARBService;
+  private historyService: HistoryService;
   private arbValidationRepository: ARBValidationRepository;
   private languageService: LanguageService;
   private configService: ConfigService;
@@ -133,6 +136,7 @@ export class McpBridge {
 
   constructor({
     arbService,
+    historyService,
     arbValidationRepository,
     languageService,
     configService,
@@ -142,6 +146,7 @@ export class McpBridge {
     changelogService,
   }: InitParams) {
     this.arbService = arbService;
+    this.historyService = historyService;
     this.arbValidationRepository = arbValidationRepository;
     this.languageService = languageService;
     this.configService = configService;
@@ -281,9 +286,13 @@ export class McpBridge {
     return !key.startsWith("@");
   }
 
+  // A key needs translation when the target lacks it, or when its source value
+  // differs from the one recorded in history (the source was edited after the
+  // last translation).
   private getUntranslatedKeys(
     source: Record<string, string>,
     target: Record<string, string>,
+    history: Record<string, string>,
   ): string[] {
     const keys: string[] = [];
     for (const key of Object.keys(source)) {
@@ -295,11 +304,32 @@ export class McpBridge {
         continue;
       }
       const targetValue = target[key];
-      if (targetValue === undefined || targetValue === "") {
+      const historyValue = history[key];
+      if (
+        targetValue === undefined ||
+        targetValue === "" ||
+        (historyValue !== undefined && historyValue !== sourceValue)
+      ) {
         keys.push(key);
       }
     }
     return keys;
+  }
+
+  // Keys absent from history have no baseline to detect edits against, so
+  // record their current source value; later edits are then detected.
+  private recordMissingHistory(source: Record<string, string>): void {
+    const historyData = { ...this.historyService.get().data };
+    let nAdded = 0;
+    for (const key of Object.keys(source)) {
+      if (this.isTranslatableKey(key) && historyData[key] === undefined) {
+        historyData[key] = source[key];
+        nAdded++;
+      }
+    }
+    if (nAdded > 0) {
+      this.historyService.update(historyData);
+    }
   }
 
   private async readTargetData(
@@ -324,6 +354,8 @@ export class McpBridge {
     const sourceARB = await this.arbService.getSourceARB();
     const targetLanguages = await this.arbService.getTargetLanguageList();
     const excludeSet = this.getExcludeLanguageCodeSet();
+    this.recordMissingHistory(sourceARB.data);
+    const history = this.historyService.get().data;
 
     const targets: {
       languageCode: string;
@@ -342,7 +374,11 @@ export class McpBridge {
           language.languageCode,
         );
       const targetData = await this.readTargetData(targetArbPath);
-      const count = this.getUntranslatedKeys(sourceARB.data, targetData).length;
+      const count = this.getUntranslatedKeys(
+        sourceARB.data,
+        targetData,
+        history,
+      ).length;
       if (count > 0) {
         targets.push({
           languageCode: language.languageCode,
@@ -362,6 +398,8 @@ export class McpBridge {
     const targetLanguages = await this.arbService.getTargetLanguageList();
     const excludeLanguages = this.arbService.getExcludeLanguageList();
     const excludeSet = this.getExcludeLanguageCodeSet();
+    this.recordMissingHistory(sourceARB.data);
+    const history = this.historyService.get().data;
 
     // Map every still-missing key to the target languages that lack it.
     const missingMap: Record<string, string[]> = {};
@@ -377,7 +415,11 @@ export class McpBridge {
           language.languageCode,
         );
       const targetData = await this.readTargetData(targetArbPath);
-      for (const k of this.getUntranslatedKeys(sourceARB.data, targetData)) {
+      for (const k of this.getUntranslatedKeys(
+        sourceARB.data,
+        targetData,
+        history,
+      )) {
         if (!missingMap[k]) {
           missingMap[k] = [];
         }
@@ -553,6 +595,11 @@ export class McpBridge {
     const ok = failures.length === 0;
     if (ok) {
       this.sessions.delete(sessionId);
+      // mark this source value as translated so it is no longer detected as changed
+      this.historyService.update({
+        ...this.historyService.get().data,
+        [key]: source,
+      });
     }
     return { ok, written, failures };
   }

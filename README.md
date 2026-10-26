@@ -342,7 +342,7 @@ While the project is open in VS Code, the extension runs a localhost bridge so t
 
 **ARB tools**
 
-- `list_targets` : lists target languages that have untranslated strings, with the count for each.
+- `list_targets` : lists target languages that have untranslated strings, with the count for each. A key counts as untranslated when it is missing from the target ARB file, or when its source value changed since the last translation (tracked in the same `history.json` as `ARB - Translate`).
 - `start_translation` : returns one untranslated key together with every target language it is still missing in, the source string, and the matching wording from your hand-maintained reference languages so Claude can match the intended meaning, tone, and length. Claude translates that single key into all of those languages at once.
 - `finish_translation` : validates placeholders, writes and caches the passing translations into each target ARB file (keeping the source key order), and returns any failing items for re-translation.
 

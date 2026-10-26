@@ -2,6 +2,12 @@
 
 All notable changes to the [flutter-translator extension](https://marketplace.visualstudio.com/items?itemName=DevStory.flutter-translator) will be documented in this file.
 
+## [2.6.5] - 26.10.26
+
+### Fixed
+
+- Fix the Claude Code MCP ARB tools (`list_targets`, `start_translation`) ignoring edited source strings: a key whose source value changed since the last translation is now detected as untranslated in every target language, using the same history file as `ARB - Translate`. Finished keys are recorded in the history.
+
 ## [2.6.4] - 26.07.14
 
 ### Fixed
